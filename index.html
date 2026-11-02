@@ -1,0 +1,1744 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>V3 Tinder voor collecties</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500&display=swap">
+<style>
+/* Blom Collectiekeuze. Eén scherm per model: boven de vouw foto, namen, uitvoeringen, huidige AFAS-situatie en prijzen; onder de vouw aanvullende info. Knoppenbalk altijd in beeld. Huisstijl: wit/zwart, haaks, geen schaduwen; groen = ja, rood = nee, altijd met zwarte tekst. */
+:root{
+  --ink:#3A3A3A; --wit:#FFFFFF; --grijs:#F8F8F8; --n200:#F4F4F2; --n300:#EFEFEC; --n500:#DEDED8; --g300:#898989; --g400:#616161;
+  --groen:#91D6AC; --rood:#F09491; --geel:#FED880; --roze:#FFB990; --blauw:#BFCED6;
+  --display:"Roc Grotesk",roc-grotesk,Verdana,sans-serif; --body:"Plus Jakarta Sans",Verdana,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--wit);color:var(--ink);font-family:var(--body);font-weight:300;font-size:14px;line-height:1.4;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;border-radius:0;cursor:pointer}
+a{color:var(--ink)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none!important}
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-width:560px;margin:0 auto;border-left:1px solid var(--n300);border-right:1px solid var(--n300)}
+.eye{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:var(--g400)}
+.disp{font-family:var(--display);font-weight:500}
+.num{font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--g400);margin:0}
+
+/* header */
+header{background:var(--wit)}
+.hrow{height:46px;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
+.hrow svg.logo{height:20px;width:auto;display:block}
+.hright{display:flex;align-items:center;gap:10px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;border:0;display:grid;place-items:center;font-size:11px;font-weight:500;padding:0}
+.menubtn{height:32px;padding:0 10px;border:1px solid var(--ink);background:#fff;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--n500)}
+.tabs button{height:34px;border:0;border-bottom:1px solid var(--n500);background:#fff;font-size:12.5px;font-weight:400;color:var(--g400)}
+.tabs button.on{font-family:var(--display);font-weight:500;font-size:13px;color:var(--ink);border-bottom:2px solid var(--ink)}
+.supbar{height:28px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:var(--grijs)}
+.supbar b{font-weight:500;font-size:13px;margin-left:8px}
+.pct{font-weight:600!important;color:var(--ink);margin-left:0!important}
+.pct.klaar{display:inline-flex;align-items:center;gap:4px;vertical-align:-2px}
+.prog{height:2px;background:var(--n300)}.prog i{display:block;height:2px;background:var(--ink);width:0}
+.banner{background:var(--geel);padding:8px 16px;font-size:12px}
+
+main{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.page{padding:20px 16px 40px;display:grid;gap:14px;align-content:start}
+.page h1{font-family:var(--display);font-weight:500;font-size:34px;line-height:1;margin:0}
+.intro{font-family:var(--display);font-weight:200;font-size:17px;line-height:1.35;margin:0}
+
+/* home */
+.supcard{border:1px solid var(--ink);padding:14px;display:grid;gap:8px}
+.supcard .nm{font-family:var(--display);font-weight:500;font-size:22px}
+.supcard .mt{font-size:12px;color:var(--g400)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cta{height:46px;border:0;background:var(--ink);color:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
+.ghost{height:46px;border:1.5px solid var(--ink);background:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
+.cta:disabled{background:var(--grijs);color:var(--g400);border:1px dashed var(--g300);cursor:not-allowed}
+.later{border:1px dashed var(--g300);padding:12px 14px;font-size:13px;color:var(--g400)}
+
+/* card: fold */
+.fold{display:flex;flex-direction:column;padding-bottom:12px}
+.serie{margin:10px 16px 0;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex:none}
+.serie .sl{display:flex;align-items:baseline;gap:8px;min-width:0}
+.serie .sn{font-size:22px;line-height:1}
+.serie .ss{font-size:11.5px;white-space:nowrap}
+.types{margin:8px 16px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:none}
+.types::-webkit-scrollbar{display:none}
+.types button{flex:none;height:28px;padding:0 9px;border:1px solid var(--n500);background:#fff;font-size:12px;font-weight:400}
+.types button span{color:var(--g400);margin-left:3px}
+.types button.on{border:1px solid var(--ink);background:var(--ink);color:#fff;font-weight:500}
+.types button.on span{color:#DEDED8}
+.prod{margin:8px 16px 0;display:flex;gap:8px;align-items:baseline;flex:none}
+.prod .pl{font-family:var(--display);font-weight:500;font-size:15px;line-height:1.2}
+.fins{margin:6px 16px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:none}
+.fins button{height:30px;display:flex;align-items:center;gap:5px;padding:0 8px 0 5px;border:1px solid var(--n500);background:#fff;font-size:12px}
+.fins button small{font-size:10px;color:var(--g400)}
+.fins button.on{border:1.5px solid var(--ink);font-weight:500}
+.finnote{font-size:10.5px;color:var(--g400)}
+.conf{position:absolute;top:6px;right:6px;z-index:3;height:24px;padding:0 7px;border:1px solid var(--ink);font-size:11px;font-weight:500;display:flex;align-items:center;gap:4px}
+.conf.hi{background:var(--groen)}.conf.mid{background:var(--geel)}.conf.lo{background:var(--rood)}
+.confpop{position:absolute;top:34px;right:6px;left:6px;z-index:4;background:#fff;border:1px solid var(--ink);padding:10px 12px;font-size:12px;line-height:1.4}
+.confpop b{font-weight:500}.confpop ul{margin:6px 0 0;padding-left:16px;display:grid;gap:3px}
+.photo{margin:8px 16px 0;flex:1 1 110px;min-height:96px;max-height:380px;border:1px solid var(--n500);border-bottom:0;position:relative}
+.strip{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.strip::-webkit-scrollbar{display:none}
+.slide{flex:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;scroll-snap-stop:always;padding:6px 0}
+.slide img{width:94%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
+.slide .wait{font-size:12px;color:var(--g300)}
+.slide{cursor:zoom-in}
+.zoom{position:fixed;inset:0;z-index:90;background:#fff;display:flex;flex-direction:column}
+.zoom[hidden]{display:none}
+.zoom .zi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px;touch-action:pinch-zoom;overflow:auto}
+.zoom .zi img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.zoom .zx{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:10px;width:44px;height:44px;border:1px solid var(--ink);background:#fff;font-size:24px;line-height:1;font-weight:300;cursor:pointer;z-index:2}
+.zoom .zf{display:flex;align-items:center;gap:10px;padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--n300);font-size:12.5px}
+.zoom .zf span{flex:1;min-width:0}
+.zoom .zf small{display:block;color:var(--g400);font-size:11px}
+.zoom .zf button{width:44px;height:44px;border:1px solid var(--n500);background:#fff;font-size:20px;cursor:pointer}
+.phfoot{margin:0 16px;height:28px;border:1px solid var(--n500);border-top:0;display:flex;align-items:center;justify-content:space-between;padding:0 2px 0 10px;flex:none}
+.phfoot .q{font-size:10.5px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phnav{display:flex;align-items:center;font-size:11px}
+.phnav button{width:28px;height:26px;border:0;background:none;font-size:16px}
+.names{margin:10px 16px 0;flex:none}
+.nrow{display:grid;grid-template-columns:62px minmax(0,1fr) auto;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--n500)}
+.nrow .big{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.15}
+.nrow .mut{font-size:12px;color:var(--g400)}
+.nrow .r{font-size:11px;font-variant-numeric:tabular-nums;text-align:right}
+.vrow{margin:8px 16px 0;display:flex;align-items:center;gap:8px;flex:none;min-width:0}
+.vstrip{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:6px 2px 2px;margin:0 16px;min-width:0;flex:none}
+.vstrip .vbtn{width:40px;padding:1px 1px 2px}.vstrip .vbtn img,.vstrip .vbtn .ni{height:22px;width:34px}.vstrip .vbtn span{font-size:8.5px}
+.vstrip::-webkit-scrollbar{display:none}
+.vbtn{position:relative;flex:none;width:54px;padding:2px 2px 3px;border:1px solid var(--n500);background:#fff;display:grid;justify-items:center;gap:1px}
+.vbtn.on{border:1.5px solid var(--ink)}
+.vbtn img,.vbtn .ni{height:32px;width:46px;object-fit:contain;display:block}
+.vbtn span{font-size:9px;font-weight:400;line-height:1.1;max-width:50px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vbtn.on span{font-weight:500}
+.vbtn .bd{position:absolute;top:-2px;right:-2px}
+.vsum{flex:none;font-size:11px;line-height:14px;white-space:nowrap}
+.vsum b{font-weight:500}
+.ico{display:block;flex:none}
+.now{margin:10px 16px 0;border:1px solid var(--ink);flex:none}
+.now .hd{display:flex;justify-content:space-between;align-items:center;height:22px;padding:0 10px;background:var(--grijs);border-bottom:1px solid var(--n500);font-size:10px}
+.now .hd b{letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.now .hd span{color:var(--g400)}
+.cells{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--n500)}
+.cell{display:flex;align-items:center;gap:6px;padding:0 8px;height:34px;border-right:1px solid var(--n500);font-size:11.5px;line-height:13px}
+.cell:last-child{border-right:0}
+.cell.no{color:var(--g400)}.cell.yes{font-weight:500}
+.cell.main{font-family:var(--display);font-weight:500;font-size:12.5px;color:var(--ink)}
+.labs{padding:6px 8px 7px;display:flex;gap:8px;align-items:flex-start}
+.labs .eye{line-height:20px;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px 0 3px;border:1px solid var(--n500);font-size:10.5px;white-space:nowrap;color:var(--g400)}
+.chip.on{border-color:var(--ink);color:var(--ink);font-weight:500}
+.chip .sw{width:8px;height:8px;flex:none}
+.prices{margin:10px 16px 0;flex:none;font-variant-numeric:tabular-nums}
+.ph{display:grid;align-items:end;padding-bottom:3px;border-bottom:1px solid var(--ink)}
+.ph div{text-align:right;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:500;white-space:nowrap}
+.ph div:first-child{text-align:left;display:flex;gap:6px;align-items:center}
+.pr{display:grid;align-items:center;height:20px;font-size:11.5px;border-bottom:1px solid var(--n300)}
+.pr div{text-align:right;white-space:nowrap}.pr div:first-child{text-align:left}
+.pr .pc{color:var(--g400);font-size:9.5px;text-align:right}
+.pr.b{font-weight:500}
+.pr.vk{height:32px;font-family:var(--display);font-weight:500;font-size:14px;background:var(--ink);color:#fff;padding:0 6px 0 8px;margin-top:3px;border:0}
+.pr.vk small{font-family:var(--body);font-weight:300;font-size:10.5px}
+.sg{display:inline-flex;flex-direction:column;align-items:flex-end;gap:2px;text-transform:none;letter-spacing:0}
+.ptab .sg{align-items:flex-start}
+.sgb{white-space:normal;background:var(--ink);color:#fff;font-size:10.5px;font-weight:500;padding:1px 6px;white-space:nowrap}
+.sgb.care{background:var(--roze);color:var(--ink)}
+/* prijskoppen mogen afbreken: 'Goedkoopste gestoffeerde uitvoering' past niet op één regel */
+.ph div{white-space:normal}
+.ph .sg{align-items:flex-end;max-width:100%}
+.ph .sgb{white-space:normal;text-align:right;line-height:1.1;padding:1px 4px;font-size:9px;font-weight:500;max-width:118px}
+.ph .sgs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;line-height:1.2;font-size:8.5px;max-width:118px}
+.pr.vk.care{background:var(--roze);color:var(--ink);margin-top:2px;height:24px;font-size:12.5px}.pr.vk.care small{font-size:9.5px}
+.pr .cc{background:color-mix(in srgb,var(--roze) 22%,transparent);padding-right:4px;margin-left:6px}
+.pr.two{height:auto;min-height:20px;padding:2px 0}.pr .pc2{display:block;font-size:9px;color:var(--g400);line-height:1.1}
+.sgs{border:1px solid #EFEFEC;color:#B0B0B0;font-size:8px;font-weight:300;padding:0 4px;white-space:nowrap;letter-spacing:.02em}
+.ptab.ap{font-size:10.5px}
+.ptab.ap th{font-size:8.5px;vertical-align:bottom}
+.ptab.ap th small,.ptab.ap td small{display:block;font-size:8px;font-weight:300;color:var(--g400);text-transform:none;letter-spacing:0;white-space:nowrap}
+.ptab.ap td{padding:5px 3px 5px 0;vertical-align:middle;white-space:nowrap}
+.ptab.ap td.vk{font-weight:500;font-size:11px}
+.ptab.ap{font-size:10px}.ptab.ap td{padding-right:2px}
+.ptab.ap .sgb{font-size:9.5px}
+.aprows{display:grid;gap:0}
+.aprow{border-top:1px solid var(--n500);padding:8px 0}
+.aprow:first-child{border-top:1px solid var(--ink)}
+.aph{display:flex;align-items:flex-start;gap:8px}
+.aph .sg{align-items:flex-start}
+.apv{font-size:11px;color:var(--g400);flex:1;padding-top:2px}
+.apk{margin-left:auto;text-align:right;font-family:var(--display);font-weight:500;font-size:17px;line-height:1.1;white-space:nowrap}
+.apk small{display:block;font-family:var(--body);font-weight:300;font-size:9.5px;color:var(--g400)}
+.steps{display:grid;grid-template-columns:1fr auto;column-gap:12px;margin-top:6px;font-size:10.5px;color:var(--g400);font-variant-numeric:tabular-nums;line-height:1.45}
+.steps span:nth-child(even){text-align:right}
+.pfor{margin-top:6px;border:1px solid var(--n500);padding:6px 8px;font-size:11px;display:grid;gap:2px}
+.pfor b{font-weight:500;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.pfor div{display:grid;grid-template-columns:56px 1fr;gap:6px}
+.pfor span{color:var(--g400)}
+.prices:not(.open) .px{display:none}.prices.open .pxs{display:none}
+.ptog{display:flex;align-items:center;gap:10px;width:100%;margin-top:8px;min-height:38px;padding:0 12px;background:#fff;border:1px solid var(--ink);font:inherit;color:var(--ink);cursor:pointer;text-align:left}.ptog b{font-family:var(--display);font-weight:500;font-size:14px}.ptog span{font-weight:300;font-size:11px;color:var(--g400);margin-left:auto;white-space:nowrap}.ptog i{font-style:normal;font-weight:300;font-size:22px;line-height:1;width:14px;text-align:center}
+.pnote{font-size:10.5px;color:var(--g400);margin-top:4px;line-height:1.35}
+.pkey{margin-top:8px;display:grid;gap:3px;font-size:10.5px;line-height:1.35;color:var(--g400)}.pkey div{display:grid;grid-template-columns:96px 1fr;gap:8px}.pkey span{color:var(--ink);font-weight:500}
+.locked{border:1px dashed var(--g300);padding:10px;font-size:12px;color:var(--g400)}
+
+/* naamvoorstel */
+.nvl{white-space:nowrap}.nvl b{font-weight:600;color:var(--ink)}.nvl i,.nvb i{font-style:normal;font-size:10px;color:#B5462F;margin-left:4px}
+.nvb .vst{margin-right:4px;vertical-align:2px}
+/* knop productkaart op de swipekaart */
+.dpk{position:absolute;top:10px;right:12px;z-index:2;display:flex;align-items:center;gap:7px;max-width:150px;padding:6px 9px;border:1px solid var(--ink);background:#fff;font-size:10.5px;line-height:1.2;text-align:left;font-weight:500}
+.dpk:hover{background:var(--ink);color:#fff}
+.dcard.top .dtype,.dcard.top .dname{padding-right:158px}
+/* productkaart online collectie (voorbeeld), naar het productvenster van collection.blominteriors.com */
+.pkaart{position:fixed;inset:0;z-index:95;background:rgba(20,20,20,.86);overflow-y:auto;-webkit-overflow-scrolling:touch;font-family:var(--display);font-weight:200;color:#111;padding:12px 0 30px}
+.pk-bar{max-width:1240px;margin:0 auto 8px;padding:0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pk-sw{display:flex;border:1px solid #fff}
+.pk-sw button{height:30px;padding:0 12px;border:0;background:transparent;color:#fff;font-family:var(--display);font-weight:500;font-size:12px}
+.pk-sw button.on{background:#fff;color:#111}
+.pk-bar small{color:#E6E6E6;font-family:var(--body);font-size:11px;font-weight:300}
+.pk-modal{position:relative;max-width:1240px;margin:0 auto;background:#fff;border-top:4px solid #111;padding:26px 16px 22px}
+.pk-x{position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;background:none;font-size:28px;line-height:1;font-weight:200;color:#111}
+.pk-grid2{display:grid;grid-template-columns:1fr;gap:22px}
+@media(min-width:900px){.pk-modal{padding:28px 24px 24px}.pk-grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px}}
+.pk-grid2>*{min-width:0}.pk-img{min-width:0}
+.pk-img .ph{background:#E9EBEF;aspect-ratio:16/8;display:flex;align-items:center;justify-content:center;padding:18px}
+@media(max-width:899px){.pk-img .ph{aspect-ratio:4/3}}
+.pk-img img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply}
+.pk-img .ph{position:relative;overflow:hidden}
+.pk-img .ph img{cursor:pointer}
+.pk-nav-b{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:1px solid #111;background:#fff;font-size:24px;line-height:1;font-weight:200;cursor:pointer}
+.pk-nav-b.l{left:10px}.pk-nav-b.r{right:10px}
+.pk-cnt{position:absolute;bottom:8px;right:10px;font-family:var(--body);font-size:11px;background:#fff;padding:1px 6px;border:1px solid #D3D8DF}
+.pk-th{display:flex;gap:6px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:thin;max-width:100%}
+.pk-th button{flex:none;width:58px;height:58px;border:1px solid #D3D8DF;background:#E9EBEF;padding:3px;cursor:pointer}
+.pk-th button.on{border:2px solid #111}
+.pk-th img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.pk-img small{display:block;margin-top:14px;font-family:var(--body);font-size:10.5px;font-weight:300;color:#1F3A6E;line-height:1.4}
+.pk-title{display:flex;align-items:flex-start;gap:10px;margin:4px 0 14px}
+.pk-title h2{margin:0;font-family:var(--display);font-weight:500;font-size:32px;line-height:1.05;letter-spacing:-.01em}
+.pk-badge{margin-top:-14px;font-family:var(--display);font-weight:500;font-size:12px;padding:5px 12px;background:#14D11F;color:#fff}
+.pk-badge.vs{background:#FFF8E6;color:#111;border:1px dashed #111}
+.pk-badge.off{background:#9A9A9A}
+.pk-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,150px));border-bottom:1px solid #DADADA;margin-bottom:12px}
+.pk-tabs span{text-align:center;padding:8px 0;font-weight:200;font-size:15px;color:#333}
+.pk-tabs span.on{font-weight:500;color:#111;border-bottom:3px solid #111;margin-bottom:-2px}
+.pk-desc{margin:0 0 22px;font-size:13.5px;line-height:1.5;font-weight:200}
+.pk-cols{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:620px){.pk-cols{grid-template-columns:1fr 1.15fr;gap:22px}}
+.pk-fields{display:grid;gap:14px;align-content:start}
+.pk-fields div b{display:block;font-weight:500;font-size:13px;margin-bottom:3px}
+.pk-fields div span{font-size:13px;font-weight:200}
+.pk-contact{font-size:12.5px;line-height:1.35;font-weight:200}
+.pk-panel{background:#EEF1F5;padding:22px 20px;display:grid;gap:8px;align-content:start}
+.pk-panel label{font-weight:500;font-size:13px;margin-top:6px}
+.pk-panel select{height:42px;border:1px solid #D3D8DF;border-radius:4px;background:#fff;padding:0 12px;font-family:var(--display);font-weight:200;font-size:13px;width:100%;color:#333}
+.pk-off{margin-top:14px;height:40px;border:0;background:#000;color:#fff;font-family:var(--display);font-weight:500;font-size:13px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.pk-ico{display:flex;gap:8px;margin-top:4px}.pk-ico span{width:32px;height:32px;background:#000;display:grid;place-items:center}
+.pk-ico svg{stroke:#fff}
+.pk-int{margin-top:16px;background:#EEF1F5;padding:22px 20px;display:grid;gap:14px}
+.pk-int h3{margin:0;font-family:var(--display);font-weight:500;font-size:15px}
+.pk-int div b{display:block;font-weight:500;font-size:13px;margin-bottom:3px}.pk-int div span{font-size:13px;font-weight:200}
+.pk-vs{font-family:var(--body);font-size:10px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;border:1px dashed #111;background:#FFF8E6;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.pk-grid{max-width:1240px;margin:0 auto;background:#fff;border-top:4px solid #111;padding:20px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.pk-card{background:#fff;display:flex;flex-direction:column;border:1px solid #EEF1F5;height:100%}
+.pk-grid.opz{align-items:stretch}
+.pk-card .cb{flex:1}
+.pk-card .cb b,.pk-card .cb small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-card .ci{aspect-ratio:1/1;position:relative;min-height:140px}
+.pk-card .ci img{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);object-fit:contain}
+.pk-card .ci em{position:absolute;right:8px;bottom:8px;font-style:normal;font-size:11px;background:#fff;border:1px solid #DEDED8;padding:1px 6px}
+.pk-card .cb{background:#EEF1F5;padding:10px 12px;display:grid;gap:2px}
+.pk-card .cb b{font-weight:500;font-size:14px}.pk-card .cb small{font-size:11.5px;font-weight:200;color:#444}
+.pk-card .cf{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:500}
+.pk-card.pk-dim{opacity:.45}
+button.pk-card,.pk-card button.ci{padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer;border:0;background:#fff;width:100%}
+.pk-card.pk-off .ci,.pk-card.pk-off .cb b{opacity:.4}
+.opzt{margin-top:8px;height:32px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid #111;background:#fff;font-family:var(--display);font-weight:500;font-size:12px;width:100%}
+.opzt.on{background:#111;color:#fff}.opzt .ico{flex:none}
+.opzn{display:block;margin-top:6px;font-size:11px;font-weight:500;color:#B5462F}
+.aseg{display:grid;grid-template-columns:1fr 1fr;margin-top:8px;border:1px solid #111}
+.aseg button{height:32px;display:flex;align-items:center;justify-content:center;gap:5px;border:0;background:#fff;color:#666;font-family:var(--display);font-weight:200;font-size:12px;cursor:pointer}
+.aseg button+button{border-left:1px solid #111}
+.aseg button.on{background:#111;color:#fff;font-weight:500}
+.aseg button:not(.on) .ico{opacity:.35}
+.pk-add .aseg{margin-top:0;background:#fff}
+.pk-add .note{font-size:12px}
+.npick{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:12px 0 14px}
+.npick button{height:46px;border:1.5px solid var(--ink);background:#fff;font-family:var(--display);font-weight:500;font-size:15px;cursor:pointer}
+.npick button.on,.npick button:hover{background:var(--ink);color:#fff}
+.npick .nplus{font-size:24px;font-weight:200}
+.nnew{display:grid;gap:10px}
+.pk-add{display:grid;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #D3D8DF}.pk-add b{font-weight:500;font-size:13px}.pk-add .opzt{margin-top:0}
+.pk-back{height:30px;padding:0 12px;border:1px solid #fff;background:#fff;color:#111;font-family:var(--display);font-weight:500;font-size:12px}
+.opzh{font-size:13px;font-weight:200;display:grid;gap:8px}.opzh b{font-weight:500}
+.opzf{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.opzf span{font-weight:500;font-size:12px;margin-right:4px}
+.opzf button{height:28px;padding:0 10px;border:1px solid #D3D8DF;background:#fff;font-family:var(--display);font-weight:200;font-size:12px}
+.opzf button.on{border-color:#111;font-weight:500}.opzf small{color:#777}
+.opzb{width:100%;margin-bottom:12px}
+.opzl{display:block;margin:8px auto 0;border:1px solid var(--ink);background:#fff;height:38px;padding:0 14px;font-family:var(--display);font-weight:500;font-size:13px}
+/* below the fold */
+.below{padding:0 16px 30px;display:grid;gap:22px}
+.foldline{display:flex;align-items:center;gap:10px;height:30px}
+.foldline span{flex:1;border-top:1px dashed var(--g300)}
+.foldline em{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g400)}
+.below h2{font-family:var(--display);font-weight:500;font-size:18px;margin:0 0 8px}
+.below p{margin:0;font-size:14px;line-height:22px}
+.kv{border-top:1px solid var(--ink);font-size:13px}
+details.box{border:1px solid var(--ink)}
+details.box>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:0 12px;font-family:var(--display);font-weight:500;font-size:16px}
+details.box>summary::-webkit-details-marker{display:none}
+details.box>summary span{font-family:var(--body);font-weight:300;font-size:11px;color:var(--g400);margin-left:auto;white-space:nowrap}
+details.box>summary::after{content:'+';font-family:var(--body);font-weight:300;font-size:22px;line-height:1}
+details.box[open]>summary::after{content:'−'}
+details.box>*:not(summary){margin:0 12px 12px}
+details.box .tablewrap{border:0}
+.frsel{display:grid;gap:5px;margin-bottom:10px!important}
+.frsel small{font-size:10.5px;color:var(--g400)}
+.frseg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink)}
+.frseg button{height:38px;border:0;background:#fff;font-size:12.5px}
+.frseg button+button{border-left:1px solid var(--ink)}
+.frseg button.on{background:var(--ink);color:#fff;font-weight:500}
+.frseg button.on.fr{background:var(--roze);color:var(--ink)}
+.kv div{display:grid;grid-template-columns:130px minmax(0,1fr);padding:7px 0;border-bottom:1px solid var(--n500)}
+.kv span:first-child{color:var(--g400)}
+.ptab{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.ptab th{text-align:left;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;border-bottom:1px solid var(--ink);padding:4px 4px 4px 0}
+.ptab td{border-bottom:1px solid var(--n300);padding:5px 4px 5px 0;vertical-align:top}
+.ptab td.r{white-space:nowrap}.ptab td.u{font-size:11px;color:var(--g400)}
+.ptab td.r,.ptab th.r{text-align:right}
+.tablewrap{overflow-x:auto;border:1px solid var(--n500)}
+.below{min-width:0;max-width:100%;overflow-x:hidden}details.box{min-width:0;max-width:100%}.below p{overflow-wrap:anywhere}
+.ptab.ap .sgs{white-space:normal;max-width:96px;line-height:1.15}
+.team div{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--n500);font-size:13px}
+.tag{font-size:10.5px;font-weight:500;letter-spacing:.05em;padding:3px 7px}
+.tag.wel{background:var(--groen)}.tag.niet{background:var(--rood)}.tag.open{color:var(--g400);font-weight:300;letter-spacing:0}
+.links a{display:flex;justify-content:space-between;align-items:center;height:44px;border-bottom:1px solid var(--n500);text-decoration:none;font-weight:500}
+.links a:first-child{border-top:1px solid var(--n500)}
+
+/* footer buttons (sticky) */
+.what{grid-column:1/-1;font-size:11px;line-height:1.3;margin-bottom:-3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.what b{font-weight:500}
+.actions{display:grid;grid-template-columns:66px 1fr 1fr;gap:8px;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--n300);background:#fff}
+.actions button{height:50px;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:500;font-size:14.5px;line-height:1.1;text-align:left}
+.b-undo{flex-direction:column;gap:2px!important;border:1.5px solid var(--ink);background:var(--n200);font-family:var(--body)!important;font-size:10.5px!important}
+.b-undo:disabled{opacity:.35;cursor:default}
+.b-no{border:1.5px solid var(--ink);background:#fff}
+.b-yes{border:0;background:var(--ink);color:#fff}
+.actions button:disabled{opacity:.35;cursor:default}
+
+/* deck feedback */
+.flyer{transition:transform .25s ease-out,opacity .25s}
+.stamp{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);z-index:40;padding:10px 18px;font-family:var(--display);font-weight:500;font-size:22px;letter-spacing:.06em;border:1.5px solid var(--ink);pointer-events:none}
+.stamp.wel{background:var(--groen)}.stamp.niet{background:var(--rood)}
+.empty{padding:40px 16px;text-align:center;display:grid;gap:14px;justify-items:center}
+.empty h2{font-family:var(--display);font-weight:500;font-size:28px;margin:0}
+
+/* overlay sheets */
+.sheet{position:fixed;inset:0;z-index:30;background:#fff;display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-width:560px;margin:0 auto}
+.shead{height:46px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--n500)}
+.shead button{border:0;background:none;padding:0;font-size:13px;font-weight:400;display:flex;align-items:center;gap:6px}
+.sbody{overflow-y:auto;padding:14px 16px 24px}
+.sfoot{padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--n300)}
+.ftop{display:flex;gap:12px;align-items:center}
+.ftop .th{width:56px;height:56px;border:1px solid var(--n500);display:grid;place-items:center;flex:none}
+.ftop .th img{max-width:52px;max-height:52px}
+.ftop h1{font-family:var(--display);font-weight:500;font-size:22px;line-height:1;margin:3px 0 0}
+.fsec{margin-top:18px}
+.fsec h2{margin:0 0 6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.fgrp{margin-top:10px}
+.fprod{border-bottom:1px solid var(--n500);padding:6px 0 2px}
+.fph{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500}
+.fph img{height:30px;width:38px;object-fit:contain}
+.fprod .frow{border:0;min-height:38px;padding:2px 0 2px 46px}
+.fprod .frow .nm{width:64px;font-size:12.5px}
+.fgh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;font-family:var(--display);font-weight:500;font-size:14px;border-bottom:1px solid var(--ink)}
+.fgb{display:flex;align-items:center;gap:6px;font-family:var(--body);font-weight:300;font-size:11px}
+.fgrp .frow:first-of-type{border-top:0}
+.frow{display:flex;align-items:center;gap:10px;min-height:44px;border-bottom:1px solid var(--n500);padding:4px 0}
+.frow:first-child{border-top:1px solid var(--n500)}
+.frow img{height:32px;width:40px;object-fit:contain}
+.frow .nm{font-size:13.5px;font-weight:500}
+.frow .st{font-size:10px;color:var(--g400);flex:1}
+.frow .st b{font-weight:500;color:var(--ink)}
+.cur{font-size:9px;font-weight:400;background:var(--n200);border:1px solid var(--n500);padding:1px 4px;margin-left:6px;white-space:nowrap}
+.yn{display:flex;flex:none}
+.yn button{width:54px;height:30px;border:1px solid var(--g300);background:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px}
+.yn button+button{border-left:0}
+.yn button.ja.on{background:var(--groen);border-color:var(--ink);font-weight:500}
+.yn button.nee.on{background:var(--rood);border-color:var(--ink);font-weight:500}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--g300)}
+.seg button{height:46px;border:0;border-right:1px solid var(--g300);background:#fff;font-size:12px;line-height:1.25}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--groen);font-weight:500}
+.seg button.on.neg{background:var(--rood)}
+.fprog{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:6px}
+.fprog b{font-weight:500}
+.fnote{font-size:12px;color:var(--g400);margin:-4px 0 8px;line-height:1.4}
+.fsec h2 .opt{font-weight:300;color:var(--g400);text-transform:none;letter-spacing:0;font-size:11px;margin-left:4px}
+.stdh{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;padding:8px 10px;border:1px solid var(--ink)}
+.stdh b{display:block;font-weight:500;font-size:13.5px}.stdh span:not(.gl){font-size:11.5px;color:var(--g400)}
+.gl{flex:none;display:inline-grid;place-items:center;width:18px;height:18px;font-size:10.5px;font-weight:500;background:var(--ink);color:#fff}
+.gl.x{background:var(--roze);color:var(--ink)}
+.qsel{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.qsel button{height:30px;padding:0 10px;border:1px solid var(--g300);background:#fff;font-size:12px}
+.gchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+.gchip{position:relative;display:grid;justify-items:center;gap:2px;padding:4px 2px 4px;border:1px solid var(--n500);background:#fff;cursor:pointer}
+.gchip.sel{border:2px solid var(--ink);background:var(--n100,#F6F6F4);padding:3px 1px}
+.gchip .gl{position:absolute;top:2px;left:2px;width:16px;height:16px;font-size:9.5px}
+.gchip img,.gchip i{height:30px;width:44px;object-fit:contain;display:block}
+.gchip .gc{font-size:9.5px;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gact{position:sticky;bottom:0;z-index:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:8px;background:#fff;border:1px solid var(--ink);font-size:12px}
+.gact[hidden]{display:none}
+.gact button{height:32px;padding:0 10px;border:1px solid var(--ink);background:#fff;font-size:12px}
+.gact button[data-mv="new"],.gact button[data-mv="care"]{background:var(--ink);color:#fff}
+.gcard{margin-top:12px;border:1px solid var(--ink);padding:8px 10px 10px;border-left:4px solid var(--roze)}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:500;font-size:13.5px}
+.gh span{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.gh button{height:28px;padding:0 8px;border:1px solid var(--g300);background:#fff;font-size:11px}
+.gcodes{font-size:10.5px;color:var(--g400);margin:4px 0 8px;line-height:1.35}
+.gsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);margin:8px 0 4px}
+.glabs{display:flex;flex-wrap:wrap;gap:6px}
+.glab{display:flex;align-items:center;gap:5px;height:30px;padding:0 8px;border:1px solid var(--g300);background:#fff;font-size:12px}
+.glab .sw{width:10px;height:10px}.glab b{display:flex}
+.glab.on{background:var(--groen);border-color:var(--ink)}.glab.off{background:#fff;color:var(--g400)}
+.fbar{height:3px;background:var(--n300);margin-bottom:10px}.fbar i{display:block;height:3px;background:var(--ink)}
+.menu .sbody{display:grid;gap:10px;align-content:start}
+/* serie houden: per product swipen */
+.deckmode .sfoot{display:none}
+.deckmode .sbody{display:flex;flex-direction:column;padding:10px 16px 12px;overflow:hidden}
+.deck{flex:1;display:flex;flex-direction:column;min-height:0}
+.dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.dhead b{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.1;display:block;margin-top:2px}
+.dcount{font-size:12px;white-space:nowrap}.dcount b{font-family:var(--display);font-weight:500;font-size:22px}
+.dbar{height:3px;background:var(--n300);margin-top:8px;flex:none}.dbar i{display:block;height:3px;background:var(--ink);transition:width .3s ease-out}
+.dstack{position:relative;flex:1;min-height:300px;margin:12px 0 10px}
+.dcard{position:absolute;inset:0;background:#fff;border:1.5px solid var(--ink);display:flex;flex-direction:column;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform}
+.dcard.drag{cursor:grabbing}
+.dcard.under{transform:scale(.94) translateY(14px);border-color:var(--n500);pointer-events:none}
+.dcard.under .dmeta{opacity:.5}
+.dcard.enter{animation:dpop .3s cubic-bezier(.2,1.3,.4,1)}
+@keyframes dpop{from{transform:scale(.94) translateY(14px)}to{transform:none}}
+.dcard.back{transition:transform .3s cubic-bezier(.2,1.5,.4,1)}
+.dcard.fly{transition:transform .23s ease-in,opacity .23s ease-in;opacity:0}
+.dimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;position:relative}
+.dconf{position:absolute;top:8px;left:8px;z-index:2;font-size:10px;font-weight:500;line-height:1;padding:3px 6px;border:1px solid var(--ink);background:#fff}
+.dconf.hi{background:var(--groen)}.dconf.mid{background:var(--geel)}.dconf.lo{background:var(--rood)}
+.dimg img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none}
+.dimg .wait{font-size:12px;color:var(--g300)}
+.dmeta{border-top:1px solid var(--n500);padding:10px 12px 12px;display:grid;gap:4px;flex:none}
+.dtype{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g400)}
+.dname{font-family:var(--display);font-weight:500;font-size:21px;line-height:1.1}
+.dname .dnv{font-family:var(--body);font-size:9.5px;vertical-align:5px}.dname .dnc{font-family:var(--body);font-style:normal;font-size:10px;font-weight:400;color:#B5462F;vertical-align:4px}
+.dline{font-size:11.5px;color:var(--g400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.dtag{font-size:10.5px;font-weight:500;padding:3px 7px;border:1px solid var(--ink);background:#fff}
+.dtag.in{background:var(--groen)}.dtag.new{background:var(--geel)}.dtag.grp{background:var(--roze)}
+.dprice{display:flex;align-items:baseline;gap:14px;margin-top:4px;font-size:12px;color:var(--g400);font-variant-numeric:tabular-nums}
+.dprice b{font-weight:600;color:var(--ink);font-size:15px;margin-left:3px}
+.dprice small{font-size:10px;margin-left:auto}
+.dprice{flex-wrap:wrap;row-gap:2px}.dcare{background:var(--roze);color:var(--ink);padding:0 5px}
+.dfins{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:4px}
+.dfins>span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);margin-right:2px}
+.dfin{height:28px;padding:0 8px;border:1px solid var(--ink);background:var(--groen);font-size:11.5px}
+.dfin small{font-size:9px;opacity:.7}
+.dfin.ex{background:#fff;color:var(--g400);text-decoration:line-through;border-color:var(--g300)}
+.dfin.ex.auto{border-style:dashed;border-color:var(--ink);background:#FFF8E6}
+.dauto{display:block;width:100%;font-size:10.5px;color:var(--g400);margin-top:2px}
+.dst{position:absolute;z-index:3;top:20px;padding:6px 14px;font-family:var(--display);font-weight:500;font-size:28px;letter-spacing:.08em;border:3px solid var(--ink);opacity:0;pointer-events:none}
+.dst.yes{left:16px;background:var(--groen);transform:rotate(-14deg)}
+.dst.no{right:16px;background:var(--rood);transform:rotate(14deg)}
+.dst.up{left:50%;top:auto;bottom:120px;transform:translateX(-50%);background:#fff;font-size:17px;border-width:2px}
+.dbtns{display:grid;grid-template-columns:50px 1fr 50px 1fr;gap:8px;flex:none}
+.dbtns button{height:56px;border:1.5px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--display);font-weight:500;font-size:15.5px;transition:transform .12s ease-out}
+.dbtns button:active{transform:scale(.93)}
+.dbtns .dyes{background:var(--ink);color:#fff}
+.dyl{display:inline-grid;line-height:1.1;text-align:left}.dyl small{font-size:10px;font-weight:400;opacity:.8;white-space:nowrap}
+.dok{font-size:10px;color:var(--ink)}
+.dbtns .dundo,.dbtns .dinf{font-family:var(--body);font-size:20px;background:var(--n200)}
+.dbtns button:disabled{opacity:.35}
+.dkeys{margin-top:8px;font-size:11px;color:var(--g400);display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center;flex:none}
+.dkeys kbd{font-family:var(--body);font-size:10.5px;font-weight:500;color:var(--ink);border:1px solid var(--ink);padding:1px 5px;margin-right:2px}
+.dkeys button{border:0;background:none;padding:0;font-size:11px;color:var(--ink);text-decoration:underline}
+@media (hover:none){.dkeys span{display:none}}
+.dinfo{position:absolute;inset:0;z-index:20;isolation:isolate;background:#fff;border:1.5px solid var(--ink);overflow-y:auto;overscroll-behavior:contain;padding:12px 14px 16px;animation:dslide .26s cubic-bezier(.2,1,.3,1)}
+@keyframes dslide{from{transform:translateY(100%)}to{transform:none}}
+/* kaarten onder het infopaneel echt verbergen, zodat er niets doorheen schemert */
+.dstack.info{overflow:hidden}
+.dstack.info .dcard{visibility:hidden}
+.ihead{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-12px;background:#fff;padding:2px 0 8px;border-bottom:1px solid var(--ink)}
+.ihead b{font-family:var(--display);font-weight:500;font-size:18px}
+.ihead button{height:30px;padding:0 10px;border:1px solid var(--ink);background:#fff;font-size:12px;white-space:nowrap;flex:none}
+.isec{margin-top:14px}
+.isec h3{margin:0 0 6px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.isec p{margin:0;font-size:12.5px;line-height:1.45}
+.irow{display:grid;gap:2px;padding:6px 0;border-bottom:1px solid var(--n500);font-size:12px}
+.irow b{font-weight:500}.irow span{display:flex;flex-wrap:wrap;align-items:center;gap:4px;color:var(--g400)}
+.ilabs i{display:inline-block;width:9px;height:9px;margin-left:4px}
+.ikv div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--n500);font-size:12.5px}.ikv span:first-child{color:var(--g400)}
+.tgl2{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:1px solid var(--ink);background:#fff;padding:8px 12px;text-align:left;font-size:13px;margin-bottom:8px}
+.tgl2 b{font-weight:500;display:block}.tgl2 small{display:block;font-size:11px;color:var(--g400);margin-top:2px;line-height:1.35}
+.tgl2 .sw2{flex:none;width:42px;height:24px;border:1.5px solid var(--ink);position:relative}
+.tgl2 .sw2 i{position:absolute;top:2px;left:2px;width:17px;height:17px;background:var(--ink);transition:left .15s}
+.tgl2[aria-checked="true"] .sw2{background:var(--groen)}.tgl2[aria-checked="true"] .sw2 i{left:20px}
+.ddone{align-items:center;text-align:center;gap:10px;overflow-y:auto}
+.ddone .dbig{margin-top:10px;animation:dbounce .55s cubic-bezier(.2,1.8,.4,1)}
+.ddone h2{font-family:var(--display);font-weight:500;font-size:32px;margin:0;animation:dbounce .55s cubic-bezier(.2,1.8,.4,1) .05s both}
+@keyframes dbounce{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.ddone p{margin:0;font-size:13px;line-height:1.45;max-width:420px}.ddone p b{font-weight:500}
+.dgrid{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;text-align:left;margin-top:4px}
+.dgi{position:relative;border:1.5px solid var(--ink);background:#fff;padding:4px 4px 5px;display:grid;gap:3px;animation:dbounce .35s ease-out both}
+.dgi img,.dgi i{height:54px;width:100%;object-fit:contain;display:block}
+.dgi span{font-size:10px;line-height:1.2;max-height:2.4em;overflow:hidden}
+.dgi em{position:absolute;top:3px;right:3px}
+.dgi.yes{background:var(--groen)}.dgi.no{opacity:.55;border-color:var(--g300)}
+.dbtns2{width:100%;display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px;margin-top:6px}
+.dbtns2 button{height:50px}
+.irow{gap:6px!important;padding:10px 0!important}
+.irh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.irh b{font-size:13.5px}
+.ipr{font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)!important}
+.ipr{color:var(--ink)!important;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.ipr em{font-style:normal;font-weight:500;font-size:11px;color:var(--ink);padding:1px 6px;border:1px solid var(--ink);background:#FFF8E6}
+.ipr em::after{content:' meerprijs';font-weight:400}
+.ipr em.b{display:none}
+.inow{font-size:11px}
+.ioc{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--g300)}
+.ioc button{height:34px;border:0;border-right:1px solid var(--g300);background:#fff;font-size:11.5px;color:var(--ink)}
+.ioc button:last-child{border-right:0}
+.ioc button.on{background:var(--groen);font-weight:500}.ioc button.on.neg{background:var(--rood)}
+.ilb{display:flex;flex-wrap:wrap;gap:5px}
+.ilb .glab{height:28px;font-size:11.5px;padding:0 7px}
+.ist{font-size:10.5px;color:var(--g400)}
+.ist button{border:0;background:none;padding:0;margin-left:6px;font-size:10.5px;color:var(--ink);text-decoration:underline}
+.imp{font-size:11px!important;color:var(--g400);margin:0 0 4px!important}
+.mp{font-weight:500;font-size:10.5px;color:var(--ink);opacity:1}
+.dfin small.mp{opacity:1;font-weight:600;font-size:10.5px;background:#fff;border:1px solid var(--ink);padding:0 4px;margin-left:2px}
+.ist{display:block}.ist .vst{display:inline;margin-right:6px}
+.mpn{flex-basis:100%;font-size:9.5px;color:var(--g400);font-weight:300;letter-spacing:0;text-transform:none}
+.fins .mpn{display:block;margin-top:2px}
+.what .kh{color:var(--g400)}.what kbd{font-family:var(--body);font-size:9.5px;font-weight:500;color:var(--ink);border:1px solid var(--g300);padding:0 3px}
+@media (hover:none){.what .kh{display:none}}
+.ineed{margin:12px 0 0;padding:9px 11px;border-left:3px solid var(--geel);background:#FFF8E6;font-size:12.5px;line-height:1.4}.ineed b{font-weight:500}
+.ist.need{color:#B5462F}
+.ibtns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:16px;position:sticky;bottom:-16px;background:#fff;padding:8px 0 4px}
+.ibtns button{height:46px;display:flex;align-items:center;justify-content:center;gap:6px}
+.dgo{font-size:9.5px;color:var(--ink);opacity:.8}
+.dmeta{position:relative}
+.dstate{display:grid;gap:3px;margin:2px 0 2px;padding:6px 8px;border:1px solid var(--n500);background:#FAFAF8}
+.dsr{display:grid;grid-template-columns:62px 1fr;align-items:center;gap:6px}
+.dsk{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400)}
+.dsr.new .dsk{color:var(--ink);font-weight:500}
+.dsv{display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px;min-width:0}
+.dsv .doc{font-size:10.5px;padding:1px 5px}
+.doc.chg{outline:2px solid var(--ink);outline-offset:1px}
+.dl.add{font-weight:500}.dl.del{text-decoration:line-through;color:var(--g400)}.dl.del i{opacity:.4}
+.doc{font-size:11px;font-weight:500;padding:2px 6px;border:1px solid var(--ink)}
+.doc.klant,.doc.intern{background:var(--groen)}.doc.niet{background:var(--rood)}.doc.open{background:#fff;border-style:dashed;font-weight:400}
+.dl{display:inline-flex;align-items:center;gap:4px;font-size:10.5px}.dl i{width:8px;height:8px;display:inline-block}.dl.none{color:var(--g400)}
+.dsrc{font-size:9.5px;color:var(--g400)}
+.vst{display:inline-block;font-size:9.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:1px 5px;border:1px dashed var(--ink);background:#FFF8E6;color:var(--ink)}
+.srcl{margin:4px 16px 0;flex:none}
+.srct{font-size:10.5px;color:var(--g400);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px;user-select:none}
+.srct::-webkit-details-marker{display:none}
+.srct::after{content:'▸';font-size:9px}
+.srcl[open] .srct::after{content:'▾'}
+.srcw{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;max-height:76px;overflow:auto}
+.srcc{font-size:10.5px;line-height:1;padding:3px 6px;border:1px solid var(--n500);background:#fff;white-space:nowrap}
+.cells button.cell{background:none;border-top:0;border-bottom:0;border-left:0;text-align:left;cursor:pointer;font:inherit;font-size:11.5px;color:inherit}
+.labs .chips button.chip{background:none;cursor:pointer;font:inherit;font-size:10.5px}
+.labs .chips button.chip.on{color:var(--ink)}
+.cell.chg,.chip.chg{outline:1.5px dashed var(--ink);outline-offset:-3px;background:#FFF8E6!important}
+.drreset{border:0;background:none;padding:0;font-size:10px;text-decoration:underline;color:var(--ink)}
+.iopt{margin-top:6px!important;font-size:11px!important;color:var(--g400)}.iopt b{font-weight:500;color:var(--ink)}
+.lset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-top:3px}.lset .doc{font-size:9.5px;padding:1px 5px}
+.finfo{margin-left:auto;height:24px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px}
+.fph{display:flex}
+.fprod{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:start;padding:10px 0}
+.fpimg{width:76px;height:76px;border:1px solid var(--n300);display:flex;align-items:center;justify-content:center;background:#fff}
+.fpimg img{max-width:68px;max-height:68px;object-fit:contain}
+.fpbody .fph{font-size:13.5px;min-height:26px}
+.fprod .frow{padding:4px 0;min-height:40px}
+.fprod .frow:last-child{border-bottom:0}
+.fprod .frow .st{font-size:10.5px;line-height:1.35}
+.redeck{width:100%;margin-top:14px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 12px;border:1.5px solid var(--ink);background:var(--n200);font-family:var(--display);font-weight:500;font-size:14.5px;text-align:left}
+.redeck span{font-family:var(--body);font-weight:300;font-size:11px;color:var(--g400)}
+.menu .item{height:52px;border:1px solid var(--ink);background:#fff;text-align:left;padding:0 14px;font-family:var(--display);font-weight:500;font-size:15px}
+
+/* results */
+.supswitch{display:flex;flex-wrap:wrap;gap:6px}
+.supswitch button{height:34px;padding:0 12px;border:1px solid var(--ink);background:#fff;font-family:var(--display);font-weight:500}
+.supswitch button.on{background:var(--ink);color:#fff}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{border:1px solid var(--n500);padding:10px;display:grid;gap:2px}
+.tile b{font-family:var(--display);font-weight:500;font-size:26px;line-height:1}
+.tile span{font-size:11px;line-height:1.25}
+.tile.wel{background:var(--groen);border-color:var(--ink)}.tile.niet{background:var(--rood);border-color:var(--ink)}
+.xbox{border:1px solid var(--ink);padding:14px;display:grid;gap:10px}
+.xbox h2{font-family:var(--display);font-weight:500;font-size:20px;margin:0}
+table.team2{width:100%;border-collapse:collapse;font-size:13px}
+table.team2 th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding:8px;border-bottom:1px solid var(--ink)}
+table.team2 td{padding:8px;border-bottom:1px solid var(--n300)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1px solid var(--g300);background:#fff;color:var(--ink);border-radius:0;max-width:100%}
+.mlist{border:1px solid var(--n500)}
+.mrow{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:10px;border:0;border-bottom:1px solid var(--n300);width:100%;background:#fff;text-align:left}
+.mrow img,.mrow .ni{width:52px;height:52px;object-fit:contain}
+.mrow .nm{font-family:var(--display);font-weight:500;font-size:15px}
+.mrow small{display:block;font-size:11.5px;color:var(--g400)}
+.votes{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.vote{font-size:10.5px;padding:2px 6px;background:var(--n200)}
+.vote.wel{background:var(--groen)}.vote.niet{background:var(--rood)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 14px;font-size:13px;z-index:60;max-width:calc(100% - 32px)}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(58,58,58,.6);display:grid;place-items:center;padding:16px}
+.modal form,.modal .box{background:#fff;padding:22px 20px;width:100%;max-width:420px;display:grid;gap:12px}
+.modal h2{font-family:var(--display);font-weight:500;font-size:26px;margin:0}
+.modal input{width:100%;font-size:17px}
+.modal ol{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
+</style>
+
+<div class="app">
+  <header>
+    <div class="hrow">
+      <svg class="logo" viewBox="0 0 89.97 25.6" aria-label="Blom" role="img"><path fill="#3A3A3A" d="M14.96 15.2C14.96 12.35 13.320 10.49 10.84 10.49C8.36 10.49 6.71 12.35 6.71 15.2C6.71 18.04 8.36 19.9 10.84 19.9C13.32 19.9 14.96 18.04 14.96 15.2M21.75 15.2C21.75 21.65 17.8 25.6 12.01 25.6C9.74 25.6 7.77 24.79 6.71 23.52L6.71 25.3L0 25.3L0 0L6.71 0L6.71 6.66C7.81 5.67 9.49 4.8 12.11 4.8C17.8 4.8 21.75 8.74 21.75 15.2"/><path fill="#3A3A3A" d="M24.08 0h6.71v25.3h-6.71z"/><path fill="#3A3A3A" d="M48.52 15.2C48.52 12.35 46.88 10.49 44.4 10.49C41.92 10.49 40.28 12.35 40.28 15.2C40.28 18.04 41.92 19.9 44.4 19.9C46.88 19.9 48.52 18.04 48.52 15.2M33.49 15.2C33.49 9.1 38.05 4.8 44.4 4.8C50.75 4.8 55.31 9.1 55.31 15.2C55.31 21.29 50.75 25.6 44.4 25.6C38.05 25.6 33.49 21.29 33.49 15.2"/><path fill="#3A3A3A" d="M89.97 12.2L89.97 25.3L83.29 25.3L83.29 14.030C83.29 12.02 82.19 10.71 80.55 10.71C78.44 10.71 77.34 12.72 77.34 16.47L77.34 25.3L70.63 25.3L70.63 14.03C70.63 12.02 69.57 10.71 67.93 10.71C65.81 10.71 64.68 12.72 64.68 16.47L64.68 25.3L58 25.3L58 5.09L64.68 5.09L64.68 7.02C65.45 6 67.53 4.8 70.23 4.8C72.89 4.8 75.12 5.97 76.17 7.53C78.18 5.490 80.59 4.8 82.89 4.8C87.16 4.8 89.97 7.75 89.97 12.2"/></svg>
+      <div class="hright">
+        <button class="avatar" id="who" type="button" aria-label="Naam wijzigen">?</button>
+        <button class="menubtn" id="menuBtn" type="button" aria-label="Menu openen"><svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="#3A3A3A" stroke-width="1.6" aria-hidden="true"><path d="M0 1h14M0 6h14M0 11h14"/></svg>Menu</button>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Hoofdmenu">
+      <button type="button" data-view="home">Leveranciers</button>
+      <button type="button" data-view="swipe">Beoordelen</button>
+      <button type="button" data-view="res">Resultaten</button>
+    </nav>
+    <div class="supbar" id="supbar"><span><span class="eye">Leverancier</span><b id="hSup">—</b><span id="hDate" style="font-size:9.5px;font-weight:400;color:var(--g400);margin-left:8px;letter-spacing:.01em"></span></span><span class="num" id="count" style="font-size:11px"></span></div>
+    <div class="prog" id="prog"><i></i></div>
+    <div class="banner" id="banner" hidden></div>
+  </header>
+
+  <main id="main">
+    <section id="sHome" class="page">
+      <h1>Collectie&shy;keuze</h1>
+      <p class="intro">Hier zie je de complete, actuele collectie zoals de leverancier die zelf aanbiedt. Je beoordeelt per <b style="font-weight:500">serie</b> (bijvoorbeeld Mamy), met alle artikelen van die serie bij elkaar. Je ziet meteen wat al in AFAS staat en kiest of Blom de serie houdt of opneemt.</p>
+      <div class="eye">Kies een leverancier</div>
+      <div id="supList" style="display:grid;gap:10px"></div>
+      <div class="later" id="later"></div>
+    </section>
+    <section id="sSwipe" hidden></section>
+    <section id="sRes" class="page" hidden>
+      <h1>Resultaten</h1>
+      <div class="supswitch" id="resSup"></div>
+      <p class="note" id="resDate" style="color:var(--ink)"></p>
+      <button type="button" class="cta opzb" id="opzRes">Opzet online collectie</button>
+<div class="tiles" id="tiles"></div>
+      <div class="xbox">
+        <h2 id="xTitle">Excel</h2>
+        <p class="note">Met foto per regel. Tabbladen: Info, Series, Artikelen (met huidige AFAS-waarden, prijzen en de keuze van iedereen), Keuzes per persoon en Team.</p>
+        <button class="cta" id="xlsx" type="button">Download Excel</button>
+        <p class="note" id="xlsxNote"></p>
+      </div>
+      <div class="eye">Wie heeft wat gedaan</div>
+      <div class="tablewrap"><table class="team2"><thead><tr><th>Naam</th><th>Gehad</th><th>Houden / opnemen</th><th>Niet</th><th>Laatst</th></tr></thead><tbody id="teamBody"></tbody></table></div>
+      <p class="note" id="teamNote"></p>
+      <div class="eye">Per serie</div>
+      <div class="filters">
+        <select id="fPerson" aria-label="Persoon"><option value="">iedereen</option></select>
+        <select id="fChoice" aria-label="Keuze"><option value="all">alle keuzes</option><option value="wel">houden / opnemen</option><option value="niet">niet</option><option value="open">nog te doen</option><option value="split">verdeeld</option></select>
+        <select id="fAfas" aria-label="AFAS"><option value="">in én niet in AFAS</option><option value="in">minstens één artikel in AFAS</option><option value="uit">niets in AFAS</option></select>
+      </div>
+      <div class="mlist" id="mList"></div>
+    </section>
+  </main>
+
+  <footer class="actions" id="actions" hidden>
+    <div class="what" id="what"></div>
+    <button class="b-undo" id="bUndo" type="button" aria-label="Vorige: laatste keuze terugzetten" disabled><svg width="18" height="16" viewBox="0 0 18 16" fill="none" stroke="#3A3A3A" stroke-width="1.7" aria-hidden="true"><path d="M6 2L2 6l4 4"/><path d="M2.5 6h8a5 5 0 010 10H8"/></svg><span style="font-weight:500">Vorige</span></button>
+    <button class="b-no" id="bNo" type="button"><span id="noIco"></span><span id="noTxt">Niet houden</span></button>
+    <button class="b-yes" id="bYes" type="button"><span id="yesIco"></span><span id="yesTxt">Houden</span></button>
+  </footer>
+</div>
+
+<div class="sheet" id="form" hidden>
+  <div class="shead"><button type="button" id="fCancel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#3A3A3A" stroke-width="1.5" aria-hidden="true"><path d="M9 2L4 7l5 5"/></svg>Annuleren</button><span style="font-size:11px">Alle vragen zijn verplicht</span></div>
+  <div class="sbody" id="formBody"></div>
+  <div class="sfoot"><div class="fprog"><span id="fCount"></span><span id="fOpen" style="color:var(--g400)"></span></div><div class="fbar"><i id="fBar"></i></div><button class="cta" style="width:100%;height:50px" id="fSave" type="button" disabled>Opslaan en volgende</button></div>
+</div>
+
+<div class="pkaart" id="pkaart" hidden role="dialog" aria-modal="true" aria-label="Productkaart online collectie"></div>
+<div class="zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-label="Foto schermvullend"><button type="button" class="zx" id="zx" aria-label="Sluiten">×</button><div class="zi" id="zi"></div><div class="zf"><button type="button" id="zp" aria-label="Vorig product">‹</button><span id="zt"></span><button type="button" id="zn" aria-label="Volgend product">›</button></div></div>
+<div class="sheet menu" id="menu" hidden>
+  <div class="shead"><span class="disp" style="font-size:16px">Menu</span><button type="button" id="mClose">Sluiten</button></div>
+  <div class="sbody">
+    <button class="item" type="button" data-go="home">Leveranciers</button>
+    <button class="item" type="button" data-go="swipe">Beoordelen</button>
+    <button class="item" type="button" data-go="res">Resultaten en Excel</button>
+    <button class="item" type="button" id="mName">Naam wijzigen</button>
+    <button class="item" type="button" id="mHelp">Hoe werkt het?</button>
+    <p class="note" id="mInfo"></p>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<div class="modal" id="nameModal" hidden>
+  <form id="nameForm">
+    <h2>Wie beoordeelt er?</h2>
+    <p class="note">Kies je naam, dan ziet het team wie wat heeft gekozen. Kies op elk apparaat dezelfde naam, dan ga je verder waar je was.</p>
+    <div class="npick" id="namePick" role="group" aria-label="Gebruiker kiezen"></div>
+    <div class="nnew" id="nameNew" hidden>
+      <input type="text" id="nameInput" autocomplete="name" placeholder="Naam nieuwe gebruiker" maxlength="60" required>
+      <button class="cta" type="submit">Verder</button>
+    </div>
+  </form>
+</div>
+<div class="modal" id="helpModal" hidden>
+  <div class="box">
+    <h2>Hoe werkt het?</h2>
+    <ol>
+      <li>Kies een leverancier. Je beoordeelt de collectie van de leverancier per serie: één scherm per serie, met alle artikelen van die serie.</li>
+      <li>Het blok <b>Nu bij Blom</b> laat de huidige situatie in AFAS zien: groen vinkje = ja, rood kruisje = nee.</li>
+      <li>Kies bovenaan de soort (bijvoorbeeld banken of fauteuils). Veeg over de foto voor de andere artikelen van die soort, of tik op een fotootje eronder.</li>
+      <li>Kies onderin <b>Houden</b> / <b>Opnemen</b> of <b>Niet</b>. Bij Houden of Opnemen vul je verplicht in welke artikelen, of de serie online komt en onder welke labels.</li>
+      <li>Met <b>Vorige</b> zet je je laatste keuze terug.</li>
+    </ol>
+    <button class="cta" type="button" id="helpClose">Sluiten</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="js/vendor/supabase-2.118.0.js"></script>
+<script src="js/config.js"></script>
+<script src="js/blom-supabase.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n).toLocaleString('nl-NL');
+const eur=n=>'€ '+Number(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=n=>(n*100).toLocaleString('nl-NL',{maximumFractionDigits:1})+'%';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+document.addEventListener('toggle',e=>{ if(e.target&&e.target.classList&&e.target.classList.contains('srcl')) window.SRCOPEN=e.target.open; },true);
+function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>e.hidden=true,ms||2600)}
+const keyOf=n=>'p-'+n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
+const LABELS=[['Hospitality','var(--rood)'],['Care','var(--roze)'],['Student housing','var(--geel)'],['Leisure','var(--groen)'],['Smart living','var(--blauw)']];
+const OC=[['niet','Niet<br>online'],['intern','Online,<br>alleen intern'],['klant','Online,<br>voor klanten']];
+const OCL={niet:'Niet online',intern:'Online, alleen intern',klant:'Online, voor klanten'};
+function OK(s){s=s||16;return '<svg class="ico" width="'+s+'" height="'+s+'" viewBox="0 0 18 18" role="img" aria-label="ja"><rect width="18" height="18" fill="#91D6AC"/><path d="M4.5 9.3l3 2.8L13.5 6" fill="none" stroke="#3A3A3A" stroke-width="1.9"/></svg>'}
+function NO(s){s=s||16;return '<svg class="ico" width="'+s+'" height="'+s+'" viewBox="0 0 18 18" role="img" aria-label="nee"><rect width="18" height="18" fill="#F09491"/><path d="M5.5 5.5l7 7M12.5 5.5l-7 7" fill="none" stroke="#3A3A3A" stroke-width="1.8"/></svg>'}
+const CK='<svg width="11" height="11" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="#3A3A3A" stroke-width="2.2"/></svg>';
+const CX='<svg width="10" height="10" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" fill="none" stroke="#3A3A3A" stroke-width="2.2"/></svg>';
+
+let SUPS=[], LATER=[], SUP=null, DATA=null, M=[], byId={};
+let me=null, D={}, TEAM={}, PR=null, prState='wait', prErr='';
+let forced=null, hist=[], view='home', cur=null, curVi=0, curOrd=null, prOpen=false;
+const IMG={}; let loadedChunks={};
+let db=null, col=null, unsub=null, canShare=null;
+const cache={};
+let stripT=null;
+// labels uit AFAS als 0/1; artikelen die niet in AFAS staan hebben geen labels (null)
+const labOf=v=>Array.isArray(v.lab)&&v.lab.length?v.lab.map(x=>x?1:0):[0,0,0,0,0];
+let DR={};   // concept-keuzes per serie vanaf het beginscherm: {v:{id:0|1}, vs:{id:{oc,lab}}}
+const saveDr=()=>{ if(SUP) ls.set('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id,JSON.stringify(DR)); };
+// huidige waarde per artikel: concept-keuze, anders AFAS
+function drOf(m,v){ const d=DR[m.id]||{}, k=d.v&&d.v[v.id], s=d.vs&&d.vs[v.id];
+  return {keep:k==null?(v.inA?1:0):k, keepSet:k!=null, oc:s?s.oc:afasOc(v), lab:s?s.lab.slice():labOf(v), setSet:!!s}; }
+function setDrV(m,v,keep,oc,lab){ const d=DR[m.id]||(DR[m.id]={v:{},vs:{}});
+  if(keep!==undefined){ if(keep===(v.inA?1:0)) delete d.v[v.id]; else d.v[v.id]=keep; }
+  if(oc!==undefined){ const afas=sigOf(afasOc(v),labOf(v)); if(sigOf(oc,lab)===afas) delete d.vs[v.id]; else d.vs[v.id]={oc,lab:lab.slice()}; }
+  if(!Object.keys(d.v).length&&!Object.keys(d.vs).length) delete DR[m.id]; saveDr(); }
+let FRSEL=ls.get('blom-ck-frsel')==='1'?1:0, apOpen=false;   // 0 = niet brandvertragend, 1 = brandvertragend
+
+/* ---------------- data ---------------- */
+async function loadSup(id){
+  const s=SUPS.find(x=>x.id===id)||SUPS[0];
+  if(SUP&&SUP.id===s.id&&DATA) return;
+  SUP=s; ls.set('blom-ck-sup',SUP.id);
+  DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
+  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m;});
+  loadedChunks={}; for(const k in IMG) delete IMG[k];
+  forced=null; hist=[]; cur=null; PR=null; prState='wait';
+  $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
+  D=loadLocal(); TEAM={}; subscribe(); loadPrices();
+  try{ DR=JSON.parse(ls.get('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
+}
+function chunk(n){ if(loadedChunks[n]) return loadedChunks[n]; const sup=SUP.id, lc=loadedChunks;
+  return lc[n]=dfetch('data/'+sup+'-img-'+n+'.json').then(r=>r.json()).then(o=>{ if(SUP.id===sup) Object.assign(IMG,o); return true}).catch(()=>{delete lc[n]}); }
+async function ensureImgs(ms){ await Promise.all([...new Set(ms.flatMap(m=>m.ch))].map(chunk)); }
+const img=i=>i==null?null:IMG[i];
+const dstr=()=>SUP&&SUP.date?new Date(SUP.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+
+/* ---------------- prices (beschermd document, alleen leesbaar voor ingelogde collega's) ---------------- */
+async function loadPrices(){
+  if(!db||!SUP){ prState=db===null&&canShare===false?'locked':'wait'; return; }
+  const sup=SUP.id;
+  prErr='';
+  // één document lezen, met maximaal drie pogingen (grote documenten kunnen de eerste keer mislukken)
+  const read=async p=>{ let err=null; for(let a=0;a<3;a++){ try{ return await db.doc(p).get(); }catch(e){ err=e; await new Promise(r=>setTimeout(r,500*(a+1))); } } throw Object.assign(err||new Error('lezen mislukt'),{part:p}); };
+  try{ const s=await read('prijzen/'+sup); if(!SUP||SUP.id!==sup) return; let pr=s.exists?s.data():null;
+    // grote prijslijsten staan verdeeld over meerdere beveiligde delen (prijzen/<leverancier>-1, -2 …); één voor één laden
+    // de database levert bevroren objecten: eerst kopiëren, dan de delen samenvoegen
+    if(pr) pr=Object.assign({},pr);
+    if(pr&&pr.parts){ pr.r=Object.assign({},pr.r||{});
+      for(let i=1;i<=pr.parts;i++){ const d=await read('prijzen/'+sup+'-'+i); if(!SUP||SUP.id!==sup) return;
+        if(!d.exists){ prErr='prijsdeel '+i+' van '+pr.parts+' ontbreekt'; pr=null; break; }
+        Object.assign(pr.r,(d.data()||{}).r||{}); } }
+    PR=pr; prState=PR?'ok':'none'; }
+  catch(e){ prState='locked'; prErr=((e&&(e.code||e.message))||'onbekende fout')+(e&&e.part?' bij '+e.part:''); try{ console.warn('[prijzen]',e); }catch(_){} }
+  if(view==='swipe') renderCard(true);
+}
+function uParts(u){ if(typeof u==='string'){ const t=u.split(' · '); const br=t.filter(x=>/brandvertragend/i.test(x)); const rest=t.filter(x=>!/brandvertragend/i.test(x)); u=[rest[0]||'',rest.slice(1).join(' · '),br[0]||'']; } u=u||['','','']; const out=[]; if(u[0]) out.push([/\d{3}\s*[xX]|Ø|^\d+X\d+/.test(u[0])?'Maat':'Frame',u[0]]); if(u[1]) out.push(['Afwerking',u[1]]); if(u[2]) out.push(['Stof',u[2].toLowerCase()]); return out; }
+function uText(u){ const p=uParts(u); return p.length?p.map(([a,b])=>a+': '+b).join(' · '):'standaard'; }
+// COM-koppeling per leverancier: alleen 'Eigen stof / COM' noemen als bevestigd (Brees: stofgroep A = COM nog te bevestigen door JE of WH)
+const COM_OK={piaval:true,brees:true};   // Brees stofgroep A = COM: bevestigd door de gebruiker (28-10-2026)
+const comOk=()=>!!(SUP&&COM_OK[SUP.id]);
+function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(c)+'</span></span>'; }
+function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(priceRows(code).map(r=>r[0]))].filter(c=>PR.bc[c]===n); return cs.find(c=>!/OUTDOOR/.test(c))||cs[0]||null; }
+const pk=v=>v.pk||v.code;   // prijzen per uitvoering (bij tafels die AFAS per maat heeft: per AFAS-artikel)
+// stofkeuze brandvertragend: de prijslijst noemt dit in het derde deel van de uitvoering ("Brandvertragend" / "Niet brandvertragend")
+const frOf=row=>{ const u=PR&&PR.u&&PR.u[row[1]]; const t=((u&&u[2])||'').trim().toLowerCase(); return t==='brandvertragend'?1:t==='niet brandvertragend'?0:null; };
+const rawRows=code=>(PR&&PR.r&&PR.r[code])||[];
+const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
+let frUse=true;   // uit tijdens de Excel-export: die bevat altijd alle prijsregels
+// alleen als een artikel beide stoffen heeft, tonen we de regels van de gekozen stof (en de regels zonder stofvermelding)
+function priceRows(code){ const rs=rawRows(code); if(!frUse||!frBoth(code)) return rs; return rs.filter(r=>frOf(r)!==(FRSEL?0:1)); }
+function calc(code,cat){
+  const rows=priceRows(code).filter(r=>r[0]===cat); if(!rows.length) return null;
+  const best=rows.reduce((a,b)=>b[2]<a[2]?b:a);
+  return calcRow(code,best);
+}
+// Blom Care altijd tonen als de prijslijst (Excel) een Blom Care-prijs heeft, ook als die gelijk is aan de verkoopprijs
+function careOn(){ return !!PR&&PR.oc!=null; }
+function calcRow(code,row){
+  // alle bedragen komen rechtstreeks uit de Excel (Dimensies K, L, M, N); alleen het percentage verkoopconditie wordt afgeleid
+  const [cat,u,b,net,ver,vk,err,care]=row;
+  return {cat,u:(PR.u&&PR.u[u])||['','',''],b,net,ver,vk,care:care??null,vcp:(vk!=null&&ver)?vk/ver-1:null,err:err||'',n:priceRows(code).filter(r=>r[0]===cat).length};
+}
+
+/* ---------------- persistence ---------------- */
+const docId=()=>me.key+'--'+SUP.id;
+function lkey(){return 'blom-ck-'+(me?me.key:'anon')+'-'+(SUP?SUP.id:'')}
+function loadLocal(){try{return JSON.parse(ls.get(lkey())||'{}')||{}}catch(e){return {}}}
+function saveLocal(){ls.set(lkey(),JSON.stringify(D))}
+let pending={}, writing=false, exists=null;
+async function flush(){
+  if(writing||!col||!me||!SUP||canShare===false) return;
+  const ks=Object.keys(pending); if(!ks.length) return;
+  const batch=pending, sup=SUP.id, id=docId(); pending={}; writing=true;
+  const ref=col.doc(id);
+  try{
+    if(exists===null){ const s=await ref.get(); exists=s.exists; }
+    const now=new Date().toISOString();
+    if(!exists){ await ref.set({naam:me.name,sup,c:Object.assign({},D),laatst:now}); exists=true; }
+    else await ref.update({naam:me.name,sup,c:batch,laatst:now});
+  }catch(e){
+    for(const k in batch) if(!pending[k]) pending[k]=batch[k];
+    if(e&&(e.code==='invalid_argument'||e.code==='not_granted'||e.code==='revoked')) setShare(false);
+    writing=false; setTimeout(flush,5000); return;
+  }
+  writing=false; if(Object.keys(pending).length) flush();
+}
+function record(mid,r){ D[mid]=r; saveLocal(); pending[mid]=r; flush(); }
+function setShare(ok){
+  canShare=ok; const b=$('banner');
+  if(!ok){ b.innerHTML='<b style="font-weight:500">Je keuzes worden nu alleen op dit apparaat bewaard</b> en prijzen zijn niet zichtbaar. Herlaad de pagina. Lukt het dan nog niet, log uit en weer in, of kies je eigen naam.'; b.hidden=false; }
+  else b.hidden=true;
+}
+async function initDb(){
+  try{ db=await (window.claude&&claude.use?claude.use('db'):null) }catch(e){db=null}
+  if(!db){ setShare(false); prState='locked'; render(); return }
+  col=db.collection('keuzes'); subscribe(); loadPrices();
+}
+function subscribe(){
+  if(!col||!SUP) return;
+  if(unsub) unsub(); exists=null;
+  const sup=SUP.id;
+  unsub=col.where('sup','==',sup).onSnapshot(snap=>{
+    if(!SUP||SUP.id!==sup) return;
+    if(canShare===null) setShare(true);
+    const t={}; snap.docs.forEach(d=>{const v=d.data(); if(v) t[d.id]=v}); TEAM=t;
+    if(me){ const mine=TEAM[docId()]; if(mine){ exists=true; let ch=false; for(const k in mine.c||{}){ const a=mine.c[k], b=D[k]; if(!b||(a.t||'')>(b.t||'')){ D[k]=a; ch=true } } if(ch) saveLocal(); } }
+    flush(); render(true);
+  },()=>{});
+}
+
+/* ---------------- decisions ---------------- */
+const st=mid=>(D[mid]&&D[mid].s)||'';
+function vStatus(r,v){ if(!r||!r.s) return ''; if(r.s==='niet') return 'niet'; if(r.v&&r.v[v.id]!=null) return r.v[v.id]?'wel':'niet'; return 'wel'; }
+function queue(){ const q=M.filter(m=>!st(m.id)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
+function counts(c,list){let w=0,n=0;for(const m of list){const s=c[m.id]&&c[m.id].s; if(s==='wel')w++; else if(s==='niet')n++} return {w,n}}
+function people(){
+  const map={}; for(const k in TEAM) map[k]={naam:TEAM[k].naam,c:TEAM[k].c||{},laatst:TEAM[k].laatst};
+  if(me&&SUP){ const k=docId(); map[k]={naam:me.name,c:Object.assign({},(map[k]||{}).c,D),laatst:(map[k]||{}).laatst||''} }
+  return Object.entries(map).map(([k,v])=>({key:k,...v})).filter(p=>Object.values(p.c).some(r=>r&&r.s)).sort((a,b)=>a.naam.localeCompare(b.naam,'nl'));
+}
+const anyIn=m=>m.v.some(v=>v.inA);
+
+/* ---------------- render ---------------- */
+function render(soft){
+  $('who').textContent=me?me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'?';
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  const sw=view==='swipe';
+  $('supbar').hidden=!SUP; $('prog').hidden=!sw; $('actions').hidden=!sw;
+  if(SUP){ const c=counts(D,M); const pct=Math.floor((c.w+c.n)/(M.length||1)*100); const klaar=M.length&&c.w+c.n>=M.length; $('count').innerHTML=sw?(klaar?'<b class="pct klaar">'+OK(12)+' Klaar</b>':'serie '+fmt(Math.min(c.w+c.n+1,M.length))+' van '+fmt(M.length)+' · <b class="pct">'+pct+'%</b>'):fmt(M.length)+' series'; $('prog').firstElementChild.style.width=((c.w+c.n)/(M.length||1)*100)+'%'; }
+  if(view==='home') renderHome();
+  if(view==='res') renderRes();
+  if(sw) renderCard(soft);
+}
+function show(v){
+  view=v; $('sHome').hidden=v!=='home'; $('sSwipe').hidden=v!=='swipe'; $('sRes').hidden=v!=='res';
+  $('main').scrollTop=0; cur=null; render();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.view));
+function go(v){ if(v==='swipe'&&!me){askName(()=>show('swipe'));return} show(v); }
+
+// voortgang per leverancier: eigen keuzes op dit apparaat plus wat in de database staat
+const PROG={};
+function progLine(d,t,team){ const st=!d?'<b class="pct">0%</b> · nog niet begonnen':d>=t?'<b class="pct klaar">'+OK(12)+' Klaar</b> · '+fmt(t)+' van '+fmt(t)+' series gehad':'<b class="pct">'+Math.floor(d/t*100)+'%</b> · '+fmt(d)+' van '+fmt(t)+' series gehad';
+  return '<span class="mt">Jij: '+st+(team!=null?' · team: '+fmt(team):'')+'</span>'; }
+function progHtml(s,isCur,mine){ if(!me) return '';
+  if(isCur&&mine){ delete PROG[s.id]; return progLine(mine.w+mine.n,M.length,people().length); }
+  const p=PROG[s.id]; return p&&p.t!=null?progLine(p.d,p.t,null):''; }
+async function progOther(s){ const k=s.id; PROG[k]={busy:1};
+  try{ const data=cache[k]||(cache[k]=await dfetch('data/'+k+'.json').then(r=>r.json()));
+    let c={}; try{ c=JSON.parse(ls.get('blom-ck-'+me.key+'-'+k)||'{}')||{} }catch(e){}
+    if(col){ try{ const sn=await col.doc(me.key+'--'+k).get(); if(sn.exists){ const mc=(sn.data()||{}).c||{}; c=Object.assign({},c); for(const x in mc){ if(!c[x]||(mc[x].t||'')>(c[x].t||'')) c[x]=mc[x]; } } }catch(e){} }
+    const r=counts(c,data.models); PROG[k]={d:r.w+r.n,t:data.models.length}; }
+  catch(e){ PROG[k]={err:1}; }
+  if(view==='home') renderHome(); }
+function renderHome(){
+  if(me) SUPS.forEach(x=>{ if(!(SUP&&x.id===SUP.id)&&!PROG[x.id]) progOther(x); });
+  $('supList').innerHTML=SUPS.map(s=>{
+    const isCur=SUP&&s.id===SUP.id; const mine=isCur?counts(D,M):null;
+    return `<div class="supcard"><span style="display:flex;align-items:center;gap:10px"><span class="nm">${esc(s.name)}</span><span title="Momentopname: data geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL')}" style="font-size:10px;font-weight:400;color:var(--g400);letter-spacing:.01em">geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'})}</span></span>
+      <span class="mt">${fmt(s.models)} series · ${fmt(s.variants)} artikelen · ${fmt(s.inAfas||0)} in AFAS · ${esc(s.land||'')} </span>
+      ${progHtml(s,isCur,mine)}
+      <div class="row2"><button type="button" class="cta" data-go="swipe" data-sup="${esc(s.id)}">Beoordelen</button><button type="button" class="ghost" data-go="res" data-sup="${esc(s.id)}">Resultaten</button></div></div>`}).join('');
+  $('supList').querySelectorAll('[data-go]').forEach(b=>b.onclick=async()=>{ await loadSup(b.dataset.sup); go(b.dataset.go); });
+  $('later').hidden=!LATER.length; $('later').textContent=LATER.length?'Volgt later: '+LATER.join(', ')+'. De data daarvan wordt nog aangeleverd.':'';
+}
+
+/* ---------------- card ---------------- */
+const PL={Hocker:'hockers',Kussen:'kussens',Kamerscherm:'kamerschermen',Stoel:'stoelen',Armstoel:'armstoelen',Fauteuil:'fauteuils',Loungefauteuil:'loungefauteuils',Bank:'banken',Barkruk:'barkrukken',Poef:'poefs',Tafel:'tafels','':'overige'};
+const plural=(t,n)=>n===1?(t?t.toLowerCase():'artikel'):(PL[t]||'artikelen');
+// laagste verkoopprijs (Excel) van een product; COM-regels alleen als er niets anders is
+function pmin(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best)) best=r[5]; }); }); return best; }
+// per soort (bank, fauteuil, stoel …) de producten van goedkoop naar duur; zonder prijzen de volgorde van de prijslijst
+function groups(m){ const gk=prState+'|'+FRSEL+'|'+frUse; if(m._g&&m._gp===gk) return m._g; const o=[], map={}; m.p.forEach((p,k)=>{ const t=p.t||''; if(!(t in map)){ map[t]=o.length; o.push({t,pk:[],idx:[]}); } o[map[t]].pk.push(k); });
+  o.forEach(g=>{ if(prState==='ok'){ const pr={}; g.pk.forEach(k=>pr[k]=pmin(m,k)); g.pk.sort((a,b)=>((pr[a]??Infinity)-(pr[b]??Infinity))||a-b); } g.idx=g.pk.flatMap(k=>m.p[k].idx); });
+  m._gp=gk; return m._g=o; }
+function grpOf(m,i){ const k=m.v[i].p; return groups(m).find(g=>g.pk.includes(k)); }
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+const plabel=(m,k)=>{ const p=m.p[k]; return p.l.startsWith(p.t+' · ')?p.l.slice(p.t.length+3):p.l.startsWith(p.t+' (')?p.l.slice(p.t.length+1).replace(/^\((.*)\)$/,'$1'):p.l===p.t?'standaard':p.l; };
+const pIn=(m,k)=>m.p[k].idx.filter(i=>m.v[i].inA).length;
+function variantName(v){ return [v.type,v.code].filter(Boolean).join(' ') }
+function renderCard(soft){
+  const q=queue(), sec=$('sSwipe');
+  $('bUndo').disabled=!hist.length;
+  if(!q.length){
+    sec.innerHTML='<div class="empty"><h2>Alles gehad</h2><p class="note">Je hebt alle '+fmt(M.length)+' series van '+esc(SUP.name)+' beoordeeld.</p><button class="cta" type="button" id="goRes">Bekijk de resultaten</button><button type="button" class="ghost opzb" id="opzDone" style="margin-top:8px">Opzet online collectie</button></div>';
+    $('goRes').onclick=()=>show('res'); $('opzDone').onclick=openOpzet; $('bNo').disabled=$('bYes').disabled=true; cur=null; return;
+  }
+  $('bNo').disabled=$('bYes').disabled=false;
+  const m=q[0];
+  if(cur!==m||curOrd!==prState){ const fresh=cur!==m; cur=m; curOrd=prState; curVi=m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
+  const has=anyIn(m);
+  $('noTxt').textContent=has?'Serie niet houden':'Serie niet opnemen'; $('yesTxt').textContent=has?'Serie houden':'Serie opnemen';
+  $('what').innerHTML='Je beoordeelt de <b>hele serie '+esc(m.fam)+'</b><span class="kh"> · <kbd>Enter</kbd> '+(has?'houden':'opnemen')+' · <kbd>Del</kbd> niet · <kbd>⌫</kbd> vorige · <kbd>← →</kbd> artikel</span>';
+  $('noIco').innerHTML=NO(20); $('yesIco').innerHTML=OK(20);
+  const keepScroll=$('main').scrollTop, stripEl=sec.querySelector('.strip'), keepStrip=stripEl?stripEl.scrollLeft:0;
+  sec.innerHTML=cardHTML(m);
+  bindCard(m);
+  if(soft){ $('main').scrollTop=keepScroll; }
+  const need=q.slice(0,3);
+  if(need.some(x=>x.ch.some(c=>!loadedChunks[c]))) ensureImgs(need).then(()=>{ if(view==='swipe'&&cur===m) renderCard(true) });
+}
+// modelnaam binnen de serie leesbaar maken: serienaam weg, rest met hoofdletter (BUTTERFLY ARM 24 -> Arm 24)
+function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
+  return r.toLowerCase().replace(/(^|\s)([a-z])/g,(a,b,c)=>b+c.toUpperCase()).replace(/\bIi\b/g,'II'); }
+function cardHTML(m){
+  const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=groups(m), g=grpOf(m,curVi), k=v.p, P=m.p[k], pos=g.pk.indexOf(k), gin=g.pk.filter(x=>pIn(m,x)).length;
+  const shown=x=>x===k?curVi:m.p[x].idx[0];
+  const FP=finPrices(m,k);
+  const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
+  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+img(x.img)+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">'+(x.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>').join('');
+  const qtxt=v.img==null?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':'Foto: ander artikel uit de serie';
+  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
+  const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
+  const blom=v.inA?`<span class="big">${esc(v.blom||'(geen Blom-naam in AFAS)')}</span><span class="r">${esc(v.afas)}</span>`:(v.nv?`<span class="big nvb" title="${esc(v.nvw||'')}"><span class="vst">Voorstel</span> ${esc(v.nv)}${v.nvc?' <i>controleren</i>':''}</span><span class="r mut">niet in AFAS</span>`:`<span class="mut">nog geen Blom-naam</span><span class="r mut">niet in AFAS</span>`);
+  const cell=(lbl,val,main)=>'<div class="cell'+(main?' main':'')+(val?' yes':' no')+'">'+(val?OK():NO())+'<span>'+lbl+'</span></div>';
+  const dr=drOf(m,v), afLab=labOf(v);
+  const chips=LABELS.map(([n,c],i)=>{const on=dr.lab[i]===1, ch=dr.lab[i]!==afLab[i]; return '<button type="button" class="chip'+(on?' on':'')+(ch?' chg':'')+'" data-dlab="'+i+'" aria-pressed="'+on+'">'+(on?OK(12):NO(12))+'<span class="sw" style="background:'+c+'"></span>'+n+'</button>'}).join('');
+  const cellB=(act,lbl,val,main,ch)=>'<button type="button" class="cell'+(main?' main':'')+(val?' yes':' no')+(ch?' chg':'')+'" data-dact="'+act+'">'+(val?OK():NO())+'<span>'+lbl+'</span></button>';
+  return `<div class="fold">
+    <div class="serie"><div class="sl"><span class="eye">Serie</span><span class="disp sn">${esc(m.fam)}</span></div><span class="ss">${m.p.length} ${m.p.length===1?'product':'producten'} · ${m.v.length} art. · ${nin} in AFAS</span></div>
+    ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
+    ${typeChips}
+    <div class="photo"><div class="strip" id="strip">${slides}</div>${v.img!=null?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
+    <div class="phfoot"><span class="q">${v.imgq&&v.imgq!=='exact'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
+    ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
+    <div class="prod"><span class="eye">Product</span><span class="pl">${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}${v.tguess?' <span style="font-size:11px;color:var(--g400)">(soort niet bevestigd: geen gegevens in prijslijst of op piaval.it)</span>':''}</span></div>
+    ${fins}
+    <div class="names">
+      <div class="nrow"><span class="eye" style="color:var(--ink)">Blom</span>${blom}</div>
+      <div class="nrow"><span class="eye">${esc(SUP.short||SUP.name)}</span><span style="font-size:12.5px;font-weight:400">${esc(m.fam)}${v.fin?' · '+esc(v.fin):''}</span><span class="r">${esc(v.code)}</span></div>
+    </div>
+    <div class="now">
+      <div class="hd"><b>${dr.keepSet||dr.setSet?'Jouw keuze':'Nu bij Blom'} · ${esc(v.code)}</b><span>${dr.keepSet||dr.setSet?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, stand '+dstr()+' · tik om te wijzigen'}</span></div>
+      <div class="cells">${cellB('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Niet in AFAS'),dr.keep===1,true,dr.keepSet)}${cellB('online','Online collectie',dr.oc!=='niet',false,dr.setSet&&(dr.oc!=='niet')!==!!v.online)}${cellB('klant','Zichtbaar<br>voor klanten',dr.oc==='klant',false,dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))}</div>
+      <div class="labs"><span class="eye">Labels</span><div class="chips">${chips}</div></div>
+    </div>
+    ${pricesHTML(v)}
+  </div>
+  ${belowHTML(m,v)}`;
+}
+function pricesHTML(v){
+  if(prState==='locked'&&prErr&&canShare!==false) return '<div class="prices"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px">Opnieuw proberen</button></div></div>';
+  if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="prices"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
+  if(prState!=='ok') return '<div class="prices"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
+  // kolom 1: eigen stof / COM; kolom 2: de werkelijk goedkoopste gestoffeerde uitvoering (niet automatisch Blom 1)
+  const comCat=supCat(pk(v),0);
+  // gestoffeerd = stofgroepen die naar Blom 1 t/m 5 vertaald zijn (Blom 6 t/m 8 is leder, hogere nummers zijn bijzondere uitvoeringen)
+  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&c!=='COM'&&!/OUTDOOR/.test(c));
+    const stof=all.filter(c=>PR.bc&&PR.bc[c]>=1&&PR.bc[c]<=5), cs=stof.length?stof:all.filter(c=>PR.bc&&PR.bc[c]!=null);
+    let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
+  const B=[[0,comCat],[1,cheapCat]].filter(x=>x[1]!=null);
+  let cats=B.map(x=>x[1]);
+  let heads=B.map(([n,c])=>n===0
+    ? '<span class="sg"><span class="sgb">Eigen stof / COM</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>'
+    : '<span class="sg"><span class="sgb">Goedkoopste gestoffeerde uitvoering</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>');
+  if(!cats.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="prices"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cats=[cs[0]]; heads=[cs[0]?'Stofgroep '+cs[0]:'Prijs']; }
+  const P=cats.map(c=>calc(pk(v),c));
+  // Blom Care alleen als de prijslijst (Excel) een Blom Care-prijs voor dit artikel geeft; nooit zelf afleiden
+  // Blom Care: het bedrag uit de Excel, voor elke stofgroep die de Excel een Care-prijs geeft
+  const careOk=p=>careOn()&&p&&p.care!=null;
+  const hasCare=P.some(careOk);
+  const narrow=P.length>2, cc=p=>p.isCare?' class="cc"':'';
+  const cols=narrow?'minmax(0,1fr) '+P.map(()=>'minmax(0,80px)').join(' '):'minmax(0,1fr) '+P.map(()=>'84px 40px').join(' ');
+  const row=(lbl,f,cls,pf,lp)=>narrow
+    ? '<div class="pr'+(cls?' '+cls:'')+(pf&&!lp?' two':'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+(lp?' <span class="pc">'+lp+'</span>':'')+'</div>'+P.map(p=>'<div'+cc(p)+'>'+f(p)+(pf&&!lp?'<small class="pc2">'+pf(p)+'</small>':'')+'</div>').join('')+'</div>'
+    : '<div class="pr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+'</div>'+P.map(p=>'<div>'+f(p)+'</div><div class="pc">'+(pf?pf(p):'')+'</div>').join('')+'</div>';
+  const same=P.every(p=>uText(p.u)===uText(P[0].u));
+  const lab=p=>!p.cat?'Prijs':p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Goedkoopste gestoffeerde uitvoering':'Stofgroep '+p.cat;
+  const forRows=same?uParts(P[0].u).map(([a,b])=>'<div><span>'+a+'</span>'+esc(b)+'</div>').join(''):P.map(p=>'<div><span>'+lab(p)+'</span>'+esc(uText(p.u))+'</div>').join('');
+  const more=P.some(p=>p.n>1);
+  return `<div class="prices${prOpen?' open':''}" id="prices">
+    <div class="ph" style="grid-template-columns:${cols}"><div><span style="font-size:10px;letter-spacing:.12em">Prijzen · ${esc(v.code)}</span></div>${heads.map(h=>'<div style="grid-column:span '+(narrow?1:2)+'">'+h+'</div>').join('')}</div>
+    ${row('Bruto inkoopprijs',p=>eur(p.b),'px')}
+    ${row('Inkoopconditie',p=>'− '+eur(p.b-p.net),'px',()=>pct(PR.k),pct(PR.k))}
+    ${row('Netto inkoopprijs',p=>eur(p.net),'b')}
+    ${row('Transporttoeslag',p=>'+ '+eur(p.ver-p.net),'px',()=>pct(PR.t),pct(PR.t))}
+    ${row('Verrekenprijs',p=>eur(p.ver),'b px')}
+    ${row('Verkoopconditie',p=>p.vk!=null?'+ '+eur(p.vk-p.ver):'','px',p=>p.vcp!=null?pct(p.vcp):'')}
+    ${hasCare?row('Care-conditie',p=>careOk(p)?'+ '+eur(p.care-p.ver):'—','px',p=>careOk(p)&&p.ver?pct(p.care/p.ver-1):''):''}
+    <div class="pr vk" style="grid-template-columns:${cols}"><div style="line-height:1">${(hasCare?'Verkoopprijs':'Verkoopprijs')+'<br><small>'+(hasCare?'Interieurs · ':'')+'excl. btw'+(PR.o!=null?' · ×'+fmt(PR.o):'')+'</small>'}</div>${P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+(p.isCare?';color:var(--roze)':'')+'">'+(p.vk!=null?eur(p.vk)+(p.err?' <span style="color:var(--no,#C0392B)">!</span>':''):'—')+'</div>').join('')}</div>
+    ${hasCare?'<div class="pr vk care" style="grid-template-columns:'+cols+'"><div style="line-height:1">Blom Care prijs<br><small>excl. btw · marge ×'+fmt(PR.oc)+'</small></div>'+P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+'">'+(careOk(p)?eur(p.care):'—')+'</div>').join('')+'</div>':''}
+    ${P.filter(p=>p.err).map(p=>'<div class="xerr px" style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11.5px;line-height:1.35"><b style="font-weight:500">'+esc(lab(p))+': </b>'+esc(p.err)+' Het bedrag staat zoals in de Excel.</div>').join('')}
+    <button type="button" class="ptog" id="ptog" aria-expanded="${prOpen}"><b>Hele berekening</b><span>bruto · condities · transport</span><i aria-hidden="true">${prOpen?'−':'+'}</i></button>
+    ${P.some(p=>p.err)?'<div class="pxs" style="margin-top:6px;font-size:11px;color:#C0392B">! Fout in de Excel bij deze prijs: open Hele berekening.</div>':''}
+    ${forRows?'<div class="pfor px"><b>Deze prijzen gelden voor</b>'+forRows+'</div>':''}
+    <div class="pnote px">${more?'Andere frames of stofuitvoeringen hebben een eigen prijs: zie Alle prijzen hieronder. ':''}${B.some(x=>x[0]===0)?'Eigen stof / COM'+(comOk()?'':' (stofgroep '+esc(comCat)+', koppeling nog te bevestigen)')+': '+(PR.comNote?esc(PR.comNote.replace(/^COM:\s*/,''))+'. ':'verkoopprijs inclusief € '+PR.com+' per meter stof. '):''}${PR.o!=null?(hasCare?'Interieurs: marge ×':'Marge ×')+fmt(PR.o)+'. ':''}${hasCare?'Blom Care: uit de prijslijst, Care-marge ×'+fmt(PR.oc)+(PR.oc===PR.o?' (gelijk aan de verkoopprijs)':'')+'. ':''}Stand ${dstr()} (momentopname).</div>
+  </div>`;
+}
+function belowHTML(m,v){
+  const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
+  const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
+  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  let ptab='';
+  if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
+    const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
+    const kinds=['Frame','Maat','Afwerking','Stof'];
+    const val=(p,k)=>{ const x=uParts(p.u).find(q=>q[0]===k); return x?x[1]:''; };
+    const vary=kinds.filter(k=>new Set(rows.map(p=>val(p,k))).size>1), fixed=kinds.filter(k=>!vary.includes(k)&&rows.length&&val(rows[0],k));
+    const com=p=>p.cat==='COM'?((PR.m&&PR.m[v.code])||0)*PR.com:0;
+    // zelfde stofgroep en precies dezelfde bedragen: één regel, met de uitvoeringen bij elkaar
+    const grp=[]; rows.forEach(p=>{ const key=[p.cat,p.b,p.net,p.ver,p.vk,p.care,p.err].join('|'); const g=grp.find(x=>x.key===key); if(g) g.rs.push(p); else grp.push({key,p,rs:[p]}); });
+    const uCell=g=>{ const per=vary.map(k=>[...new Set(g.rs.map(r=>val(r,k)).filter(Boolean))]); const many=per.filter(x=>x.length>1).length;
+      if(many<=1) return per.map(x=>x.join(' / ')).filter(Boolean).map(esc).join('<br>');
+      return g.rs.map(r=>vary.map(k=>val(r,k)).filter(Boolean).join(' · ')).map(esc).join('<br>'); };
+    const frSel=frBoth(pk(v))?'<div class="frsel" role="radiogroup" aria-label="Stofkeuze"><span class="eye">Stof</span><div class="frseg"><button type="button" role="radio" data-frsel="0" aria-checked="'+(FRSEL===0)+'" class="'+(FRSEL===0?'on':'')+'">Niet brandvertragend</button><button type="button" role="radio" data-frsel="1" aria-checked="'+(FRSEL===1)+'" class="'+(FRSEL===1?'on fr':'')+'">Brandvertragend</button></div><small>Je keuze geldt ook voor de prijzen bovenaan en voor de volgende artikelen.</small></div>':'';
+    if(rows.length) ptab='<details class="box" id="apBox"'+(apOpen?' open':'')+'><summary>Alle prijzen <span>'+esc(v.code)+' · '+grp.length+(grp.length===1?' regel':' regels')+(frBoth(pk(v))?' · '+(FRSEL?'brandvertragend':'niet brandvertragend'):'')+'</span></summary>'+frSel+(fixed.length?'<div class="pfor" style="margin-bottom:8px"><b>Geldt voor alle regels</b>'+fixed.map(k=>'<div><span>'+k+'</span>'+esc(val(rows[0],k))+'</div>').join('')+'</div>':'')+'<div class="tablewrap"><table class="ptab ap"><thead><tr><th>Stof&shy;groep</th>'+(vary.length?'<th>'+vary.join(' / ')+'</th>':'')+'<th class="r">Bruto</th><th class="r">Netto<small>−'+pct(PR.k)+'</small></th><th class="r">Verreken<small>+'+pct(PR.t)+' transport</small></th><th class="r">Verkoop<small>×'+fmt(PR.o)+', afgerond</small></th>'+(careOn()?'<th class="r">Care<small>×'+fmt(PR.oc)+'</small></th>':'')+'</tr></thead><tbody>'+grp.map(g=>{ const p=g.p; return '<tr><td>'+(p.cat?(bc(p.cat)!=null?sgTag(bc(p.cat),p.cat):'<span class="sg"><span class="sgb" style="background:#fff;color:var(--ink);border:1px dashed var(--ink)">nog te bepalen</span><span class="sgs">'+esc(SUP.name)+' '+esc(p.cat)+'</span></span>'):'—')+'</td>'+(vary.length?'<td class="u">'+uCell(g)+'</td>':'')+'<td class="r">'+eur(p.b)+'</td><td class="r">'+eur(p.net)+'</td><td class="r">'+eur(p.ver)+'</td><td class="r vk">'+(p.vk!=null?eur(p.vk):'—')+(p.err?' <span style="color:#C0392B" title="'+esc(p.err)+'">!</span>':'')+'</td>'+(careOn()?'<td class="r" style="background:color-mix(in srgb,var(--roze) 22%,transparent)">'+(p.care!=null?eur(p.care):'—')+'</td>':'')+'</tr>'; }).join('')+'</tbody></table></div>'+(rows.some(p=>p.err)?'<div style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11px;line-height:1.35"><b style="font-weight:500">! Fout in Excel</b> ('+rows.filter(p=>p.err).length+(rows.filter(p=>p.err).length===1?' regel':' regels')+'): '+esc([...new Set(rows.filter(p=>p.err).map(p=>p.err.replace(/^Fout in Excel: /,'')))].join(' '))+' De bedragen staan zoals in de Excel.</div>':'')+'<div class="pkey">'
+      +'<div><span>Bron</span>prijslijst (Excel), bedragen ongewijzigd</div>'
+      +'<div><span>Rekenregel</span>netto −'+pct(PR.k)+' · verreken +'+pct(PR.t)+' transport · verkoop ×'+fmt(PR.o)+(careOn()?' · Care ×'+fmt(PR.oc):'')+' · afgerond op € 5</div>'
+      +(PR.comNote?'<div><span>Eigen stof / COM</span>'+esc(PR.comNote.replace(/^COM:\s*/,''))+'</div>':'')
+      +(rows.some(p=>p.cat&&bc(p.cat)==null)?'<div><span>Gestippeld</span>Blom stofgroep nog te bepalen</div>':'')
+      +(PR.bcNote&&rows.some(p=>[6,7,8].includes(bc(p.cat)))?'<div><span>Let op</span>'+esc(PR.bcNote)+'</div>':'')
+      +'</div></p></details>'; }
+  const ps=people(); const team=ps.length?ps.map(p=>{const r=p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>r.v[x.id]).map(x=>x.code):[];
+    return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div><span class="note">Nog niemand heeft deze serie beoordeeld.</span></div>';
+  return `<div class="below">
+    ${v.desc?'<section><h2>Omschrijving</h2><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section><h2>Omschrijving</h2><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
+    <details class="box"><summary>Specificaties <span>${esc(v.code)} · stand ${dstr()}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
+    ${ptab}
+    <section><h2>Keuzes van het team</h2><div class="team">${team}</div></section>
+    ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">Productpagina '+esc(SUP.name)+' <span aria-hidden="true">↗</span></a></section>':''}
+  </div>`;
+}
+function setVi(m,i){
+  curVi=Math.max(0,Math.min(m.v.length-1,i));
+  const sec=$('sSwipe'), keep=$('main').scrollTop;
+  sec.innerHTML=cardHTML(m); bindCard(m); $('main').scrollTop=keep;
+}
+function bindCard(m){
+  const fo=$('sSwipe').querySelector('.fold'); if(fo) fo.style.minHeight=$('main').clientHeight+'px';
+  const sp=$('strip'), g=grpOf(m,curVi), pos=g.pk.indexOf(m.v[curVi].p);
+  clearTimeout(stripT);
+  if(sp){
+    sp.scrollLeft=pos*sp.clientWidth;
+    // alleen reageren op vegen door de gebruiker, niet op het verschuiven door de app zelf (anders lopen foto en afwerking uit de pas)
+    let user=false; ['pointerdown','touchstart','wheel'].forEach(ev=>sp.addEventListener(ev,()=>{ user=true; },{passive:true}));
+    sp.addEventListener('scroll',()=>{ if(!user) return; clearTimeout(stripT); stripT=setTimeout(()=>{ if(!sp.isConnected||cur!==m) return; const n=Math.round(sp.scrollLeft/Math.max(1,sp.clientWidth)); if(n!==pos&&g.pk[n]!=null) setVi(m,m.p[g.pk[n]].idx[0]); },120); },{passive:true});
+  }
+  const pt=$('ptog'); if(pt) pt.onclick=()=>{ prOpen=!prOpen; const pe=$('prices'); pe.classList.toggle('open',prOpen); pt.setAttribute('aria-expanded',String(prOpen)); pt.querySelector('i').textContent=prOpen?'−':'+'; };
+  if(sp) sp.querySelectorAll('.slide').forEach(el=>el.onclick=()=>openZoom(m));
+  const cb=$('confBtn'); if(cb) cb.onclick=e=>{ e.stopPropagation(); const p=$('confPop'); p.hidden=!p.hidden; cb.setAttribute('aria-expanded',String(!p.hidden)); };
+  const cp=$('confPop'); if(cp) cp.onclick=()=>{ cp.hidden=true; cb.setAttribute('aria-expanded','false'); };
+  const vs=$('vstrip'); const on=vs&&vs.querySelector('.vbtn.on'); if(on) vs.scrollLeft=Math.max(0,on.getBoundingClientRect().left-vs.getBoundingClientRect().left+vs.scrollLeft-vs.clientWidth/2+on.clientWidth/2);
+  $('sSwipe').querySelectorAll('[data-vi]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.vi));
+  $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
+  $('sSwipe').querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>setVi(m,groups(m)[+b.dataset.type].idx[0]));
+  $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{ const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
+  const v0=m.v[curVi];
+  $('sSwipe').querySelectorAll('[data-dact]').forEach(b=>b.onclick=()=>{ const a=b.dataset.dact, d=drOf(m,v0);
+    if(a==='reset'){ const x=DR[m.id]; if(x){ delete x.v[v0.id]; delete x.vs[v0.id]; if(!Object.keys(x.v).length&&!Object.keys(x.vs).length) delete DR[m.id]; saveDr(); } }
+    else if(a==='keep') setDrV(m,v0,d.keep?0:1);
+    else if(a==='online') setDrV(m,v0,undefined,d.oc==='niet'?'intern':'niet',d.lab);
+    else if(a==='klant') setDrV(m,v0,undefined,d.oc==='klant'?'intern':'klant',d.lab);
+    setVi(m,curVi); });
+  $('sSwipe').querySelectorAll('[data-dlab]').forEach(b=>b.onclick=()=>{ const d=drOf(m,v0), j=+b.dataset.dlab; d.lab[j]=d.lab[j]===1?0:1; setDrV(m,v0,undefined,d.oc,d.lab); setVi(m,curVi); });
+  const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
+  const ap=$('apBox'); if(ap) ap.addEventListener('toggle',()=>{ apOpen=ap.open; });
+  $('sSwipe').querySelectorAll('[data-frsel]').forEach(b=>b.onclick=()=>{ FRSEL=+b.dataset.frsel; ls.set('blom-ck-frsel',String(FRSEL)); apOpen=true; setVi(m,curVi); });
+}
+
+/* ---------------- foto schermvullend ---------------- */
+function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p);
+  if(!img(v.img)) return;
+  $('zi').innerHTML='<img src="'+img(v.img)+'" alt="'+esc(m.fam+' '+v.code)+'">';
+  $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+' · Foto klopt '+v.conf+'%</small>';
+  $('zp').hidden=$('zn').hidden=g.pk.length<2;
+  $('zp').onclick=()=>{ setVi(m,m.p[g.pk[(pos-1+g.pk.length)%g.pk.length]].idx[0]); openZoom(m); };
+  $('zn').onclick=()=>{ setVi(m,m.p[g.pk[(pos+1)%g.pk.length]].idx[0]); openZoom(m); };
+  $('zoom').hidden=false; }
+function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; }
+$('zx').onclick=closeZoom;
+$('zi').onclick=e=>{ if(e.target===$('zi')) closeZoom(); };
+document.addEventListener('keydown',e=>{ if($('zoom').hidden) return; if(e.key==='Escape') closeZoom(); else if(e.key==='ArrowRight') $('zn').click(); else if(e.key==='ArrowLeft') $('zp').click(); });
+
+/* ---------------- deciding ---------------- */
+function stamp(s){ const e=document.createElement('div'); e.className='stamp '+s; e.textContent=s==='wel'?(anyIn(cur)?'HOUDEN':'OPNEMEN'):'NIET'; document.body.appendChild(e); setTimeout(()=>e.remove(),650); }
+function after(m){ hist.push(m.id); if(hist.length>50) hist.shift(); if(forced===m.id) forced=null; cur=null; render(); }
+$('bNo').onclick=()=>{ const m=cur; if(!m) return; if(!me){askName();return} record(m.id,{s:'niet',t:new Date().toISOString()}); stamp('niet'); after(m); };
+$('bYes').onclick=()=>{ const m=cur; if(!m) return; if(!me){askName(()=>openForm(m));return} openForm(m); };
+$('bUndo').onclick=()=>{ const mid=hist.pop(); if(!mid) return; const prev=D[mid]||{}; record(mid,Object.assign({},prev,{s:'',t:new Date().toISOString()})); forced=mid; cur=null; render(); toast('Vorige keuze teruggezet'); };
+document.addEventListener('keydown',e=>{ if(e.target.closest('input,select,textarea')||!$('zoom').hidden||!$('nameModal').hidden||!$('form').hidden||!$('menu').hidden) return; if(view!=='swipe'||!cur) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  // sneltoetsen op het beginscherm van een serie: Enter = houden/opnemen, Delete = niet, Backspace = vorige
+  if(e.key==='Enter'){ e.preventDefault(); e.stopImmediatePropagation(); if(!$('bYes').disabled) $('bYes').click(); return; }   // niet doorgeven: anders keurt het swipescherm meteen de eerste kaart goed
+  if(e.key==='Delete'){ e.preventDefault(); if(!$('bNo').disabled) $('bNo').click(); return; }
+  if(e.key==='Backspace'){ e.preventDefault(); if(!$('bUndo').disabled) $('bUndo').click(); return; }
+  // pijltjes volgen de volgorde op het scherm: product voor product, en binnen een product de afwerkingen
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); const ord=groups(cur).flatMap(g=>g.pk.flatMap(k=>cur.p[k].idx)), i=ord.indexOf(curVi), n=ord.length; setVi(cur,ord[((i<0?0:i)+(e.key==='ArrowRight'?1:-1)+n)%n]); } });
+
+/* ---------------- houden / opnemen formulier ---------------- */
+let F=null;
+const afasOc=v=>!v.online?'niet':v.klant?'klant':'intern';   // 'In online collectie = Nee' gaat boven 'Toegankelijk voor klanten'
+const sigOf=(oc,lab)=>oc+'|'+(lab||[]).map(x=>x==null?'-':x).join('');
+const GL=i=>String.fromCharCode(66+i);   // groepen B, C, D … (A = standaard)
+// welke instelling geldt voor één artikel: zijn afwijkende groep, anders de standaard van de serie
+function effOf(r,id){ const g=(r&&r.g||[]).find(g=>g.ids.includes(id)); return g?{oc:g.oc,lab:g.lab,g:GL(r.g.indexOf(g))}:{oc:r&&r.oc,lab:r&&r.lab,g:'A'}; }
+function openForm(m){
+  const prev=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
+  const ins=m.v.filter(v=>v.inA);
+  F={m, v:{}, oc:null, lab:[null,null,null,null,null], g:[], sel:{}, cur:{}};
+  if(ins.length){
+    m.v.forEach(v=>{ F.v[v.id]=v.inA?1:0; });   // iets van de serie in AFAS: in AFAS = Ja, de rest = Nee; niets in AFAS: alles leeg
+    // standaard = de combinatie die in AFAS het vaakst voorkomt; afwijkende AFAS-artikelen komen vooraf in een eigen groep
+    const cnt={}; ins.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); cnt[k]=(cnt[k]||0)+1; });
+    const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+    const [toc,tl]=top.split('|'); F.oc=toc; F.lab=[...tl].map(Number); F.cur.oc=1; F.cur.lab=1;
+    const byk={}; ins.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); if(k!==top) (byk[k]=byk[k]||[]).push(v.id); });
+    Object.entries(byk).forEach(([k,ids])=>{ const [o,l]=k.split('|'); F.g.push({oc:o,lab:[...l].map(Number),ids,afas:1}); });
+  }
+  if(prev){ if(prev.v) F.v=Object.assign({},prev.v); if(prev.oc) F.oc=prev.oc; if(prev.lab) F.lab=prev.lab.slice(); F.g=JSON.parse(JSON.stringify(prev.g||[])); }
+  // eerst per product swipen (Tinder), daarna online collectie en labels
+  F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>m.v[i].img!=null)?1:0)-(m.p[a].idx.some(i=>m.v[i].img!=null)?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
+  // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
+  // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), 'voorstel' (zoals de artikelen van deze serie die al in AFAS staan), of leeg
+  const prevRec=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
+  // voorstel: de meest voorkomende instelling van de artikelen in deze serie die in AFAS al online staan of labels hebben
+  const leeg=v=>afasOc(v)==='niet'&&!labOf(v).some(x=>x===1), rich=m.v.filter(v=>v.inA&&!leeg(v)), nIn=rich.length;
+  const pc={}; rich.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); pc[k]=(pc[k]||0)+1; });
+  let pk1=Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0], pv=pk1?rich.find(v=>sigOf(afasOc(v),labOf(v))===pk1):null;
+  // geen AFAS-artikel online of met labels: neem dan de instelling van de AFAS-artikelen van de serie over (ook niet online)
+  if(!pv){ const allIn=m.v.filter(v=>v.inA), pc2={}; allIn.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); pc2[k]=(pc2[k]||0)+1; }); pk1=Object.keys(pc2).sort((a,b)=>pc2[b]-pc2[a])[0]; pv=pk1?allIn.find(v=>sigOf(afasOc(v),labOf(v))===pk1):null; }
+  F.vs={}; m.v.forEach(v=>{ const g=F.g.find(g=>g.ids.includes(v.id)); let oc=g?g.oc:F.oc, lab=g?g.lab:F.lab, src=null;
+    if(prevRec) src='eerder';
+    else if(v.inA&&!leeg(v)){ oc=afasOc(v); lab=labOf(v); src='afas'; }
+    else if(pv){ oc=afasOc(pv); lab=labOf(pv); src='voorstel'; }
+    else if(v.inA){ oc=afasOc(v); lab=labOf(v); src='afas'; }
+    else { oc=null; lab=null; }
+    F.vs[v.id]={oc:oc||null, lab:(lab&&lab.length?lab:[0,0,0,0,0]).map(x=>x==null?0:x), src, n:nIn, leeg:src==='afas'&&leeg(v)}; });
+  // concept-keuzes van het beginscherm gaan voor
+  const dr=DR[m.id]; if(dr){ m.v.forEach(v=>{ const s2=dr.vs&&dr.vs[v.id]; if(s2) F.vs[v.id]={oc:s2.oc,lab:s2.lab.slice(),src:'gekozen',n:nIn}; const k2=dr.v&&dr.v[v.id]; if(k2===0) F.dk.ex[v.id]=true; }); }
+  F.vs0=JSON.parse(JSON.stringify(F.vs));   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
+  $('form').hidden=false; $('formBody').scrollTop=0; renderForm();
+}
+
+/* ---------------- serie houden: per product swipen (Tinder) ---------------- */
+// rechts = houden, links = niet, omhoog = meer info en extra instellingen; op de pc met de pijltjes
+const buzz=n=>{ try{ if(navigator.vibrate) navigator.vibrate(n||12) }catch(e){} };
+// instelling per uitvoering (online collectie en labels), gekozen tijdens het swipen
+const effV=id=>F.vs[id]||{oc:null,lab:[0,0,0,0,0]};
+const ownIn=()=>false;
+// meerprijs per afwerking (bijv. beuken tegenover walnoot): netto inkoopprijs in dezelfde stofgroep, anders de laagste inkoopprijs
+function finPrices(m,k){
+  if(prState!=='ok') return null; const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.length<2) return null;
+  const ink=(v,cat)=>{ const rs=priceRows(pk(v)).filter(r=>(cat==null||r[0]===cat)&&r[3]!=null); return rs.length?Math.min(...rs.map(r=>r[3])):null; };
+  let cat=null, lbl='laagste netto inkoopprijs';
+  for(const n of [1,0]){ const cs=vs.map(v=>supCat(pk(v),n)); if(cs.every(c=>c!=null)&&new Set(cs).size===1){ cat=cs[0]; lbl='netto inkoopprijs, Blom '+n+(n===0?'/COM':''); break; } }
+  const p={}; vs.forEach(v=>p[v.id]=ink(v,cat));
+  if(vs.some(v=>p[v.id]==null)){ vs.forEach(v=>p[v.id]=ink(v,null)); lbl='laagste netto inkoopprijs'; }
+  const vals=vs.map(v=>p[v.id]).filter(x=>x!=null); if(vals.length<2) return null;
+  const min=Math.min(...vals); return {p,min,lbl,base:vs.find(v=>p[v.id]===min)};
+}
+// goedkoopste prijsregel van een product (zelfde keuze als pmin): verkoopprijs en de netto inkoopprijs van diezelfde regel
+function pminRow(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best[5])) best=r; }); }); return best; }
+// alleen de meerprijs tonen; de goedkoopste afwerking krijgt geen extra label
+const mpTxt=(fp,id)=>{ if(!fp||fp.p[id]==null) return ''; const d=fp.p[id]-fp.min; return d>0.004?'+ '+eur(d):''; };
+const mpNote=fp=>fp?'<small class="mpn">meerprijs o.b.v. '+esc(fp.lbl)+'</small>':'';
+// rechts op de kaart: online collectie en labels (huidig in AFAS, eerdere keuze of voorstel)
+// korte producttitel: serie plus het eerste kenmerk (bijv. "Mamy 2-zits"); wat op de foto te zien is, staat er niet nog eens bij
+function shortTitle(m,k){ const l=plabel(m,k), first=l==='standaard'?'':(DATA&&DATA.sup==='brees'?l.split(' · ').join(', '):l.split(' · ')[0]).replace(/\s*\(.*?\)\s*/g,' ').trim();
+  const fam=m.fam, f2=DATA&&DATA.sup==='brees'?first:first.split(' ').map(w=>/[a-z]/.test(w.slice(1))?w.toLowerCase():w).join(' ');
+  return first&&!fam.toLowerCase().includes(first.toLowerCase())?fam+' '+f2:fam; }
+// op de kaart: huidige situatie (AFAS) tegenover de nieuwe situatie (keuze of voorstel), voor online collectie en labels
+function deckState(k){
+  const m=F.m, d=F.dk, vs=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]), v=vs.find(x=>effV(x.id).oc)||vs[0]; if(!v) return '';
+  const e=effV(v.id), OCT={niet:'Niet online',intern:'Online, intern',klant:'Online, klanten'};
+  const nowOc=v.inA?afasOc(v):null, nowLab=v.inA?labOf(v).map(x=>x===1?1:0):[0,0,0,0,0], newLab=(e.lab||[]).map(x=>x===1?1:0);
+  const chip=(oc,cls)=>'<b class="doc '+(oc||'open')+(cls?' '+cls:'')+'">'+(oc?OCT[oc]:'Online: kiezen')+'</b>';
+  const labsNow=LABELS.map(([n,c],j)=>nowLab[j]?'<span class="dl"><i style="background:'+c+'"></i>'+n+'</span>':'').filter(Boolean).join('')||'<span class="dl none">geen labels</span>';
+  // nieuw: labels die erbij komen met +, labels die vervallen doorgestreept
+  const labsNew=LABELS.map(([n,c],j)=>newLab[j]&&nowLab[j]?'<span class="dl"><i style="background:'+c+'"></i>'+n+'</span>'
+      :newLab[j]?'<span class="dl add" title="Komt erbij"><i style="background:'+c+'"></i>+ '+n+'</span>'
+      :nowLab[j]&&e.oc?'<span class="dl del" title="Vervalt"><i style="background:'+c+'"></i>'+n+'</span>':'').filter(Boolean).join('')||(e.oc?'<span class="dl none">geen labels</span>':'');
+  const same=v.inA&&e.oc&&e.oc===nowOc&&newLab.join('')===nowLab.join('');
+  const why=e.src==='vk'?'<span class="dsrc">'+(e.strong?'op basis van je eerdere keuzes ('+e.n+'x)':'uit je keuzes')+'</span>'
+    :e.src==='voorstel'?'<span class="dsrc">zoals de andere artikelen van de serie in AFAS</span>'
+    :e.src==='eerder'?'<span class="dsrc">je eerdere keuze</span>':e.src==='gekozen'?'<span class="dsrc">door jou gekozen</span>'
+    :e.src==='afas'?'<span class="dsrc">ongewijzigd uit AFAS</span>':'';
+  const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<div class="dsr"><span></span><span class="dsrc">afwerkingen verschillen: zie ⓘ info</span></div>':'';
+  return '<div class="dstate">'
+    +'<div class="dsr"><span class="dsk">Nu</span><span class="dsv">'+(v.inA?chip(nowOc)+labsNow:'<span class="dl none">nog niet in AFAS</span>')+'</span></div>'
+    +'<div class="dsr new"><span class="dsk">Voorstel</span><span class="dsv">'+(same?'<span class="dl none">blijft gelijk</span>'+why:chip(e.oc,e.oc&&e.oc!==nowOc&&v.inA?'chg':'')+labsNew+why)+'</span></div>'
+    +diff+'</div>';
+}
+function hasProp(k){ const m=F.m, d=F.dk; if(m.p[k].idx.some(i=>d.ax[m.v[i].id])) return true; return m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]).some(v=>{ const e=effV(v.id); if(!e.oc||(e.src!=='vk'&&e.src!=='voorstel')) return false;
+  return !v.inA||sigOf(e.oc,(e.lab||[]).map(x=>x===1?1:0))!==sigOf(afasOc(v),labOf(v).map(x=>x===1?1:0)); }); }
+// naamvoorstel (Blom naamvoering) voor een product dat nog niet in AFAS staat
+function nvOf(m,k){ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.some(v=>v.inA&&v.blom)) return null; const v=vs.find(v=>v.nv); return v?{n:v.nv,w:v.nvw,c:v.nvc}:null; }
+const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="13" height="13"/><rect x="3.5" y="3.5" width="9" height="5.5"/><path d="M3.5 11h6M3.5 13h4"/></svg>';
+function deckCard(k,top){
+  const m=F.m, p=m.p[k], a=m.v[p.idx[0]], inA=pIn(m,k), pr=pmin(m,k), has=anyIn(m), d=F.dk, fp=top?finPrices(m,k):null;
+  const fins=p.idx.length>1?'<div class="dfins"><span>Afwerking</span>'+p.idx.map(i=>{const v=m.v[i], mp=mpTxt(fp,v.id); return '<button type="button" class="dfin'+(d.ex[v.id]?' ex':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+!d.ex[v.id]+'">'+esc(cap(v.fin)||v.code)+(mp?' <small class="mp">'+mp+'</small>':'')+(v.inA?' <small>AFAS</small>':'')+'</button>'}).join('')+mpNote(fp)+(()=>{ const au=p.idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]); return au.length?'<small class="dauto"><span class="vst">Voorstel</span> '+au.map(v=>esc(cap(v.fin)||v.code)).join(', ')+' uit, op basis van je eerdere keuzes ('+au.map(v=>finRun(finKey(v))).reduce((a,b)=>Math.min(a,b))+'x niet gekozen)</small>':''; })()+'</div>':'';
+  const pg=ownIn(m,k);
+  return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
+    +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
+    +'<div class="dimg">'+(a.img!=null&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">':'<span class="wait">'+(a.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>'
+    +'<div class="dmeta">'+(top?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
+      return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
+    +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
+    +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
+    +(()=>{ const r=pminRow(m,k); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf, excl. btw</small></div>':''; })()
+    +(top?fins:'')+'</div></div>';
+}
+/* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
+const PK_LOGO='<svg class="logo" viewBox="0 0 89.97 25.6" aria-label="Blom" role="img"><path fill="#3A3A3A" d="M14.96 15.2C14.96 12.35 13.320 10.49 10.84 10.49C8.36 10.49 6.71 12.35 6.71 15.2C6.71 18.04 8.36 19.9 10.84 19.9C13.32 19.9 14.96 18.04 14.96 15.2M21.75 15.2C21.75 21.65 17.8 25.6 12.01 25.6C9.74 25.6 7.77 24.79 6.71 23.52L6.71 25.3L0 25.3L0 0L6.71 0L6.71 6.66C7.81 5.67 9.49 4.8 12.11 4.8C17.8 4.8 21.75 8.74 21.75 15.2"/><path fill="#3A3A3A" d="M24.08 0h6.71v25.3h-6.71z"/><path fill="#3A3A3A" d="M48.52 15.2C48.52 12.35 46.88 10.49 44.4 10.49C41.92 10.49 40.28 12.35 40.28 15.2C40.28 18.04 41.92 19.9 44.4 19.9C46.88 19.9 48.52 18.04 48.52 15.2M33.49 15.2C33.49 9.1 38.05 4.8 44.4 4.8C50.75 4.8 55.31 9.1 55.31 15.2C55.31 21.29 50.75 25.6 44.4 25.6C38.05 25.6 33.49 21.29 33.49 15.2"/><path fill="#3A3A3A" d="M89.97 12.2L89.97 25.3L83.29 25.3L83.29 14.030C83.29 12.02 82.19 10.71 80.55 10.71C78.44 10.71 77.34 12.72 77.34 16.47L77.34 25.3L70.63 25.3L70.63 14.03C70.63 12.02 69.57 10.71 67.93 10.71C65.81 10.71 64.68 12.72 64.68 16.47L64.68 25.3L58 25.3L58 5.09L64.68 5.09L64.68 7.02C65.45 6 67.53 4.8 70.23 4.8C72.89 4.8 75.12 5.97 76.17 7.53C78.18 5.490 80.59 4.8 82.89 4.8C87.16 4.8 89.97 7.75 89.97 12.2"/></svg>';
+let PK={m:null,k:0,tab:'win',vi:0};
+const icon=d=>'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke-width="1.4">'+d+'</svg>';
+function pkVar(m,k){ return m.p[k].idx.map(i=>m.v[i]); }   // de productkaart toont alle uitvoeringen
+// naam van de productkaart: één naam per serie en productcategorie (pkn); anders de AFAS-naam of het naamvoorstel
+function pkName(vs){ const c=vs.find(v=>v.pkn); if(c) return {n:c.pkn,vs:!vs.some(v=>v.inA&&v.blom===c.pkn)}; const a=vs.find(v=>v.inA&&v.blom); if(a) return {n:a.blom,vs:false}; const v=vs.find(v=>v.nv); return v?{n:v.nv,vs:true}:{n:null,vs:true}; }
+// alle producten van de serie met dezelfde (voorgestelde) Blom naam staan op één productkaart
+// zelfde soort en uitstraling in deze serie (ook AFAS-artikelen met een eigen nummer), anders dezelfde naam
+function pkGroup(m,k){ const g=m.v[m.p[k].idx[0]].pkg; if(g) return m.p.map((_,j)=>j).filter(j=>m.v[m.p[j].idx[0]].pkg===g);
+  const n=pkName(m.p[k].idx.map(i=>m.v[i])).n; if(!n) return [k]; return m.p.map((_,j)=>j).filter(j=>pkName(m.p[j].idx.map(i=>m.v[i])).n===n); }
+// korte omschrijving van een uitvoering voor de keuzelijst op de productkaart
+const SHORT=[[/zitting, rug en zijkanten gestoffeerd/g,'volledig gestoffeerd'],[/gestoffeerde zitting en rug/g,'gestoffeerd'],[/gestoffeerde zitting, houten rug/g,'houten rug'],[/gestoffeerde zitting/g,'gestoffeerde zit'],[/geheel hout/g,'hout'],
+  [/houten armleuning met handgreep/g,'houten arm, greep'],[/armleuningen met handgreep/g,'arm met greep'],[/gestoffeerde armleuningen/g,'gestoffeerde arm'],[/houten armleuningen/g,'houten arm'],[/met armleuningen|met arm/g,'arm'],
+  [/hoge rug met hoofdsteun/g,'hoofdsteun'],[/relax (handmatig|gasveer|elektrisch) \d+°/g,'relax $1'],[/met greep in rug/g,'greep'],[/draaibaar/g,'draai'],[/ ?kuip/g,''],[/multiplex schaal en poten/g,'multiplex'],[/multiplex schaal/g,'multiplex'],[/zithoogte (\d+) cm/g,'zit $1'],[/\s*\([^)]*\)/g,'']];
+function shortU(m,j){ const l=plabel(m,j); if(l==='standaard') return 'standaard';
+  let parts=l.split(' · ').filter(x=>!/^(stapelbaar|vaste stand)$/i.test(x.replace(/\s*\(.*\)$/,'')));
+  let t=parts.join(' · '); SHORT.forEach(([a,b])=>t=t.replace(a,b)); t=t.replace(/\s+·\s+·/g,' ·').trim();
+  return t?t.charAt(0).toUpperCase()+t.slice(1):'Standaard'; }
+function pkDims(v){ const d=v.dim||[]; const b=d[0],h=d[6],t=d[2]; const mm=x=>x!=null?Math.round(x*10)+'mm':'?';
+  if(b!=null||h!=null||t!=null) return mm(b)+' x '+mm(h)+' x '+mm(t);
+  // zelfde product in een andere afwerking heeft wel maten in de prijslijst: die gelden ook hier
+  const pm=PK.m, sib=pm&&pm.p[v.p]?pm.p[v.p].idx.map(i=>pm.v[i]).find(x=>x!==v&&x.dim&&x.dim.some(y=>y!=null)):null; if(sib) return pkDims(sib);
+  if(v.sizes&&v.sizes.length&&/\d/.test(v.sizes.join(''))) return v.sizes.filter(x=>/\d/.test(x)).join(' / ');
+  const w=(String(v.code).match(/\s-?\s?(1\d\d|2\d\d|3\d\d)(?=\s|$|\s*\()/)||[])[1]; return w?'breedte '+w*10+'mm (alleen breedte in de prijslijst)':null; }
+function openPk(m,k,r){ PK={m,k,tab:r?'win':(PK.tab||'win'),vi:0,r:r||null,back:!!r}; renderPk(); $('pkaart').hidden=false; $('pkaart').scrollTop=0; }
+/* opzet: alle producten die jij toevoegt (nog niet in AFAS) en die online komen, als overzicht van de online collectie */
+function opzetItems(){ const cards=new Map();
+  for(const m of M){ const r=D[m.id]; if(!r||r.s!=='wel') continue;
+    m.p.forEach((p,k)=>{ p.idx.forEach(i=>{ const v=m.v[i]; if(v.inA) return; const e=effOf(r,v.id); if(!e.oc||e.oc==='niet') return;
+      const key=m.id+'|'+(v.pkg||v.nv||v.id); if(!cards.has(key)) cards.set(key,{m,k,r,vs:[],on:[],oc:new Set(),lab:new Set()}); const c=cards.get(key);
+      c.vs.push(v); if(vStatus(r,v)==='wel'){ c.on.push(v); if(c.on.length===1) c.k=k; c.oc.add(e.oc); (e.lab||[]).forEach((x,j)=>{ if(x) c.lab.add(j); }); } }); }); }
+  const all=[...cards.values()]; return {cards:all.filter(c=>c.on.length), alle:all}; }
+// wel/niet toevoegen vanuit de opzet of de productkaart: past alleen jouw keuze in de serie aan
+// waar de keuze vandaan komt: de open swipeserie, of je opgeslagen keuze voor de serie
+function pkAddState(m,k){ const ids=pkVar(m,k).map(x=>x.id);
+  if(F&&F.m===m&&F.view==='deck'&&!$('form').hidden){ const vals=ids.map(id=>F.v[id]); return {ctx:'deck',on:vals.some(x=>x===1)?true:vals.length&&vals.every(x=>x===0)?false:null}; }
+  const r=PK.r||D[m.id]; if(!r||!r.s) return {ctx:'geen',on:null};
+  return {ctx:'rec',on:pkVar(m,k).some(x=>vStatus(r,x)==='wel')}; }
+// één keuze: Toevoegen of Niet toevoegen, de huidige stand is geselecteerd
+function addSeg(on,id){ const isP=id==='pkAdd', at=isP?'data-pkadd':'data-opzt="'+id.slice(3)+'" data-val';
+  return '<div class="aseg" role="radiogroup" aria-label="In de collectie opnemen"><button type="button" role="radio" aria-checked="'+(on===true)+'" class="'+(on===true?'on yes':'')+'" '+at+'="1">'+OK(12)+' Toevoegen</button><button type="button" role="radio" aria-checked="'+(on===false)+'" class="'+(on===false?'on no':'')+'" '+at+'="0">'+NO(12)+' Niet toevoegen</button></div>'; }
+function setAdd(m,ids,val){ const r=D[m.id]; if(!r) return; const nr=JSON.parse(JSON.stringify(r)); nr.v=nr.v||{}; ids.forEach(id=>nr.v[id]=val?1:0); nr.t=new Date().toISOString(); record(m.id,nr); }
+let OPZF=-1;
+async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o.alle.map(c=>c.m))]);
+  const all=o.alle, list=OPZF<0?all:all.filter(c=>c.lab.has(OPZF));
+  const cnt=j=>o.cards.filter(c=>c.lab.has(j)).length;
+  const card=c=>{ const on=c.on.length>0, v=(on?c.on:c.vs).find(x=>img(x.img))||c.vs[0]; const n=v.pkn||v.nv||'[Blom naam]', i=all.indexOf(c);
+    return '<div class="pk-card'+(on?'':' pk-off')+'"><button type="button" class="ci" data-opz="'+i+'" aria-label="Productkaart '+esc(n)+' openen">'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'')+'</button><div class="cb"><b>'+esc(n)+'</b><small>'+(on?c.on.length+(c.on.length<c.vs.length?' van '+c.vs.length:'')+' nieuw':'0 van '+c.vs.length+' nieuw')+' · '+esc(c.m.fam)+'</small>'
+      +(on?'':'<span class="opzn">Niet toegevoegd · open de kaart om aan te passen</span>')+'</div></div>'; };
+  $('pkaart').innerHTML='<div class="pk-bar"><small style="font-size:12.5px;color:#fff;font-family:var(--display);font-weight:500">Opzet online collectie · '+esc(SUP.name)+'</small><small>Nieuwe producten (nog niet in AFAS) uit series die je houdt of opneemt, met online collectie intern of klanten. Open een kaart om iets wel of niet toe te voegen.</small></div>'
+    +'<div class="pk-grid opz"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'
+    +'<div class="opzh" style="grid-column:1/-1"><span><b>'+o.cards.length+(o.cards.length===1?' productkaart':' productkaarten')+' toegevoegd</b> · '+o.cards.reduce((a,c)=>a+c.on.length,0)+' nieuwe artikelen'+(all.length>o.cards.length?' · '+(all.length-o.cards.length)+((all.length-o.cards.length)===1?' kaart':' kaarten')+' niet toegevoegd':'')+'</span>'
+    +'<div class="opzf"><span>Geschikt voor</span><button type="button" data-opzf="-1" class="'+(OPZF<0?'on':'')+'">Alles</button>'+LABELS.map((l,j)=>'<button type="button" data-opzf="'+j+'" class="'+(OPZF===j?'on':'')+'">'+l[0]+' <small>'+cnt(j)+'</small></button>').join('')+'</div></div>'
+    +(list.length?list.map(card).join(''):'<p class="note" style="grid-column:1/-1">'+(all.length?'Geen producten met dit label.':'Je hebt nog geen nieuwe producten gekozen die online komen. Kies bij een serie Opnemen en zet de online collectie op intern of klanten.')+'</p>')+'</div>';
+  $('pkaart').hidden=false;
+  $('pkX').onclick=closePk; $('pkaart').onclick=e=>{ if(e.target===$('pkaart')) closePk(); };
+  $('pkaart').querySelectorAll('[data-opzf]').forEach(b=>b.onclick=()=>{ OPZF=+b.dataset.opzf; openOpzet(); });
+  $('pkaart').querySelectorAll('[data-opz]').forEach(b=>b.onclick=()=>{ const c=all[+b.dataset.opz]; openPk(c.m,c.k,D[c.m.id]); });
+  $('pkaart').querySelectorAll('[data-opzt]').forEach(b=>b.onclick=()=>{ const c=all[+b.dataset.opzt]; const on=b.dataset.val!=='1'; if((c.on.length>0)===!on) return; setAdd(c.m,c.vs.map(v=>v.id),!on); toast(on?'Kaart '+(c.vs[0].pkn||c.vs[0].nv)+' niet toegevoegd':'Kaart '+(c.vs[0].pkn||c.vs[0].nv)+' weer toegevoegd'); const st=$('pkaart').scrollTop; openOpzet().then(()=>{ $('pkaart').scrollTop=st; }); });
+}
+
+function closePk(){ $('pkaart').hidden=true; }
+function renderPk(){
+  const m=PK.m, k=PK.k, p=m.p[k], vs=pkVar(m,k), v=vs[Math.min(PK.vi,vs.length-1)], G=pkGroup(m,k);
+  const allV=G.flatMap(j=>pkVar(m,j)), nm0=pkName(allV), nm={n:nm0.n,vs:!allV.some(x=>x.inA&&x.blom===nm0.n)};
+  const e=PK.r?(()=>{ const x=effOf(PK.r,v.id); return {oc:x.oc||afasOc(v),lab:(x.lab||labOf(v)).map(y=>y?1:0)}; })():(F&&F.vs&&effV(v.id).oc)?effV(v.id):{oc:afasOc(v),lab:labOf(v)};
+  const naam=nm.n||'[Blom naam]';
+  const geschikt=LABELS.filter((_,j)=>(e.lab||[])[j]===1||(e.lab||[])[j]===true).map(l=>l[0]);
+  const actief=!nm.vs&&e.oc&&e.oc!=='niet';
+  const nr=v.inA?(v.afas||''):'';
+  const dims=[...new Set(allV.map(pkDims).filter(Boolean))];
+  const bar='<div class="pk-bar">'+(PK.back?'<button type="button" class="pk-back" id="pkBack">← Terug naar opzet</button>':'')+'<div class="pk-sw" role="tablist"><button type="button" data-pkt="win" class="'+(PK.tab==='win'?'on':'')+'">Productvenster</button><button type="button" data-pkt="card" class="'+(PK.tab==='card'?'on':'')+'">Kaart in het overzicht</button></div><small>Voorbeeld met de gegevens uit deze app'+(nm.vs?' en het naamvoorstel':'')+'. Er wordt niets aangepast.</small></div>';
+  let body='';
+  if(PK.tab==='win'){
+    const sel=(id,lbl,opts,cur)=>'<label for="'+id+'">'+lbl+'</label><select id="'+id+'">'+opts.map(([val,t])=>'<option value="'+esc(String(val))+'"'+(String(val)===String(cur)?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select>';
+    body='<div class="pk-modal"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten">×</button><div class="pk-grid2">'
+      +'<div class="pk-img"><div class="ph">'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'<span class="note">geen foto beschikbaar</span>')
+        +(G.length>1?'<button type="button" class="pk-nav-b l" data-pknav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="pk-nav-b r" data-pknav="1" aria-label="Volgende uitvoering">›</button><span class="pk-cnt">'+(G.indexOf(k)+1)+' / '+G.length+'</span>':'')+'</div>'
+        +(G.length>1?'<div class="pk-th">'+G.map(j=>{ const a=pkVar(m,j).find(x=>img(x.img))||pkVar(m,j)[0]; return '<button type="button" class="'+(j===k?'on':'')+'" data-pkj="'+j+'" title="'+esc(shortU(m,j))+'">'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'</button>'; }).join('')+'</div>':'')+'<small>Afbeelding dient ter illustratie van de modelserie; de werkelijke indeling en afmeting zijn afhankelijk van de gekozen configuratie.</small></div>'
+      +'<div><div class="pk-title"><h2>'+esc(naam)+'</h2><span class="pk-badge'+(actief?'':nm.vs?' vs':' off')+'">'+(actief?'Actief':nm.vs?'Voorstel':'Niet online')+'</span></div>'
+      +'<div class="pk-tabs"><span class="on">basic</span><span>specific</span></div>'
+      +'<p class="pk-desc">'+(v.desc?esc(v.desc):'Nog geen omschrijving.')+'</p>'
+      +'<div class="pk-cols"><div class="pk-fields">'
+      +'<div><b>Artikelnummer</b><span>'+(nr?esc(nr):'nog niet in AFAS')+'</span></div>'
+      +'<div><b>Artikelnaam</b><span>'+esc(v.inA?(v.blom||naam):(v.nv||naam))+(!v.inA?'<span class="pk-vs">voorstel</span>':'')+'</span>'+(()=>{ const ns=[...new Set(allV.filter(x=>x.inA&&x.blom).map(x=>x.blom))].filter(x=>x!==naam); return ns.length?'<span style="display:block;margin-top:4px;font-size:11.5px;color:#666" title="'+esc(ns.join(', '))+'">'+(ns.length<=2?'Ook op deze kaart: '+esc(ns.join(', ')):'Ook op deze kaart: '+ns.length+' andere AFAS-namen')+'</span>':''; })()+'</div>'
+      +'<div><b>Product categorieën</b><span>'+esc([m.cat,p.t].filter(Boolean).join(', '))+'</span></div>'
+      +'<div><b>Geschikt voor</b><span>'+(geschikt.length?esc(geschikt.join(', ')):'nog niet gekozen')+'</span></div>'
+      +'<div class="pk-contact">Staat de gewenste uitvoering er niet bij? Neem dan contact met ons op via +31 (0)515 - 33 41 00 of info@blominteriors.com en vraag naar de mogelijkheden.</div>'
+      +'</div><div><div class="pk-panel">'
+      +sel('pkMaat','Beschikbare afmetingen (BxHxD)',dims.length?dims.map(x=>[x,x]):[['','Afmetingen volgen']],pkDims(v)||'')
+      +(G.length>1?sel('pkUitv','Uitvoering',G.map(j=>{ const a=pkVar(m,j).find(x=>x.inA&&x.blom); return [j,shortU(m,j)+(a?(a.blom!==naam?' · '+a.blom:''):' · nieuw')]; }),k):'')
+      +(vs.length>1?sel('pkFin','Afwerking',vs.map((x,i)=>[i,cap(x.fin)||x.code]),Math.min(PK.vi,vs.length-1)):'')
+      +(()=>{ const st=pkAddState(m,k); if(st.ctx==='geen') return '<div class="pk-add"><b>'+esc(shortU(m,k))+'</b><span class="note">Beoordeel eerst de serie om te kiezen.</span></div>';
+          return '<div class="pk-add"><b>'+esc(shortU(m,k))+(pkVar(m,k).some(x=>x.inA)?' <span style="font-weight:200">(staat in AFAS)</span>':'')+'</b>'+addSeg(st.on,'pkAdd')+'</div>'; })()
+
+      +'<div class="pk-ico">'+['<path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/>','<path d="M8 3v10M3 8h10"/>','<path d="M4 1.5h5.5l3 3v10H4zM6 9h4M6 11.5h4"/>','<path d="M4 1.5h5.5l3 3v10H4z"/><path d="M5.5 10.5h5"/>','<path d="m3 13 1-3.5 7-7 2.5 2.5-7 7z"/>'].map(d=>'<span>'+icon(d)+'</span>').join('')+'</div>'
+      +'</div><div class="pk-int"><h3>Verkoopinformatie (intern)</h3><div><b>Leverancier</b><span>'+esc(SUP.name)+'</span></div><div><b>Artikelcode leverancier</b><span>'+esc(v.code)+'</span></div><div><b>Toegankelijk voor klanten?</b><span>'+(e.oc==='klant'?'Ja':'Nee')+'</span></div></div>'
+      +'</div></div></div></div></div>';
+  } else {
+    const card=(x,dim)=>'<div class="pk-card'+(dim?' pk-dim':'')+'"><div class="ci">'+(x.src?'<img src="'+x.src+'" alt="">':'')+(x.cnt>1?'<em>1/'+x.cnt+'</em>':'')+'</div><div class="cb"><b>'+esc(x.n)+'</b><small>'+esc(x.nr)+'</small><div class="cf"><span>Collection</span>'+icon('<path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11" stroke="#111"/>')+'</div></div></div>';
+    const seen=new Set(G.map(j=>pkName(m.p[j].idx.map(i=>m.v[i])).n));
+    const buren=[]; m.p.forEach((q,j)=>{ const qv=pkVar(m,j), qn=pkName(qv).n||'[Blom naam]'; if(seen.has(qn)||buren.length>=3) return; seen.add(qn); buren.push({src:img(qv[0].img),cnt:qv.length,n:qn,nr:qv[0].inA?(qv[0].afas||''):'nog niet in AFAS'}); });
+    body='<div class="pk-grid"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'+card({src:img(v.img),cnt:allV.filter(x=>x.img!=null).length,n:naam,nr:nr||'nog niet in AFAS'},false)+buren.map(b=>card(b,true)).join('')+'<p class="note" style="grid-column:1/-1;margin:0">Eén kaart per Blom naam: alle uitvoeringen met dezelfde naam staan op dezelfde productkaart. De lichtere kaarten zijn andere namen uit deze serie. Geen prijzen in het overzicht.</p></div>';
+  }
+  $('pkaart').innerHTML=bar+body;
+  $('pkX').onclick=closePk;
+  const bk=$('pkBack'); if(bk) bk.onclick=openOpzet;
+  $('pkaart').onclick=e=>{ if(e.target===$('pkaart')) closePk(); };
+  $('pkaart').querySelectorAll('[data-pkt]').forEach(b=>b.onclick=()=>{ PK.tab=b.dataset.pkt; renderPk(); });
+  const u=$('pkUitv'); if(u) u.onchange=()=>{ PK.k=+u.value; PK.vi=0; renderPk(); };
+  $('pkaart').querySelectorAll('[data-pknav]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const i=G.indexOf(k), n=G[(i+ +b.dataset.pknav+G.length)%G.length]; PK.k=n; PK.vi=0; renderPk(); });
+  $('pkaart').querySelectorAll('[data-pkj]').forEach(b=>b.onclick=()=>{ PK.k=+b.dataset.pkj; PK.vi=0; renderPk(); });
+  // klik op de foto: volgende uitvoering (links op de foto: vorige)
+  const ph=$('pkaart').querySelector('.pk-img .ph img'); if(ph&&G.length>1) ph.onclick=e=>{ const r=ph.getBoundingClientRect(), dir=(e.clientX-r.left)<r.width/3?-1:1, i=G.indexOf(k); PK.k=G[(i+dir+G.length)%G.length]; PK.vi=0; renderPk(); };
+  // huidige kleine foto in beeld houden
+  const thOn=$('pkaart').querySelector('.pk-th button.on'); if(thOn) thOn.scrollIntoView({block:'nearest',inline:'center'});
+  const f=$('pkFin'); if(f) f.onchange=()=>{ PK.vi=+f.value; renderPk(); };
+  const mt=$('pkMaat'); if(mt) mt.onchange=()=>{ for(const j of G){ const qv=pkVar(m,j); const i=qv.findIndex(x=>pkDims(x)===mt.value); if(i>=0){ PK.k=j; PK.vi=i; break; } } renderPk(); };
+  const off=$('pkOff'); if(off) off.onclick=()=>toast('Dit is een voorbeeld: offertes maak je in de online collectie zelf.');
+  $('pkaart').querySelectorAll('[data-pkadd]').forEach(b=>b.onclick=()=>{ const val=b.dataset.pkadd==='1', ids=pkVar(m,k).map(x=>x.id), st=pkAddState(m,k);
+    if(st.ctx==='deck'){ ids.forEach(id=>{ F.v[id]=val?1:0; F.dk.ex[id]=!val; }); try{ renderDeck(); }catch(e){} }
+    else { setAdd(m,ids,val); PK.r=D[m.id]; }
+    renderPk(); });
+
+}
+function deckInfo(k){
+  const m=F.m, p=m.p[k], v=m.v[p.idx[0]], fp=finPrices(m,k);
+  const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
+  const dims=(v.dim||[]).map((x,i)=>x!=null?'<div><span>'+dl[i]+'</span><span>'+fmt(x)+' cm</span></div>':'').join('');
+  const OC3=[['niet','Niet online'],['intern','Online, intern'],['klant','Online, klanten']];
+  const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id);
+    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(fp&&fp.p[a.id]!=null?'<span class="ipr">'+eur(fp.p[a.id])+(mp&&mp!=='basis'?' <em>'+mp+'</em>':mp==='basis'?' <em class="b">basis</em>':'')+'</span>':'')+'</div>'
+      +'<span class="inow">Nu: '+(a.inA?OK(12)+' in AFAS'+(a.blom?' als '+esc(a.blom):''):NO(12)+' niet in AFAS'+(a.nv?' · <span class="vst">Voorstel</span> naam <b>'+esc(a.nv)+'</b>'+(a.nvc?' (controleren)':''):''))+' · '+(a.online?OK(12):NO(12))+' online · '+(a.klant?OK(12):NO(12))+' klanten'+(a.inA?' · labels: '+(LABELS.filter((_,j)=>labOf(a)[j]===1).map(x=>x[0]).join(', ')||'geen'):'')+'</span>'
+      +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o)+'" class="'+(e.oc===o?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'</div>'
+      +'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>'
+      +(e.oc?'<div class="ist">'+({afas:'Huidige AFAS-waarde',eerder:'Je eerdere keuze',voorstel:'<span class="vst">Voorstel</span> zoals '+(e.n===1?'het artikel':'de '+e.n+' artikelen')+' van deze serie in AFAS: controleer dit',vk:'<span class="vst">Voorstel</span> op basis van je eerdere keuzes in deze serie ('+e.n+'x)'+(e.strong&&a.inA&&e.was?' · nu in AFAS: '+({niet:'niet online',intern:'online, intern',klant:'online, klanten'})[e.was]:'')+': controleer dit',gekozen:'Door jou gekozen'}[e.src]||'')+'</div>':'<div class="ist need">Kies de online collectie voor deze uitvoering</div>')+'</div>'}).join('');
+  return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
+    +(F.dk.need===k?'<div class="ineed">Nog niet in AFAS en geen voorstel mogelijk: kies per uitvoering de online collectie en de labels, en kies dan <b>'+(anyIn(m)?'Houden':'Opnemen')+'</b>.</div>':'')
+    +'<div class="isec"><h3>Per uitvoering: online en labels</h3>'+(fp?'<p class="imp">Meerprijs ten opzichte van '+esc(cap(fp.base.fin)||fp.base.code)+' ('+esc(fp.lbl)+').</p>':'')+rows+'</div>'
+    +(dims?'<div class="isec"><h3>Maten</h3><div class="ikv">'+dims+'</div></div>':'')
+    +(v.desc?'<div class="isec"><h3>Omschrijving</h3><p>'+esc(v.desc)+'</p>'+((v.opts&&v.opts.length)?'<p class="iopt"><b>Opties en meerprijzen:</b> '+v.opts.map(esc).join(' · ')+'</p>':'')+'</div>':'')
+    +'<div class="ibtns"><button type="button" class="ghost" id="iNo">'+NO(16)+' Niet</button><button type="button" class="cta" id="iYes">'+OK(16)+' <span class="dyl">'+(anyIn(m)?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
+    +'</div>';
+}
+// voorstel uit je eigen keuzes in deze serie: zodra je bij een product online collectie en labels kiest,
+// krijgen de producten zonder AFAS-waarde of voorstel dezelfde instelling (de meest gekozen), duidelijk als voorstel
+let TQ=[];   // meldingen over voorstellen, samen getoond
+const LEER=3;   // na zoveel dezelfde keuzes wordt het een voorstel voor de rest van de serie
+const OCN={niet:'Niet online',intern:'Online, intern',klant:'Online, klanten'};
+const sigTxt=(oc,lab)=>OCN[oc]+' · '+(LABELS.filter((_,j)=>lab&&lab[j]===1).map(x=>x[0]).join(', ')||'geen labels');
+function autoProp(){ const m=F.m, d=F.dk;
+  // eerst de vorige voorstellen uit je keuzes terugzetten naar de uitgangssituatie
+  m.v.forEach(v=>{ const e=F.vs[v.id]; if(e&&e.src==='vk') F.vs[v.id]=JSON.parse(JSON.stringify((F.vs0&&F.vs0[v.id])||{oc:null,lab:[0,0,0,0,0],src:null})); });
+  // je keuzes per product (niet per afwerking), op volgorde van kiezen
+  const ch=[]; m.p.forEach((p,k)=>{ const v=p.idx.map(i=>m.v[i]).find(v=>F.vs[v.id]&&F.vs[v.id].src==='gekozen'&&F.vs[v.id].oc); if(v) ch.push({k,v,s:sigOf(F.vs[v.id].oc,F.vs[v.id].lab),t:d.ct[k]||0}); });
+  if(!ch.length) return; ch.sort((a,b)=>a.t-b.t);
+  const c={}; ch.forEach(x=>c[x.s]=(c[x.s]||0)+1);
+  const last=ch[ch.length-1].s, strong=c[last]>=LEER, top=strong?last:Object.keys(c).sort((a,b)=>c[b]-c[a])[0], t=ch.find(x=>x.s===top).v, T=F.vs[t.id];
+  // tot 3x: alleen lege uitvoeringen invullen; vanaf 3x dezelfde keuze ook voorstellen en lege AFAS-waarden (niet online, geen labels) vervangen
+  m.v.forEach(v=>{ const e=F.vs[v.id]; if(!e||!e.oc||(strong&&(e.src==='voorstel'||e.leeg))) F.vs[v.id]={oc:T.oc,lab:T.lab.slice(),src:'vk',n:c[top],strong,was:e&&e.oc,leeg:e&&e.leeg}; });
+  if(strong&&!d.note['p'+top]){ d.note['p'+top]=1; TQ.push('Op basis van je eerdere keuzes ('+c[top]+'x) staat bij de volgende producten '+sigTxt(T.oc,T.lab)+' voorgesteld. Controleer het per product.'); }
+}
+// afwerkingen: zet je dezelfde afwerking (bijv. walnoot) 3x achter elkaar uit, dan staat die bij de volgende producten standaard uit
+const finKey=v=>(v.fin||'').toLowerCase().replace(/\s+/g,' ').trim();
+function finRun(f){ const l=F.dk.fl[f]||[]; let n=0; for(let i=l.length-1;i>=0&&l[i];i--) n++; return n; }
+function autoEx(){ const m=F.m, d=F.dk;
+  d.order.slice(d.i).forEach(k=>{ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.length<2) return;
+    vs.forEach(v=>{ if(d.ax[v.id]){ d.ex[v.id]=false; delete d.ax[v.id]; } });
+    const off=vs.filter(v=>!d.man[v.id]&&finKey(v)&&finRun(finKey(v))>=LEER&&!d.ex[v.id]);
+    if(!off.length||vs.every(v=>d.ex[v.id]||off.includes(v))) return;   // minstens één afwerking blijft aan
+    off.forEach(v=>{ d.ex[v.id]=true; d.ax[v.id]=true; }); });
+  const cur=d.order[d.i]; if(cur!=null) m.p[cur].idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]).forEach(v=>{ const f=finKey(v); if(!d.note['f'+f]){ d.note['f'+f]=1; TQ.push(cap(v.fin)+' staat uit op basis van je eerdere keuzes ('+finRun(f)+'x niet gekozen). Tik erop om hem toch aan te zetten.'); } });
+}
+function renderDeck(){
+  autoProp(); if(F.dk.i<F.dk.order.length) autoEx(); if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
+  const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
+  if(d.i>=n) return renderDeckDone();
+  const k=d.order[d.i], k2=d.order[d.i+1];
+  B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke producten '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+'</div></div>'
+    +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
+    +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(k):'')+'</div>'
+    +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+'Niet</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
+    +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
+  d.enter=false;
+  $('dList').onclick=toList;
+  $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
+  B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
+  B.querySelectorAll('[data-ex]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.ex; d.ex[id]=!d.ex[id]; d.man[id]=true; delete d.ax[id]; const all=m.p[k].idx.every(i=>d.ex[m.v[i].id]); if(all){ d.ex[id]=false; toast('Minstens één afwerking aan, of veeg naar links'); } renderDeck(); });
+  if(d.info) bindInfo(k);
+  bindDeckSwipe();
+}
+function bindInfo(k){
+  const m=F.m, ids=m.p[k].idx.map(i=>m.v[i].id);
+  $('iClose').onclick=()=>{ F.dk.info=false; renderDeck(); };
+  const keep=()=>{ const el=$('dinfo'), t=el?el.scrollTop:0; renderDeck(); const n=$('dinfo'); if(n){ n.style.animation='none'; n.scrollTop=t; } };
+  $('dinfo').querySelectorAll('[data-voc]').forEach(b=>b.onclick=()=>{ const [id,o]=b.dataset.voc.split('|'); F.vs[id].oc=o; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
+  $('dinfo').querySelectorAll('[data-vlab]').forEach(b=>b.onclick=()=>{ const [id,j]=b.dataset.vlab.split('|'); const l=F.vs[id].lab; l[+j]=l[+j]===1?0:1; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
+  $('iYes').onclick=()=>deckGo('yes'); $('iNo').onclick=()=>deckGo('no');
+}
+function bindDeckSwipe(){
+  const c=$('dcard'), u=$('dstack').querySelector('.dcard.under'); if(!c) return;
+  const S={yes:$('sYes'),no:$('sNo'),up:$('sUp')};
+  let id=null,x0=0,y0=0,dx=0,dy=0,axis=null;
+  const paint=()=>{ c.style.transform=axis==='y'?'translateY('+Math.min(0,dy)+'px)':'translate('+dx+'px,'+(dy*.15)+'px) rotate('+(dx/16)+'deg)';
+    S.yes.style.opacity=axis==='x'&&dx>0?Math.min(1,dx/100):0; S.no.style.opacity=axis==='x'&&dx<0?Math.min(1,-dx/100):0; S.up.style.opacity=axis==='y'&&dy<0?Math.min(1,-dy/90):0;
+    if(u){ const t=Math.min(1,Math.abs(axis==='y'?dy:dx)/140); u.style.transform='scale('+(.94+.06*t)+') translateY('+(14-14*t)+'px)'; } };
+  c.addEventListener('pointerdown',e=>{ if(e.button!==0||e.target.closest('button')) return; id=e.pointerId; x0=e.clientX; y0=e.clientY; dx=dy=0; axis=null; c.classList.add('drag'); try{ c.setPointerCapture(id) }catch(_){} });
+  c.addEventListener('pointermove',e=>{ if(e.pointerId!==id) return; dx=e.clientX-x0; dy=e.clientY-y0; if(!axis&&Math.hypot(dx,dy)>6) axis=Math.abs(dx)>=Math.abs(dy)?'x':(dy<0?'y':'x'); if(axis){ e.preventDefault(); paint(); } });
+  const end=e=>{ if(e.pointerId!==id) return; id=null; c.classList.remove('drag');
+    if(axis==='x'&&Math.abs(dx)>100) return deckGo(dx>0?'yes':'no',true);
+    if(axis==='y'&&dy<-90) { c.classList.add('back'); c.style.transform=''; S.up.style.opacity=0; return deckGo('up'); }
+    c.classList.add('back'); c.style.transform=''; Object.values(S).forEach(s=>s.style.opacity=0); if(u) u.style.transform=''; setTimeout(()=>c.classList.remove('back'),300); };
+  c.addEventListener('pointerup',end); c.addEventListener('pointercancel',e=>{ if(e.pointerId===id){ dx=dy=0; end(e); } });
+}
+// keuze voor het product bovenop de stapel, met een vlieg-animatie
+function deckGo(dir,fromDrag){
+  const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
+  if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
+  if(dir==='yes'){ const open=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
+    if(open.length){ d.need=k; d.info=true; renderDeck(); buzz(20); return; } }
+  if(d.info) d.info=false; d.need=null;
+  const c=$('dcard'), u=$('dstack')&&$('dstack').querySelector('.dcard.under');
+  const commit=()=>{ const ids=m.p[k].idx.map(i=>m.v[i].id);
+    d.hist.push({k,prev:ids.map(id=>F.v[id]),vs:JSON.parse(JSON.stringify(F.vs)),ex:Object.assign({},d.ex),ax:Object.assign({},d.ax),fl:JSON.parse(JSON.stringify(d.fl))});
+    // een voorstel uit je keuzes dat je met Houden bevestigt, telt als jouw keuze
+    if(dir==='yes'){ let cf=false; ids.forEach(id=>{ const e=F.vs[id]; if(e&&e.src==='vk'&&!d.ex[id]){ F.vs[id]={oc:e.oc,lab:e.lab.slice(),src:'gekozen',n:e.n}; cf=true; } }); if(cf) d.ct[k]=Date.now(); }
+    if(dir==='yes'&&ids.length>1) m.p[k].idx.map(i=>m.v[i]).forEach(v=>{ const f=finKey(v); if(f) (d.fl[f]=d.fl[f]||[]).push(!!d.ex[v.id]); });
+    ids.forEach(id=>{ F.v[id]=dir==='yes'?(d.ex[id]?0:1):0; });
+    d.i++; d.enter=true; buzz(dir==='yes'?[10,30,10]:12); renderForm(); };
+  if(!c) return commit();
+  const s=$(dir==='yes'?'sYes':'sNo'); if(s) s.style.opacity=1;
+  c.classList.remove('drag','back'); c.classList.add('fly');
+  c.style.transform=dir==='yes'?'translate(150%,-30px) rotate(24deg)':'translate(-150%,-30px) rotate(-24deg)';
+  if(u){ u.style.transition='transform .22s ease-out'; u.style.transform='none'; }
+  setTimeout(commit,fromDrag?170:230);
+}
+function deckUndo(){
+  const d=F.dk, m=F.m, h=d.hist.pop(); if(!h) return;
+  m.p[h.k].idx.forEach((i,j)=>{ const id=m.v[i].id; if(h.prev[j]==null) delete F.v[id]; else F.v[id]=h.prev[j]; });
+  if(h.vs) F.vs=h.vs; if(h.ex){ d.ex=h.ex; d.ax=h.ax; d.fl=h.fl; }
+  d.i=d.order.indexOf(h.k); d.info=false; d.enter=true; F.view='deck'; renderForm();
+}
+// opslaan: de meest voorkomende instelling wordt de standaard van de serie, afwijkende uitvoeringen komen in groepen
+// van swipen naar het oude overzicht: keuzes per uitvoering omzetten naar standaard + afwijkende groepen
+function vsToGroups(){ const m=F.m, set=m.v.filter(v=>effV(v.id).oc), ch=set.filter(v=>F.v[v.id]===1), base=ch.length?ch:set;
+  if(!base.length) return; const sig=v=>sigOf(F.vs[v.id].oc,F.vs[v.id].lab), cnt={}; base.forEach(v=>{ cnt[sig(v)]=(cnt[sig(v)]||0)+1; });
+  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0], t=base.find(v=>sig(v)===top);
+  F.oc=F.vs[t.id].oc; F.lab=F.vs[t.id].lab.slice(); F.cur={}; F.g=[];
+  set.forEach(v=>{ const s2=sig(v); if(s2===top) return; let g=F.g.find(g=>sigOf(g.oc,g.lab)===s2); if(!g) F.g.push(g={oc:F.vs[v.id].oc,lab:F.vs[v.id].lab.slice(),ids:[]}); g.ids.push(v.id); }); }
+// van het overzicht terug naar swipen: standaard + groepen weer per uitvoering
+function groupsToVs(){ const m=F.m; m.v.forEach(v=>{ const g=F.g.find(g=>g.ids.includes(v.id)), oc=g?g.oc:F.oc, lab=g?g.lab:F.lab; if(oc){ const old=F.vs[v.id]||{}; const nl=(lab||[]).map(x=>x==null?0:x); if(old.oc!==oc||sigOf(old.oc,old.lab)!==sigOf(oc,nl)) F.vs[v.id]={oc,lab:nl,src:'gekozen',n:old.n}; } }); }
+// in het overzicht: per artikel de huidige keuze voor online collectie en labels (standaard van de serie of afwijkende groep)
+function listSet(v){ const g=F.g.find(g=>g.ids.includes(v.id)), oc=g?g.oc:F.oc, lab=g?g.lab:F.lab, OCT={niet:'niet online',intern:'online, intern',klant:'online, klanten'};
+  const ls=LABELS.map(([n,c],j)=>lab&&lab[j]===1?'<span class="dl"><i style="background:'+c+'"></i>'+n+'</span>':'').filter(Boolean).join(' ');
+  return '<span class="lset"><b class="doc '+(oc||'open')+'">'+(oc?OCT[oc]:'online: kiezen')+'</b> '+(ls||'<span class="dl none">geen labels</span>')+(g?' <span class="dsrc">groep '+GL(F.g.indexOf(g))+'</span>':'')+'</span>'; }
+function toList(){ vsToGroups(); F.dk.info=false; F.view='list'; $('formBody').scrollTop=0; renderForm(); }
+function saveDeck(){
+  const m=F.m, d=F.dk, chosen=m.v.filter(v=>F.v[v.id]===1); if(!chosen.length) return;
+  const miss=chosen.filter(v=>!effV(v.id).oc);
+  if(miss.length){ const k=miss[0].p; d.i=d.order.indexOf(k); d.need=k; d.info=true; d.enter=true; renderForm(); toast('Kies nog de online collectie voor '+miss.length+(miss.length===1?' uitvoering':' uitvoeringen')); return; }
+  const sig=v=>sigOf(F.vs[v.id].oc,F.vs[v.id].lab), cnt={}; chosen.forEach(v=>{ cnt[sig(v)]=(cnt[sig(v)]||0)+1; });
+  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0], t=chosen.find(v=>sig(v)===top);
+  F.oc=F.vs[t.id].oc; F.lab=F.vs[t.id].lab.slice(); F.g=[];
+  chosen.forEach(v=>{ const s2=sig(v); if(s2===top) return; let g=F.g.find(g=>sigOf(g.oc,g.lab)===s2); if(!g) F.g.push(g={oc:F.vs[v.id].oc,lab:F.vs[v.id].lab.slice(),ids:[]}); g.ids.push(v.id); });
+  m.v.forEach(v=>{ if(F.v[v.id]==null) F.v[v.id]=0; });
+  $('fSave').onclick();
+}
+function renderDeckDone(){
+  const m=F.m, d=F.dk, has=anyIn(m), B=$('formBody');
+  const ks=d.order, yes=ks.filter(k=>m.p[k].idx.some(i=>F.v[m.v[i].id]===1));
+  B.innerHTML='<div class="deck ddone"><div class="dbig">'+(yes.length?OK(34):NO(34))+'</div><h2>'+(yes.length?'Klaar!':'Niets gekozen')+'</h2>'
+    +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+' producten '+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
+    +'<div class="dgrid">'+ks.map(k=>{const p=m.p[k], a=m.v[p.idx[0]], on=p.idx.some(i=>F.v[m.v[i].id]===1); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(shortTitle(m,k))+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(p.idx.map(i=>m.v[i]).find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
+    +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (opgeslagen series)</button>'
+    +'<div class="dbtns2"><button type="button" class="ghost" id="dAgain">Opnieuw swipen</button><button type="button" class="ghost" id="dList2">Overzicht</button><button type="button" class="cta" id="dNext"'+(yes.length?'':' disabled')+'>Opslaan en volgende serie →</button></div>'
+    +'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>⌫</kbd> laatste terug</span></div></div>';
+  B.querySelectorAll('[data-flip]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.flip, ids=m.p[k].idx.map(i=>m.v[i].id), on=ids.some(id=>F.v[id]===1); ids.forEach(id=>F.v[id]=on?0:(d.ex[id]?0:1)); renderDeckDone(); });
+  $('dAgain').onclick=()=>{ d.i=0; d.hist=[]; d.enter=true; renderForm(); };
+  $('dNext').onclick=saveDeck; $('dList2').onclick=toList; $('dOpz').onclick=openOpzet;
+  if(yes.length) buzz([10,40,10,40,10]);
+}
+document.addEventListener('keydown',e=>{
+  if(!$('pkaart').hidden){ if(e.key==='Escape') closePk(); return; }
+  if($('form').hidden||!F||F.view!=='deck'||e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return;
+  const done=F.dk.i>=F.dk.order.length;
+  if((e.key==='ArrowRight'||e.key==='Enter')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('yes'); }
+  else if((e.key==='ArrowLeft'||e.key==='Delete')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('no'); }
+  else if(e.key==='ArrowUp'&&!done){ e.preventDefault(); if(!F.dk.info) deckGo('up'); }
+  else if((e.key==='ArrowDown'||e.key==='Escape')&&F.dk.info){ e.preventDefault(); F.dk.info=false; renderDeck(); }
+  else if(e.key==='Backspace'){ e.preventDefault(); deckUndo(); }
+  else if(e.key==='Enter'&&done){ e.preventDefault(); const n=$('dNext'); if(n&&!n.disabled) n.click(); }
+});
+function moveTo(ids,target){ // target: -1 = standaard, 'new', 'care', of index
+  F.g.forEach(g=>g.ids=g.ids.filter(x=>!ids.includes(x)));
+  if(target==='new'||target==='care'){ F.g.push(Object.assign({oc:F.oc,lab:target==='care'?[0,1,0,0,0]:F.lab.slice(),ids:ids.slice()},target==='care'?{n:'alleen Care'}:{})); }
+  else if(target>=0) F.g[target].ids.push(...ids);
+  F.g=F.g.filter(g=>g.ids.length); F.sel={};
+}
+function renderForm(){
+  // swipen is leidend; het oude overzicht (lijst) blijft bereikbaar via 'Overzicht'
+  if(F.view!=='list'){ F.view='deck'; $('form').classList.add('deckmode'); return renderDeck(); }
+  $('form').classList.remove('deckmode');
+  const m=F.m, has=anyIn(m), v0=m.v.find(v=>img(v.img))||m.v[0];
+  const yn=(key,val)=>'<div class="yn" role="group"><button type="button" class="nee'+(val===0?' on':'')+'" data-k="'+key+'" data-val="0" aria-pressed="'+(val===0)+'">'+CX+'Nee</button><button type="button" class="ja'+(val===1?' on':'')+'" data-k="'+key+'" data-val="1" aria-pressed="'+(val===1)+'">'+CK+'Ja</button></div>';
+  const curTag='<span class="cur">AFAS-waarde '+dstr()+'</span>';
+  const chosen=m.v.filter(v=>F.v[v.id]===1), cids=chosen.map(v=>v.id);
+  F.g.forEach(g=>g.vis=g.ids.filter(x=>cids.includes(x)));
+  const gi=id=>F.g.findIndex(g=>g.ids.includes(id)&&cids.includes(id));
+  const nA=chosen.filter(v=>gi(v.id)<0).length, nsel=Object.keys(F.sel).filter(k=>F.sel[k]&&cids.includes(k)).length;
+  const seg=(val,attr)=>'<div class="seg" role="radiogroup">'+OC.map(([k,l])=>'<button type="button" role="radio" aria-checked="'+(val===k)+'" class="'+(val===k?'on'+(k==='niet'?' neg':''):'')+'" '+attr+'="'+k+'">'+l+'</button>').join('')+'</div>';
+  const labChips=(lab,i)=>'<div class="glabs">'+LABELS.map(([n,c],j)=>{const on=lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-glab="'+i+':'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>';
+  // snelselectie
+  const types=[...new Set(chosen.map(v=>v.type).filter(Boolean))], fins=[...new Set(chosen.map(v=>v.fin).filter(Boolean))];
+  const quick=[['alle','Alles'],...types.map(t=>['t:'+t,'Alle '+plural(t,2)]),...(fins.length>1?fins.map(f=>['f:'+f,'Alle '+cap(f)]):[]),...(chosen.some(v=>v.inA)&&chosen.some(v=>!v.inA)?[['in','In AFAS'],['uit','Niet in AFAS']]:[]),['geen','Niets']];
+  const gsec=chosen.length?`<div class="fsec"><h2>4 · Afwijkende groepen <span class="opt">optioneel</span></h2>
+    <p class="fnote">Wijkt een deel van de serie af van de standaard? Tik artikelen aan (of gebruik de snelkeuze) en zet ze in een eigen groep met andere instellingen.</p>
+    <div class="qsel">${quick.map(([k,l])=>'<button type="button" data-q="'+esc(k)+'">'+esc(l)+'</button>').join('')}</div>
+    <div class="gchips">${chosen.map(v=>{const i=gi(v.id); return '<button type="button" class="gchip'+(F.sel[v.id]?' sel':'')+'" data-sel="'+esc(v.id)+'" aria-pressed="'+!!F.sel[v.id]+'"><span class="gl'+(i<0?'':' x')+'">'+(i<0?'A':GL(i))+'</span>'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'<i></i>')+'<span class="gc">'+esc(v.code)+'</span></button>'}).join('')}</div>
+    <div class="gact"${nsel?'':' hidden'}><span><b>${nsel}</b> geselecteerd →</span><button type="button" data-mv="new">Nieuwe groep</button><button type="button" data-mv="care">Nieuwe groep: alleen Care</button>${F.g.map((g,i)=>g.vis.length?'<button type="button" data-mv="'+i+'">Naar groep '+GL(i)+'</button>':'').join('')}<button type="button" data-mv="-1">Terug naar standaard (A)</button></div>
+    ${F.g.map((g,i)=>g.vis.length?'<div class="gcard"><div class="gh"><span><span class="gl x">'+GL(i)+'</span> Groep '+GL(i)+(g.n?' · '+esc(g.n):'')+' · '+g.vis.length+' art.'+(g.afas?' <span class="cur">uit AFAS '+dstr()+'</span>':'')+'</span><button type="button" data-gdel="'+i+'">Opheffen</button></div><div class="gcodes">'+g.vis.map(esc).join(', ')+'</div><div class="gsub">Online collectie</div>'+seg(g.oc,'data-goc="'+i+'" data-v')+'<div class="gsub">Labels</div>'+labChips(g.lab,i)+'</div>':'').join('')}
+  </div>`:'';
+  $('formBody').innerHTML=`<div class="ftop"><div class="th">${img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':''}</div><div><div class="eye">${esc(SUP.name)} · ${m.v.filter(v=>v.inA).length} van ${m.v.length} in AFAS</div><h1>Serie ${esc(m.fam)} ${has?'houden':'opnemen'}</h1><div style="font-size:12px;margin-top:3px">${has?'Ingevuld met de AFAS-waarden van '+dstr()+'. Controleer en vul aan.':'Nieuw voor Blom: vul alles in.'}</div></div></div>
+  <button type="button" class="redeck" id="reDeck">← Terug naar swipen <span>${m.p.length} producten · je keuzes uit dit overzicht gaan mee</span></button>
+  <div class="fsec"><h2>1 · Welke artikelen uit de serie *</h2>${groups(m).map(g=>'<div class="fgrp"><div class="fgh"><span>'+esc(cap(plural(g.t,2)))+' <span style="color:var(--g400);font-weight:300">'+g.pk.length+' · '+g.pk.filter(x=>pIn(m,x)).length+' in AFAS</span></span>'+(g.idx.length>1?'<span class="fgb">alle: <div class="yn"><button type="button" class="nee" data-bulk="0" data-g="'+esc(g.t)+'">'+CX+'Nee</button><button type="button" class="ja" data-bulk="1" data-g="'+esc(g.t)+'">'+CK+'Ja</button></div></span>':'')+'</div>'+g.pk.map(k=>{const p=m.p[k], a0=m.v[p.idx[0]]; return '<div class="fprod"><div class="fpimg">'+(img(a0.img)?'<img src="'+img(a0.img)+'" alt="">':'')+'</div><div class="fpbody"><div class="fph"><span>'+esc(plabel(m,k))+'</span><button type="button" class="finfo" data-finfo="'+k+'" aria-label="Info en instellingen">ⓘ info</button></div>'+p.idx.map(i=>m.v[i]).map(v=>'<div class="frow">'+(v.fin?'<span class="nm">'+esc(cap(v.fin))+'</span>':'')+'<span class="st">'+esc(v.code)+(v.blom?' · '+esc(v.blom):'')+'<br>'+(v.inA?'<b>in AFAS</b>':'nog niet in AFAS'+(F.v[v.id]==null?' · <b>kies</b>':''))+'<br>'+listSet(v)+'</span>'+yn('v:'+v.id,F.v[v.id])+'</div>').join('')+'</div></div>'}).join('')+'</div>').join('')}</div>
+  <div class="fsec"><div class="stdh"><span class="gl">A</span><div><b>Standaard voor de serie</b><span>Geldt voor ${F.g.some(g=>g.vis.length)?nA+' van '+chosen.length:'alle '+chosen.length} gekozen artikelen${F.g.some(g=>g.vis.length)?', de rest staat in een afwijkende groep':''}.</span></div></div>
+  <h2>2 · Online collectie *${F.cur.oc&&F.oc?curTag:''}</h2>${seg(F.oc,'data-oc')}</div>
+  <div class="fsec"><h2>3 · Labels in AFAS / online collectie *</h2>${LABELS.map(([n,c],i)=>'<div class="frow"><span style="width:12px;height:12px;background:'+c+';flex:none"></span><span style="font-size:13.5px;flex:1">'+n+(F.cur.lab?curTag:'')+'</span>'+yn('l:'+i,F.lab[i])+'</div>').join('')}</div>
+  ${gsec}`;
+  const B=$('formBody');
+  B.querySelectorAll('[data-finfo]').forEach(b=>b.onclick=()=>{ groupsToVs(); const k=+b.dataset.finfo, i=F.dk.order.indexOf(k); if(i>=0) F.dk.i=i; F.dk.info=true; F.dk.enter=false; F.view='deck'; renderForm(); });
+  $('reDeck').onclick=()=>{ groupsToVs(); F.view='deck'; F.dk.info=false; F.dk.enter=true; renderForm(); };
+  B.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const [t,k]=b.dataset.k.split(/:(.+)/); const val=+b.dataset.val; if(t==='v') F.v[k]=val; else F.lab[+k]=val; renderForm(); });
+  B.querySelectorAll('[data-bulk]').forEach(b=>b.onclick=()=>{ const val=+b.dataset.bulk, t=b.dataset.g; m.v.forEach(v=>{ if((v.type||'')===t) F.v[v.id]=val; }); renderForm(); });
+  B.querySelectorAll('[data-oc]').forEach(b=>b.onclick=()=>{ F.oc=b.dataset.oc; renderForm(); });
+  B.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{ const id=b.dataset.sel; F.sel[id]=!F.sel[id]; renderForm(); });
+  B.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{ const q=b.dataset.q; F.sel={}; if(q!=='geen') chosen.forEach(v=>{ if(q==='alle'||(q==='in'&&v.inA)||(q==='uit'&&!v.inA)||(q.startsWith('t:')&&v.type===q.slice(2))||(q.startsWith('f:')&&v.fin===q.slice(2))) F.sel[v.id]=true; }); renderForm(); });
+  B.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const t=b.dataset.mv; moveTo(Object.keys(F.sel).filter(k=>F.sel[k]&&cids.includes(k)), t==='new'||t==='care'?t:+t); renderForm(); });
+  B.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>{ F.g.splice(+b.dataset.gdel,1); renderForm(); });
+  B.querySelectorAll('[data-goc]').forEach(b=>b.onclick=()=>{ F.g[+b.dataset.goc].oc=b.dataset.v; renderForm(); });
+  B.querySelectorAll('[data-glab]').forEach(b=>b.onclick=()=>{ const [i,j]=b.dataset.glab.split(':').map(Number); const g=F.g[i]; g.lab[j]=g.lab[j]===1?0:1; renderForm(); });
+  const vg=F.g.filter(g=>g.vis.length);
+  const gOpen=vg.reduce((a,g)=>a+(g.oc?0:1)+g.lab.filter(x=>x==null).length,0);
+  const total=m.v.length+1+5, done=m.v.filter(v=>F.v[v.id]!=null).length+(F.oc?1:0)+F.lab.filter(x=>x!=null).length, open=total-done+gOpen;
+  const noneV=m.v.length&&m.v.every(v=>F.v[v.id]===0);
+  $('fCount').innerHTML='<b>'+done+' van '+total+'</b> ingevuld'+(vg.length?' · '+vg.length+(vg.length===1?' afwijkende groep':' afwijkende groepen'):'');
+  $('fOpen').textContent=open?'open: '+[m.v.some(v=>F.v[v.id]==null)?'artikelen':'',F.oc?'':'online collectie',F.lab.some(x=>x==null)?'labels':'',gOpen?'groep '+vg.filter(g=>!g.oc||g.lab.some(x=>x==null)).map(g=>GL(F.g.indexOf(g))).join(', '):''].filter(Boolean).join(', '):noneV?'kies minstens één artikel':'';
+  $('fBar').style.width=(Math.min(done,total)/total*100)+'%';
+  const ok=!open&&!noneV; $('fSave').disabled=!ok; $('fSave').textContent=ok?'Opslaan en volgende':noneV?'Kies minstens één artikel':'Nog '+open+(open===1?' keuze':' keuzes')+' open';
+}
+$('fCancel').onclick=()=>{ $('form').hidden=true; F=null; };
+$('fSave').onclick=()=>{ if(!F) return; const m=F.m; if(DR[m.id]){ delete DR[m.id]; saveDr(); } const keep=Object.keys(F.v).filter(k=>F.v[k]===1); record(m.id,{s:'wel',t:new Date().toISOString(),v:Object.assign({},F.v),oc:F.oc,lab:F.lab.slice(),g:F.g.map(g=>Object.assign({oc:g.oc,lab:g.lab.slice(),ids:g.ids.filter(x=>keep.includes(x))},g.n?{n:g.n}:{})).filter(g=>g.ids.length)}); $('form').hidden=true; F=null; stamp('wel'); toast(m.fam+' opgeslagen'); after(m); };
+
+/* ---------------- results ---------------- */
+function ago(t){if(!t)return '—';const s=(Date.now()-new Date(t))/1000;if(s<90)return 'zojuist';if(s<3600)return Math.round(s/60)+' min';if(s<86400)return Math.round(s/3600)+' uur';return new Date(t).toLocaleDateString('nl-NL')}
+function renderRes(){
+  $('resSup').innerHTML=SUPS.map(s=>'<button type="button" data-sup="'+esc(s.id)+'" class="'+(SUP&&s.id===SUP.id?'on':'')+'">'+esc(s.name)+'</button>').join('');
+  $('resSup').querySelectorAll('[data-sup]').forEach(b=>b.onclick=async()=>{ await loadSup(b.dataset.sup); render(); });
+  $('opzRes').onclick=openOpzet; $('opzRes').textContent='Opzet online collectie '+(SUP.short||SUP.name)+': '+opzetItems().cards.length+' productkaarten die jij toevoegt';
+  const ps=people();
+  let wAny=0,nAll=0,split=0; for(const m of M){ const ss=ps.map(p=>p.c[m.id]&&p.c[m.id].s).filter(Boolean); if(ss.includes('wel')) wAny++; if(ss.length&&ss.every(s=>s==='niet')) nAll++; if(ss.includes('wel')&&ss.includes('niet')) split++; }
+  $('tiles').innerHTML='<div class="tile wel"><b>'+fmt(wAny)+'</b><span>series houden / opnemen (minstens één)</span></div><div class="tile niet"><b>'+fmt(nAll)+'</b><span>series niet (door iedereen)</span></div><div class="tile"><b>'+fmt(split)+'</b><span>verdeeld</span></div>';
+  $('xTitle').textContent='Excel van '+SUP.name; $('resDate').textContent='Momentopname: data van '+SUP.name+' geïmporteerd op '+dstr()+'. AFAS-status en prijzen kunnen inmiddels gewijzigd zijn.'; $('xlsx').textContent='Download Excel '+SUP.name;
+  $('teamBody').innerHTML=ps.length?ps.map(p=>{const c=counts(p.c,M); return '<tr><td>'+esc(p.naam)+(me&&p.key===docId()?' (jij)':'')+'</td><td>'+fmt(c.w+c.n)+' / '+fmt(M.length)+'</td><td>'+fmt(c.w)+'</td><td>'+fmt(c.n)+'</td><td>'+ago(p.laatst)+'</td></tr>'}).join(''):'<tr><td colspan="5">Nog niemand heeft iets gekozen voor '+esc(SUP.name)+'.</td></tr>';
+  $('teamNote').textContent=canShare===false?'Zonder inloggen zie je hier alleen je eigen keuzes.':'Live bijgewerkt.';
+  const pf=$('fPerson'), pv=pf.value; pf.innerHTML='<option value="">iedereen</option>'+ps.map(p=>'<option value="'+esc(p.key)+'">'+esc(p.naam)+'</option>').join(''); pf.value=ps.some(p=>p.key===pv)?pv:'';
+  renderList(ps);
+}
+function renderList(ps){
+  ps=ps||people(); const f=$('fChoice').value, fa=$('fAfas').value, fp=$('fPerson').value; const sel=fp?ps.filter(p=>p.key===fp):ps; const rows=[], vis=[];
+  for(const m of M){
+    if(fa==='in'&&!anyIn(m)) continue; if(fa==='uit'&&anyIn(m)) continue;
+    const vs=sel.map(p=>({p,r:p.c[m.id]||{}})); const ss=vs.map(o=>o.r.s||'open');
+    if(f==='split'){ if(!(ss.includes('wel')&&ss.includes('niet'))) continue; } else if(f!=='all'&&!ss.includes(f)) continue;
+    vis.push(m); const v0=m.v.find(v=>img(v.img))||m.v[0]; const nin=m.v.filter(v=>v.inA).length;
+    rows.push('<button type="button" class="mrow" data-id="'+esc(m.id)+'">'+(img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':'<span class="ni"></span>')+'<span><span class="nm">Serie '+esc(m.fam)+'</span><small>'+esc(m.cat)+' · '+m.v.length+' artikelen · '+nin+' in AFAS</small><span class="votes">'+vs.map(o=>'<span class="vote '+(o.r.s||'')+'">'+esc(o.p.naam.split(' ')[0])+': '+(o.r.s==='wel'?(nin?'houden':'opnemen'):o.r.s==='niet'?'niet':'open')+'</span>').join('')+'</span></span></button>');
+  }
+  $('mList').innerHTML=rows.length?rows.join(''):'<p class="note" style="padding:14px">Geen series in deze selectie.</p>';
+  if(!renderList.busy&&vis.some(m=>m.ch.some(c=>!loadedChunks[c]))){ renderList.busy=true; ensureImgs(vis).then(()=>{ renderList.busy=false; if(view==='res') renderList() }); }
+}
+$('mList').addEventListener('click',e=>{const b=e.target.closest('[data-id]'); if(!b) return; forced=b.dataset.id; go('swipe');});
+['fChoice','fAfas','fPerson'].forEach(id=>$(id).onchange=()=>renderList());
+
+/* ---------------- excel ---------------- */
+const jpgCache={};
+function toJpeg(dataUrl,max){ const k=max+'|'+dataUrl.length+'|'+dataUrl.slice(-40); if(jpgCache[k]) return jpgCache[k];
+  return jpgCache[k]=new Promise(res=>{ const im=new Image(); im.onload=()=>{ const s=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.width*s)); c.height=Math.max(1,Math.round(im.height*s)); const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.82)) }; im.onerror=()=>res(null); im.src=dataUrl; }); }
+$('xlsx').onclick=async()=>{
+  if(!window.ExcelJS){toast('Excel-module is niet geladen. Probeer het opnieuw.');return}
+  const btn=$('xlsx'), note=$('xlsxNote'); btn.disabled=true;
+  frUse=false;   // de Excel bevat altijd alle prijsregels, met en zonder brandvertragende stof
+  try{
+    const sup=SUP, ps=people();
+    note.textContent='Foto\'s laden…';
+    for(let n=0;n<DATA.chunks;n++) await chunk(n);
+    const wb=new ExcelJS.Workbook(); wb.creator='Blom Collectiekeuze';
+    const imgIds={};
+    async function addImg(key,p){ if(imgIds[key]!==undefined) return imgIds[key]; const d=await p; imgIds[key]=d?wb.addImage({base64:d,extension:'jpeg'}):null; return imgIds[key]; }
+    const head={font:{bold:true,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF3A3A3A'}},alignment:{vertical:'middle',wrapText:true}};
+    const GREEN='FF91D6AC', RED='FFF09491';
+    const fillFor=v=>typeof v!=='string'?null:/^(JA|HOUDEN|OPNEMEN|J)$/.test(v)||v.startsWith('Online')?GREEN:/^(NEE|NIET|N)$/.test(v)||v==='Niet online'?RED:null;
+    function sheet(name,cols){ const ws=wb.addWorksheet(name,{views:[{state:'frozen',ySplit:1}]}); ws.columns=cols.map(c=>({header:c[0],key:c[0]+Math.random(),width:c[1]})); ws.getRow(1).eachCell(c=>Object.assign(c,{style:head})); ws.getRow(1).height=32; ws.autoFilter={from:{row:1,column:1},to:{row:1,column:cols.length}}; return ws; }
+    async function addRow(ws,vals,images,colorCols){ const row=ws.addRow(vals); const r=row.number; row.height=images&&images.some(x=>x[1]!=null)?48:18; row.alignment={vertical:'middle'};
+      (colorCols||[]).forEach(ci=>{ const cell=row.getCell(ci); const f=fillFor(cell.value); if(f) cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:f}}; });
+      for(const [col,id] of (images||[])) if(id!=null) ws.addImage(id,{tl:{col:col-1+0.08,row:r-1+0.08},ext:{width:58,height:58},editAs:'oneCell'});
+      return row; }
+    const JN=x=>x==null?'':x?'J':'N';
+    const keuze=(m,r)=>r&&r.s==='wel'?(anyIn(m)?'HOUDEN':'OPNEMEN'):r&&r.s==='niet'?'NIET':'';
+    const pn=ps.map(p=>p.naam);
+    const w0=sheet('Info',[['Onderdeel',30],['Waarde',60]]);
+    for(const r of [['Leverancier',sup.name],['Data geïmporteerd op (momentopname)',dstr()],['Bronbestand',DATA.bron||''],['AFAS-status en prijzen','stand van '+dstr()+'; kan inmiddels gewijzigd zijn'],['Excel gemaakt op',new Date().toLocaleString('nl-NL')],['Aantal series',M.length],['Aantal artikelen',M.reduce((a,m)=>a+m.v.length,0)]]) await addRow(w0,r);
+    // 1 Series
+    note.textContent='Tabblad Series…';
+    const w1=sheet('Series',[['Foto',11],['Leverancier',11],['Serie',18],['Productgroep',20],['Artikelen',11],['In AFAS',9],...pn.map(n=>[n,13]),['Aantal houden/opnemen',12],['Aantal niet',10]]);
+    for(const m of M){ const v0=m.v.find(v=>img(v.img))||m.v[0]; const vals=ps.map(p=>keuze(m,p.c[m.id])); const id=img(v0.img)?await addImg('i'+v0.img,toJpeg(img(v0.img),160)):null;
+      await addRow(w1,['',sup.name,m.fam,m.cat,m.v.length,m.v.filter(v=>v.inA).length,...vals,vals.filter(x=>x==='HOUDEN'||x==='OPNEMEN').length,vals.filter(x=>x==='NIET').length],[[1,id]],pn.map((_,i)=>7+i)); }
+    // 2 Artikelen
+    note.textContent='Tabblad Artikelen…';
+    const pcols=prState==='ok'?[['Bruto Blom 0/COM',12],['Netto Blom 0/COM',11],['Verreken Blom 0/COM',11],['Verkoop Blom 0/COM',11],['Bruto Blom 1',11],['Netto Blom 1',11],['Verreken Blom 1',11],['Verkoop Blom 1',11],['Bruto zonder stofgroep',12],['Netto zonder stofgroep',11],['Verreken zonder stofgroep',11],['Verkoop zonder stofgroep',11],...(careOn()?[['Blom Care Blom 0/COM',12],['Blom Care Blom 1',12]]:[]),['Fout in prijslijst (Excel)',40]]:[];
+    const base=[['Foto',11],['Serie',16],['Nummer leverancier',16],['Soort',12],['Product',40],['Afwerking',12],['Naam Blom',16],['AFAS nr',14],['In AFAS ('+dstr()+')',11],['Op beeldbank (AFAS '+dstr()+')',13],['Klanten (AFAS '+dstr()+')',12],...LABELS.map(l=>[l[0]+' (AFAS '+dstr()+')',13]),['Breedte',8],['Diepte',8],['Hoogte',8],['Prijslijst',14],...pcols];
+    const pc=[]; ps.forEach(p=>{pc.push([p.naam+': keuze',13],[p.naam+': online',16],[p.naam+': labels',22]);});
+    const w2=sheet('Artikelen',[...base,...pc,['Productpagina',36],['Naam Blom (voorstel)',26],['Toelichting naamvoorstel',70]]);
+    const nowCols=[9,10,11,12,13,14,15,16], perStart=base.length+1;
+    for(const m of M) for(const v of m.v){
+      const id=img(v.img)?await addImg('i'+v.img,toJpeg(img(v.img),160)):null;
+      const pr=[]; if(prState==='ok'){ for(const n of [0,1,'-']){ const sc=n==='-'?null:supCat(pk(v),n); const p=n==='-'?calc(pk(v),''):sc!=null?calc(pk(v),sc):null; pr.push(p?p.b:'',p?p.net:'',p?p.ver:'',p&&p.vk!=null?p.vk:''); } if(careOn()) for(const n of [0,1]){ const sc=supCat(pk(v),n), p=sc!=null?calc(pk(v),sc):null; pr.push(p&&p.care!=null?p.care:''); } pr.push([...new Set(priceRows(pk(v)).map(r=>r[6]).filter(Boolean))].join(' ')); }
+      const per=[]; ps.forEach(p=>{ const r=p.c[m.id]; const s=vStatus(r,v); per.push(s==='wel'?(v.inA?'HOUDEN':'OPNEMEN'):s==='niet'?'NIET':'', s==='wel'&&effOf(r,v.id).oc?OCL[effOf(r,v.id).oc]+(effOf(r,v.id).g!=='A'?' (groep '+effOf(r,v.id).g+')':''):'', s==='wel'&&effOf(r,v.id).lab?LABELS.filter((_,i)=>effOf(r,v.id).lab[i]).map(l=>l[0]).join(', ')||'geen':''); });
+      const row=await addRow(w2,['',m.fam,v.code,v.type,m.p[v.p].l,cap(v.fin),v.blom,v.afas,v.inA?'J':'N',JN(v.online),JN(v.klant),...LABELS.map((_,i)=>v.lab?JN(v.lab[i]):''),v.dim[0]??'',v.dim[2]??'',v.dim[6]??'',v.bron,...pr,...per,v.url?{text:'Link',hyperlink:v.url}:'',v.inA?'':(v.nv||''),v.inA?'':((v.nvw||'')+(v.nvc?' (controleren)':''))],[[1,id]],[...nowCols,...ps.flatMap((_,i)=>[perStart+i*3,perStart+i*3+1])]);
+      if(pcols.length){ const nc=careOn()?14:12; for(let i=0;i<nc;i++) row.getCell(base.length-(nc+1)+1+i).numFmt='€ #,##0.00'; }
+    }
+    // 3 Keuzes per persoon
+    note.textContent='Tabblad Keuzes per persoon…';
+    const w3=sheet('Keuzes per persoon',[['Naam',18],['Serie',16],['Keuze',11],['Artikelen ja',30],['Artikelen nee',30],['Online collectie',20],['Labels',34],['Afwijkende groepen',50],['Tijdstip',18]]);
+    for(const p of ps) for(const m of M){ const r=p.c[m.id]; if(r&&r.s){ const ja=r.s==='wel'&&r.v?m.v.filter(v=>r.v[v.id]).map(v=>v.code).join(', '):'', nee=r.s==='wel'&&r.v?m.v.filter(v=>r.v[v.id]===0).map(v=>v.code).join(', '):'';
+      await addRow(w3,[p.naam,m.fam,keuze(m,r),ja,nee,r.oc?OCL[r.oc]:'',r.lab?LABELS.filter((_,i)=>r.lab[i]).map(l=>l[0]).join(', '):'',(r.s==='wel'&&r.g||[]).map((g,i)=>'Groep '+GL(i)+(g.n?' '+g.n:'')+' ('+g.ids.join(', ')+'): '+(OCL[g.oc]||'?')+'; '+(LABELS.filter((_,j)=>g.lab[j]).map(l=>l[0]).join(', ')||'geen labels')).join(' | '),r.t?new Date(r.t).toLocaleString('nl-NL'):''],null,[3,6]); } }
+    // 4 Team
+    const w4=sheet('Team',[['Naam',22],['Gehad',8],['Houden/opnemen',14],['Niet',8],['Nog te doen',12],['Laatst actief',20]]);
+    for(const p of ps){ const c=counts(p.c,M); await addRow(w4,[p.naam,c.w+c.n,c.w,c.n,M.length-c.w-c.n,p.laatst?new Date(p.laatst).toLocaleString('nl-NL'):'']); }
+    note.textContent='Excel maken…';
+    const buf=await wb.xlsx.writeBuffer();
+    let dl=null; try{dl=await claude.use('downloads')}catch(e){}
+    if(!dl){ note.textContent='Downloaden lukte niet. Herlaad de pagina en probeer het opnieuw.'; return; }
+    note.textContent='';
+    await dl.save({filename:'Blom collectiekeuze '+sup.name+' (data '+(sup.date||'')+') export '+new Date().toISOString().slice(0,10)+'.xlsx',data:new Blob([buf])});
+    toast('Excel van '+sup.name+' opgeslagen');
+  }catch(e){ if(!(e&&e.code==='declined')) note.textContent='Excel maken lukte niet ('+(e&&(e.code||e.message)||'fout')+').'; }
+  finally{ frUse=true; btn.disabled=false; }
+};
+
+/* ---------------- menu, naam, uitleg ---------------- */
+$('menuBtn').onclick=()=>{ $('mInfo').textContent=(me?'Ingelogd als '+me.name+'. ':'')+(canShare===false?'Keuzes worden alleen op dit apparaat bewaard.':'Keuzes worden gedeeld met het team.'); $('menu').hidden=false; };
+$('mClose').onclick=()=>$('menu').hidden=true;
+$('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hidden=true; go(b.dataset.go); });
+$('mName').onclick=()=>{ $('menu').hidden=true; askName(); };
+$('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
+$('helpClose').onclick=()=>$('helpModal').hidden=true;
+let afterName=null;
+const VASTE_GEBRUIKERS=['Jan','Johan','Test'];
+function askName(cb){ afterName=cb||null; $('nameInput').value='';
+  // vaste gebruikers; een andere gebruiker via +
+  const namen=[...VASTE_GEBRUIKERS]; $('nameNew').hidden=true;
+  $('namePick').innerHTML=namen.map(n=>'<button type="button" class="'+(me&&me.name.toLowerCase()===n.toLowerCase()?'on':'')+'" data-naam="'+esc(n)+'">'+esc(n)+'</button>').join('')+'<button type="button" class="nplus" id="namePlus" aria-label="Andere gebruiker toevoegen">+</button>';
+  $('namePlus').onclick=()=>{ $('nameNew').hidden=false; $('nameInput').focus(); };
+  $('namePick').querySelectorAll('[data-naam]').forEach(b=>b.onclick=()=>{ $('nameInput').value=b.dataset.naam; $('nameForm').requestSubmit(); });
+  $('nameModal').hidden=false; }
+$('nameForm').addEventListener('submit',e=>{
+  e.preventDefault(); const n=$('nameInput').value.trim().replace(/\s+/g,' '); if(n.length<2) return;
+  const anon=me?null:D; me={key:keyOf(n),name:n}; ls.set('blom-ck-naam',n);
+  if(SUP){
+    const loc=loadLocal(); D=Object.assign({},loc); if(anon) for(const k in anon) if(!D[k]) D[k]=anon[k];
+    const mine=TEAM[docId()]; if(mine) for(const k in mine.c||{}){ if(!D[k]||(mine.c[k].t||'')>(D[k].t||'')) D[k]=mine.c[k]; }
+    exists=mine?true:null; pending={}; for(const k in D) if(!mine||!mine.c||!mine.c[k]||mine.c[k].t!==D[k].t) pending[k]=D[k];
+    saveLocal(); flush();
+  }
+  hist=[]; $('nameModal').hidden=true; render(); if(afterName){const f=afterName; afterName=null; f();}
+});
+$('who').onclick=()=>askName();
+
+/* ---------------- boot ---------------- */
+window.__blomBoot=async function boot(){
+  const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n};
+  try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }
+  await loadSup(ls.get('blom-ck-sup')||SUPS[0].id);
+  chunk(0);
+  show('home');
+  initDb();
+  if(!me) askName();
+  window.addEventListener('resize',()=>{ const fo=$('sSwipe').querySelector('.fold'); if(fo) fo.style.minHeight=$('main').clientHeight+'px'; });
+};
+})();
+</script>
+
+</body></html>

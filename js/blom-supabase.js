@@ -1,0 +1,223 @@
+/* Blom Collectiekeuze: koppeling met Supabase.
+   Vervangt de Claude-functies die de app gebruikte:
+   - claude.use('db')        -> tabel 'keuzes' (lezen, opslaan, live bijwerken) en prijzen uit de privé opslag
+   - claude.use('downloads') -> gewone browserdownload
+   - fetch('data/...')       -> dfetch('data/...') uit de privé opslag
+   en zorgt voor inloggen met een e-mailcode, alleen voor @blominterieurs.nl. */
+(function () {
+  const CFG = window.BLOM_CONFIG;
+  const DOMEIN = (CFG.domein || '@blominterieurs.nl').toLowerCase();
+  const sb = window.supabase.createClient(CFG.url, CFG.anonKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  window.sb = sb;
+  const isBlom = u => !!(u && u.email && u.email.toLowerCase().endsWith(DOMEIN));
+
+  /* ---------- bestanden uit de privé opslag ---------- */
+  async function download(pad) {
+    const { data, error } = await sb.storage.from(CFG.bucket).download(pad);
+    if (error) throw norm(error);
+    return data;
+  }
+  window.dfetch = async function (pad) {
+    const blob = await download(String(pad).replace(/^data\//, ''));
+    return new Response(blob, { headers: { 'content-type': 'application/json' } });
+  };
+
+  function norm(e) {
+    const msg = (e && (e.message || e.error)) || 'onbekende fout';
+    const err = new Error(msg);
+    const st = e && (e.statusCode || e.status);
+    if ((e && e.code === '42501') || /not_granted|permission|row-level|JWT/i.test(msg)) err.code = 'not_granted';
+    else if (String(st) === '404' || String(st) === '400' || /not found/i.test(msg)) err.code = 'not_found';
+    else err.code = (e && e.code) || 'unknown';
+    return err;
+  }
+  const snap = (id, data) => ({ id, exists: !!data, data: () => (data ? data : undefined) });
+  const rij = r => ({ naam: r.naam, sup: r.sup, c: r.c || {}, laatst: r.laatst });
+
+  /* ---------- database: zelfde vorm als de Claude-database ---------- */
+  const keuzes = {
+    doc(id) {
+      return {
+        async get() {
+          const { data, error } = await sb.from('keuzes').select('naam,sup,c,laatst').eq('id', id).maybeSingle();
+          if (error) throw norm(error);
+          return snap(id, data ? rij(data) : null);
+        },
+        async set(v) { return zet(id, v, true); },
+        async update(v) { return zet(id, v, false); }
+      };
+    },
+    where(veld, op, waarde) {
+      return {
+        onSnapshot(cb, onErr) {
+          let gestopt = false, t = null;
+          const laad = async () => {
+            const { data, error } = await sb.from('keuzes').select('id,naam,sup,c,laatst').eq(veld, waarde);
+            if (gestopt) return;
+            if (error) { if (onErr) onErr(norm(error)); return; }
+            cb({ docs: data.map(r => snap(r.id, rij(r))) });
+          };
+          const kanaal = sb.channel('keuzes-' + waarde + '-' + Math.random().toString(36).slice(2))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'keuzes', filter: veld + '=eq.' + waarde },
+              () => { clearTimeout(t); t = setTimeout(laad, 250); })
+            .subscribe();
+          const poll = setInterval(() => { if (document.visibilityState === 'visible') laad(); }, 30000);
+          laad();
+          return () => { gestopt = true; clearTimeout(t); clearInterval(poll); sb.removeChannel(kanaal); };
+        }
+      };
+    }
+  };
+  async function zet(id, v, vervang) {
+    const { error } = await sb.rpc('keuze_zet', {
+      p_id: id, p_sup: v.sup, p_naam: v.naam, p_c: v.c || {}, p_vervang: vervang
+    });
+    if (error) throw norm(error);
+  }
+  const DB = {
+    collection(naam) {
+      if (naam !== 'keuzes') throw new Error('Onbekende collectie ' + naam);
+      return keuzes;
+    },
+    doc(pad) {
+      const [col, id] = String(pad).split('/');
+      if (col !== 'prijzen') throw new Error('Onbekend document ' + pad);
+      return {
+        async get() {
+          try {
+            const blob = await download('prijzen/' + id + '.json');
+            return snap(id, JSON.parse(await blob.text()));
+          } catch (e) {
+            if (e.code === 'not_found') return snap(id, null);
+            throw e;
+          }
+        }
+      };
+    }
+  };
+  const DL = {
+    async save({ filename, data }) {
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+  };
+  window.claude = { use: async k => (k === 'db' ? DB : k === 'downloads' ? DL : null) };
+
+  /* ---------- lettertypes uit de privé opslag ---------- */
+  async function laadFonts() {
+    const fonts = [['fonts/roc-medium.ttf', '500'], ['fonts/roc-light.ttf', '200']];
+    for (const [pad, gewicht] of fonts) {
+      try {
+        const buf = await (await download(pad)).arrayBuffer();
+        const f = new FontFace('Roc Grotesk', buf, { weight: gewicht });
+        await f.load(); document.fonts.add(f);
+      } catch (e) { /* valt terug op Verdana */ }
+    }
+  }
+
+  /* ---------- inloggen ---------- */
+  const css = `
+  .blogin{position:fixed;inset:0;z-index:200;background:#fff;display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--body,Verdana,sans-serif);color:var(--ink,#3A3A3A)}
+  .blogin form{width:100%;max-width:380px;display:grid;gap:12px}
+  .blogin h1{font-family:var(--display,Verdana,sans-serif);font-weight:500;font-size:30px;line-height:1.05;margin:0}
+  .blogin p{margin:0;font-size:13px;line-height:1.45;color:var(--g400,#616161)}
+  .blogin input{height:46px;border:1px solid var(--ink,#3A3A3A);border-radius:0;padding:0 12px;font:inherit;font-size:16px;color:inherit;background:#fff}
+  .blogin button{height:46px;border:0;border-radius:0;background:var(--ink,#3A3A3A);color:#fff;font-family:var(--display,Verdana,sans-serif);font-weight:500;font-size:15px;cursor:pointer}
+  .blogin button.link{background:none;color:var(--ink,#3A3A3A);height:auto;font-family:inherit;font-weight:400;font-size:12.5px;text-decoration:underline;justify-self:start;padding:0}
+  .blogin button:disabled{opacity:.5;cursor:default}
+  .blogin .fout{color:#B3261E}
+  .blogin .eye{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:var(--g400,#616161)}
+  .buit{margin:8px 0 0;font-size:11.5px;color:var(--g400,#616161)}
+  .buit button{border:0;background:none;padding:0;font:inherit;text-decoration:underline;color:var(--ink,#3A3A3A);cursor:pointer}`;
+  let scherm = null, email = '', gestart = false;
+
+  function toonLogin(melding) {
+    if (!scherm) {
+      const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+      scherm = document.createElement('div'); scherm.className = 'blogin';
+      document.body.appendChild(scherm);
+    }
+    scherm.hidden = false;
+    stapMail(melding);
+  }
+  function stapMail(melding) {
+    scherm.innerHTML = `<form novalidate>
+      <span class="eye">Blom Collectiekeuze</span>
+      <h1>Inloggen</h1>
+      <p>Vul je Blom e-mailadres in. Je krijgt een mail met een inlogcode.</p>
+      <input type="email" autocomplete="email" inputmode="email" placeholder="naam${DOMEIN}" required>
+      <button type="submit">Stuur inlogcode</button>
+      <p class="fout" ${melding ? '' : 'hidden'}>${melding || ''}</p></form>`;
+    const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button'), fout = f.querySelector('.fout');
+    inp.value = email; inp.focus();
+    f.onsubmit = async e => {
+      e.preventDefault();
+      email = inp.value.trim().toLowerCase();
+      if (!email.endsWith(DOMEIN)) { fout.textContent = 'Alleen adressen eindigend op ' + DOMEIN + ' hebben toegang.'; fout.hidden = false; return; }
+      knop.disabled = true; knop.textContent = 'Versturen…';
+      const terug = location.origin + location.pathname;
+      const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
+      if (error) { knop.disabled = false; knop.textContent = 'Stuur inlogcode'; fout.textContent = /rate|limit/i.test(error.message) ? 'Er zijn te veel mails verstuurd. Probeer het over een paar minuten opnieuw.' : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
+      stapCode();
+    };
+  }
+  function stapCode() {
+    scherm.innerHTML = `<form novalidate>
+      <span class="eye">Blom Collectiekeuze</span>
+      <h1>Check je mail</h1>
+      <p>We hebben een mail gestuurd naar <b>${email}</b>. Typ de code uit die mail, of klik op de link in de mail.</p>
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Inlogcode" maxlength="10" required>
+      <button type="submit">Inloggen</button>
+      <p class="fout" hidden></p>
+      <button type="button" class="link">Ander e-mailadres of nieuwe code</button></form>`;
+    const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
+    inp.focus();
+    f.querySelector('.link').onclick = () => stapMail();
+    f.onsubmit = async e => {
+      e.preventDefault();
+      const code = inp.value.replace(/\s/g, '');
+      if (code.length < 6) return;
+      knop.disabled = true; knop.textContent = 'Controleren…';
+      const { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' });
+      if (error) { knop.disabled = false; knop.textContent = 'Inloggen'; fout.textContent = 'Deze code klopt niet of is verlopen.'; fout.hidden = false; }
+    };
+  }
+
+  function uitlogRegel(user) {
+    const form = document.getElementById('nameForm');
+    if (!form || form.querySelector('.buit')) return;
+    const p = document.createElement('p'); p.className = 'buit';
+    p.innerHTML = 'Ingelogd als ' + user.email + ' · <button type="button">Uitloggen</button>';
+    p.querySelector('button').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    form.appendChild(p);
+  }
+
+  function ga(user) {
+    if (gestart) return;
+    gestart = true;
+    if (scherm) scherm.hidden = true;
+    window.BLOM_USER = user;
+    uitlogRegel(user);
+    laadFonts();
+    if (typeof window.__blomBoot === 'function') window.__blomBoot();
+  }
+
+  async function start() {
+    if (/JOUW-PROJECT|JOUW-ANON/.test(CFG.url + CFG.anonKey)) {
+      toonLogin('Deze site is nog niet gekoppeld aan Supabase (js/config.js).'); return;
+    }
+    sb.auth.onAuthStateChange((ev, s) => {
+      if (s && isBlom(s.user)) ga(s.user);
+      else if (s && !isBlom(s.user)) { sb.auth.signOut(); toonLogin('Dit account heeft geen toegang. Gebruik je ' + DOMEIN + ' adres.'); }
+    });
+    const { data } = await sb.auth.getSession();
+    const s = data && data.session;
+    if (s && isBlom(s.user)) ga(s.user);
+    else { if (s) await sb.auth.signOut(); toonLogin(); }
+  }
+  document.addEventListener('DOMContentLoaded', start);
+})();
