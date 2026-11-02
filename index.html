@@ -1040,7 +1040,7 @@ function pricesHTML(v){
 function belowHTML(m,v){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
-  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
   let ptab='';
   if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
     const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
