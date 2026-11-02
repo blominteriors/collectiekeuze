@@ -786,7 +786,7 @@ async function loadPrices(){
 function uParts(u){ if(typeof u==='string'){ const t=u.split(' · '); const br=t.filter(x=>/brandvertragend/i.test(x)); const rest=t.filter(x=>!/brandvertragend/i.test(x)); u=[rest[0]||'',rest.slice(1).join(' · '),br[0]||'']; } u=u||['','','']; const out=[]; if(u[0]) out.push([/\d{3}\s*[xX]|Ø|^\d+X\d+/.test(u[0])?'Maat':'Frame',u[0]]); if(u[1]) out.push(['Afwerking',u[1]]); if(u[2]) out.push(['Stof',u[2].toLowerCase()]); return out; }
 function uText(u){ const p=uParts(u); return p.length?p.map(([a,b])=>a+': '+b).join(' · '):'standaard'; }
 // COM-koppeling per leverancier: alleen 'Eigen stof / COM' noemen als bevestigd (Brees: stofgroep A = COM nog te bevestigen door JE of WH)
-const COM_OK={piaval:true,brees:true};   // Brees stofgroep A = COM: bevestigd door de gebruiker (28-10-2026)
+const COM_OK={piaval:true,brees:true,blues:true};   // Brees stofgroep A = COM: bevestigd door de gebruiker (28-10-2026); Blues: kolom C.O.M. in de prijslijst zelf
 const comOk=()=>!!(SUP&&COM_OK[SUP.id]);
 function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(c)+'</span></span>'; }
 function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(priceRows(code).map(r=>r[0]))].filter(c=>PR.bc[c]===n); return cs.find(c=>!/OUTDOOR/.test(c))||cs[0]||null; }
