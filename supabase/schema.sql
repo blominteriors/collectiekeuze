@@ -5,6 +5,7 @@
 create or replace function public.is_blom()
 returns boolean
 language sql stable
+set search_path = ''
 as $$
   select coalesce(lower(auth.jwt() ->> 'email') like '%@blominterieurs.nl', false)
 $$;
