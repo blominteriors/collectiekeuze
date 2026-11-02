@@ -50,8 +50,8 @@ main{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .supcard .nm{font-family:var(--display);font-weight:500;font-size:22px}
 .supcard .mt{font-size:12px;color:var(--g400)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cta{height:46px;border:0;background:var(--ink);color:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
-.ghost{height:46px;border:1.5px solid var(--ink);background:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
+.cta{min-height:46px;line-height:1.15;border:0;background:var(--ink);color:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
+.ghost{min-height:46px;line-height:1.15;border:1.5px solid var(--ink);background:#fff;font-family:var(--display);font-weight:500;font-size:15px;padding:0 16px}
 .cta:disabled{background:var(--grijs);color:var(--g400);border:1px dashed var(--g300);cursor:not-allowed}
 .later{border:1px dashed var(--g300);padding:12px 14px;font-size:13px;color:var(--g400)}
 
@@ -491,7 +491,7 @@ details.box .tablewrap{border:0}
 .dgi em{position:absolute;top:3px;right:3px}
 .dgi.yes{background:var(--groen)}.dgi.no{opacity:.55;border-color:var(--g300)}
 .dbtns2{width:100%;display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px;margin-top:6px}
-.dbtns2 button{height:50px}
+.dbtns2 button{min-height:50px;padding:6px 10px;font-size:clamp(12.5px,3.3vw,15px);text-wrap:balance}
 .irow{gap:6px!important;padding:10px 0!important}
 .irh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .irh b{font-size:13.5px}
@@ -657,7 +657,7 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 </div>
 
 <div class="sheet" id="form" hidden>
-  <div class="shead"><button type="button" id="fCancel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#3A3A3A" stroke-width="1.5" aria-hidden="true"><path d="M9 2L4 7l5 5"/></svg>Annuleren</button><span style="font-size:11px">Alle vragen zijn verplicht</span></div>
+  <div class="shead"><button type="button" id="fCancel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#3A3A3A" stroke-width="1.5" aria-hidden="true"><path d="M9 2L4 7l5 5"/></svg>Annuleren</button></div>
   <div class="sbody" id="formBody"></div>
   <div class="sfoot"><div class="fprog"><span id="fCount"></span><span id="fOpen" style="color:var(--g400)"></span></div><div class="fbar"><i id="fBar"></i></div><button class="cta" style="width:100%;height:50px" id="fSave" type="button" disabled>Opslaan en volgende</button></div>
 </div>
