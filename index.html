@@ -1246,7 +1246,7 @@ function deckCard(k,top){
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
-    +(()=>{ const r=pminRow(m,k); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf, excl. btw</small></div>':''; })()
+    +(()=>{ const r=pminRow(m,k); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf'+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
     +(top?fins:'')+'</div></div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
