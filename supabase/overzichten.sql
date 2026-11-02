@@ -1,0 +1,5 @@
+-- Leesbare overzichten van de keuzes, voor gebruik buiten de app (Supabase Table Editor, export, rapportages).
+-- security_invoker: dezelfde afscherming als de tabel keuzes (alleen @blominterieurs.nl).
+-- Zie migratie keuzes_overzichten in Supabase voor de volledige definitie:
+--   public.keuzes_per_serie       een rij per beoordelaar en serie: keuze, online, labels, aantallen uitvoeringen
+--   public.keuzes_per_uitvoering  een rij per gehouden serie en uitvoering, met product, AFAS nr en Blom naam uit artikelen
