@@ -2,44 +2,32 @@
 
 Swipe-app waarmee het Blom-team per leverancier beslist welke series in de collectie blijven of erbij komen.
 
+## Adressen
+
+| Adres | Tak | Supabase project |
+|---|---|---|
+| https://blominteriors.github.io/collectiekeuze/ | `main` (alleen final versies) | Database V1 (live) |
+| https://blominteriors.github.io/collectiekeuze/test/ | `ontwikkeling` (tussenversies) | Test project |
+
+De actie `.github/workflows/publiceren.yml` publiceert beide bij elke push en schrijft per adres `js/config.js`.
+Het adres bepaalt dus de database, niet de app-code. Op het testadres krijgt de lokale opslag van de browser
+het voorvoegsel `test:`, zodat test en live ook in de browser gescheiden blijven.
+
+## Werkwijze
+
+1. Wijzigingen gaan naar de tak `ontwikkeling` en zijn direct te zien op het testadres.
+2. Databasewijzigingen komen als genummerd bestand in `supabase/migrations/` en worden eerst alleen op het testproject uitgevoerd.
+3. Bij **final**: nieuwe bestanden uit `supabase/migrations/` op Database V1 uitvoeren, daarna `ontwikkeling` samenvoegen in `main`.
+   Zo past de live site altijd bij de live database.
+
 ## Opbouw
 
-| Onderdeel | Waar | Inhoud |
-|---|---|---|
-| App (code) | Deze repository, gepubliceerd via GitHub Pages | `index.html`, `js/` |
-| Inloggen | Supabase Auth | E-mailcode, alleen `@blominterieurs.nl` |
-| Keuzes | Supabase tabel `keuzes` | Keuzes per beoordelaar en leverancier, live gedeeld |
-| Modellen, foto's, prijzen, lettertypes | Supabase opslag, privé bucket `collectie` | Alleen leesbaar na inloggen |
+| Onderdeel | Waar |
+|---|---|
+| App (code) | Deze repository, via GitHub Pages |
+| Inloggen | Supabase Auth, e-mail, alleen `@blominterieurs.nl` |
+| Keuzes | Supabase tabel `keuzes`, overzichten `keuzes_per_serie` en `keuzes_per_uitvoering` |
+| Modellen, foto's, prijzen, lettertypes | Supabase opslag, privé bucket `collectie`, gevuld vanuit `blominteriors/collectiekeuze-data` |
+| Artikellijst | Supabase tabel `artikelen`, gevuld vanuit `blominteriors/collectiekeuze-data` |
 
-Deze repository bevat bewust **geen** prijzen, artikeldata of lettertypebestanden: GitHub Pages is openbaar.
-De `anon key` in `js/config.js` mag openbaar zijn; de beveiliging zit in de regels in `supabase/schema.sql`.
-
-## Bestanden in de bucket `collectie`
-
-```
-suppliers.json                 lijst met leveranciers op de startpagina
-<leverancier>.json             series en artikelen
-<leverancier>-img-<n>.json     foto's (70 per bestand)
-<leverancier>-sw.json          extra gegevens per leverancier
-prijzen/<leverancier>.json     prijzen (alleen voor ingelogde Blom-gebruikers)
-fonts/roc-medium.ttf, fonts/roc-light.ttf
-```
-
-## Nieuwe leverancier of nieuwe data
-
-1. Upload de bestanden in het Supabase dashboard via Storage, bucket `collectie` (bestaand bestand overschrijven mag).
-2. Voeg de leverancier toe aan `suppliers.json` en upload die opnieuw.
-3. De app hoeft niet opnieuw gepubliceerd te worden.
-
-## Code wijzigen
-
-Elke wijziging op de branch `main` wordt automatisch door GitHub Pages gepubliceerd. De geschiedenis van de app staat in de commits.
-
-## Eerste inrichting Supabase
-
-1. SQL editor: `supabase/schema.sql` uitvoeren, daarna `supabase/keuzes-overzetten.sql`.
-2. Storage: de inhoud van de map `collectie` uploaden naar bucket `collectie`.
-3. Authentication, URL Configuration: Site URL en Redirect URL op het GitHub Pages adres zetten.
-4. Authentication, Emails: in de template Magic Link `{{ .Token }}` opnemen, zodat de mail een code bevat.
-5. Voor meer dan een paar inlogmails per uur: eigen SMTP instellen (Authentication, SMTP Settings).
-6. `js/config.js`: project-URL en anon key invullen.
+Deze repository is openbaar en bevat bewust geen prijzen, artikeldata of lettertypebestanden.

@@ -7,6 +7,30 @@
 (function () {
   const CFG = window.BLOM_CONFIG;
   const DOMEIN = (CFG.domein || '@blominterieurs.nl').toLowerCase();
+  const OMGEVING = CFG.omgeving || 'live';
+
+  /* Test en live staan op hetzelfde webadres en delen dus de lokale opslag van de browser.
+     Op de testomgeving krijgt elke sleutel een eigen voorvoegsel, zodat lokaal bewaarde
+     keuzes van test nooit in de live versie terechtkomen (en andersom). */
+  if (OMGEVING !== 'live') {
+    try {
+      const pre = OMGEVING + ':';
+      const P = Storage.prototype, get = P.getItem, set = P.setItem, del = P.removeItem;
+      const eigen = s => s === window.localStorage || s === window.sessionStorage;
+      P.getItem = function (k) { return get.call(this, eigen(this) ? pre + k : k); };
+      P.setItem = function (k, v) { return set.call(this, eigen(this) ? pre + k : k, v); };
+      P.removeItem = function (k) { return del.call(this, eigen(this) ? pre + k : k); };
+    } catch (e) { /* zonder lokale opslag werkt de app ook */ }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.title = 'TEST · ' + document.title;
+      const tag = document.createElement('div');
+      tag.textContent = 'Testomgeving · keuzes tellen niet mee voor live';
+      tag.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:150;background:#3A3A3A;color:#FFFFFF;' +
+        'font:500 11px/1 Verdana,sans-serif;letter-spacing:.06em;text-align:center;' +
+        'padding:4px 16px calc(4px + env(safe-area-inset-bottom,0px));pointer-events:none';
+      document.body.appendChild(tag);
+    });
+  }
   const sb = window.supabase.createClient(CFG.url, CFG.anonKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });

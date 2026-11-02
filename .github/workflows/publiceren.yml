@@ -1,0 +1,82 @@
+name: Publiceren
+
+# main         -> https://blominteriors.github.io/collectiekeuze/       (live, Database V1)
+# ontwikkeling -> https://blominteriors.github.io/collectiekeuze/test/  (test, Test project)
+# Welke database een adres gebruikt, legt deze actie vast; de app-code zelf bepaalt dat niet.
+
+on:
+  push:
+    branches: [main, ontwikkeling]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bouwen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Live versie (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: live
+
+      - name: Testversie (ontwikkeling)
+        id: test
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: ontwikkeling
+          path: test
+
+      - name: Site samenstellen
+        run: |
+          set -e
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'supabase' live/ _site/
+          cat > _site/js/config.js <<'EOF'
+          window.BLOM_CONFIG = {
+            omgeving: 'live',
+            url: 'https://vvvsvgtmslsjegbxppjf.supabase.co',
+            anonKey: 'sb_publishable_NG__lC-SYFruk6q0KO3vsw_adHP5mLa',
+            domein: '@blominterieurs.nl',
+            bucket: 'collectie'
+          };
+          EOF
+          if [ -d test/js ]; then
+            mkdir -p _site/test
+            rsync -a --exclude '.git' --exclude '.github' --exclude 'supabase' test/ _site/test/
+            cat > _site/test/js/config.js <<'EOF'
+          window.BLOM_CONFIG = {
+            omgeving: 'test',
+            url: 'https://zfsehloyeskeatyvdrfr.supabase.co',
+            anonKey: 'sb_publishable_3Bo-AmVowuB9H8xSKYbLqQ_PcflnlQw',
+            domein: '@blominterieurs.nl',
+            bucket: 'collectie'
+          };
+          EOF
+          fi
+          touch _site/.nojekyll
+          echo "Live: $(git -C live log -1 --format='%h %s')"
+          [ -d test/.git ] && echo "Test: $(git -C test log -1 --format='%h %s')" || echo "Test: geen tak ontwikkeling"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publiceren:
+    needs: bouwen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
