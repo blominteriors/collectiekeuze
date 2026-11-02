@@ -1276,10 +1276,14 @@ function pkDims(v){ const d=v.dim||[]; const b=d[0],h=d[6],t=d[2]; const mm=x=>x
   const w=(String(v.code).match(/\s-?\s?(1\d\d|2\d\d|3\d\d)(?=\s|$|\s*\()/)||[])[1]; return w?'breedte '+w*10+'mm (alleen breedte in de prijslijst)':null; }
 function openPk(m,k,r){ PK={m,k,tab:r?'win':(PK.tab||'win'),vi:0,r:r||null,back:!!r}; renderPk(); $('pkaart').hidden=false; $('pkaart').scrollTop=0; }
 /* opzet: alle producten die jij toevoegt (nog niet in AFAS) en die online komen, als overzicht van de online collectie */
+// de serie die nu open staat (nog niet opgeslagen) telt mee met de keuzes zoals ze nu staan
+function liveOpen(m){ return !!(F&&F.m===m&&F.v&&F.vs&&!$('form').hidden); }
+function liveRec(m){ if(!liveOpen(m)) return null; const ids=m.v.filter(v=>F.v[v.id]===1).map(v=>v.id); if(!ids.length) return null;
+  return {s:'wel',live:true,v:Object.assign({},F.v),oc:null,lab:null,g:ids.map(id=>{ const e=effV(id)||{}; return {oc:e.oc,lab:(e.lab||[]).slice(),ids:[id]}; })}; }
 function opzetItems(){ const cards=new Map();
-  for(const m of M){ const r=D[m.id]; if(!r||r.s!=='wel') continue;
-    m.p.forEach((p,k)=>{ p.idx.forEach(i=>{ const v=m.v[i]; if(v.inA) return; const e=effOf(r,v.id); if(!e.oc||e.oc==='niet') return;
-      const key=m.id+'|'+(v.pkg||v.nv||v.id); if(!cards.has(key)) cards.set(key,{m,k,r,vs:[],on:[],oc:new Set(),lab:new Set()}); const c=cards.get(key);
+  for(const m of M){ const r=liveRec(m)||D[m.id]; if(!r||r.s!=='wel') continue;
+    m.p.forEach((p,k)=>{ p.idx.forEach(i=>{ const v=m.v[i]; if(v.inA&&!OPZA) return; const e=effOf(r,v.id); if(!e.oc||e.oc==='niet') return;
+      const key=m.id+'|'+(v.pkg||v.pkn||v.nv||v.blom||v.id); if(!cards.has(key)) cards.set(key,{m,k,r,vs:[],on:[],oc:new Set(),lab:new Set()}); const c=cards.get(key);
       c.vs.push(v); if(vStatus(r,v)==='wel'){ c.on.push(v); if(c.on.length===1) c.k=k; c.oc.add(e.oc); (e.lab||[]).forEach((x,j)=>{ if(x) c.lab.add(j); }); } }); }); }
   const all=[...cards.values()]; return {cards:all.filter(c=>c.on.length), alle:all}; }
 // wel/niet toevoegen vanuit de opzet of de productkaart: past alleen jouw keuze in de serie aan
@@ -1291,23 +1295,24 @@ function pkAddState(m,k){ const ids=pkVar(m,k).map(x=>x.id);
 // één keuze: Toevoegen of Niet toevoegen, de huidige stand is geselecteerd
 function addSeg(on,id){ const isP=id==='pkAdd', at=isP?'data-pkadd':'data-opzt="'+id.slice(3)+'" data-val';
   return '<div class="aseg" role="radiogroup" aria-label="In de collectie opnemen"><button type="button" role="radio" aria-checked="'+(on===true)+'" class="'+(on===true?'on yes':'')+'" '+at+'="1">'+OK(12)+' Toevoegen</button><button type="button" role="radio" aria-checked="'+(on===false)+'" class="'+(on===false?'on no':'')+'" '+at+'="0">'+NO(12)+' Niet toevoegen</button></div>'; }
-function setAdd(m,ids,val){ const r=D[m.id]; if(!r) return; const nr=JSON.parse(JSON.stringify(r)); nr.v=nr.v||{}; ids.forEach(id=>nr.v[id]=val?1:0); nr.t=new Date().toISOString(); record(m.id,nr); }
-let OPZF=-1;
+function setAdd(m,ids,val){ if(liveOpen(m)){ ids.forEach(id=>{ F.v[id]=val?1:0; if(F.dk&&F.dk.ex) F.dk.ex[id]=!val; }); try{ F.dk?renderDeck():renderForm(); }catch(_){} return; } const r=D[m.id]; if(!r) return; const nr=JSON.parse(JSON.stringify(r)); nr.v=nr.v||{}; ids.forEach(id=>nr.v[id]=val?1:0); nr.t=new Date().toISOString(); record(m.id,nr); }
+let OPZF=-1, OPZA=true;   // OPZA: ook de producten die al in AFAS staan en je houdt
 async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o.alle.map(c=>c.m))]);
   const all=o.alle, list=OPZF<0?all:all.filter(c=>c.lab.has(OPZF));
   const cnt=j=>o.cards.filter(c=>c.lab.has(j)).length;
-  const card=c=>{ const on=c.on.length>0, v=(on?c.on:c.vs).find(x=>img(x.img))||c.vs[0]; const n=v.pkn||v.nv||'[Blom naam]', i=all.indexOf(c);
-    return '<div class="pk-card'+(on?'':' pk-off')+'"><button type="button" class="ci" data-opz="'+i+'" aria-label="Productkaart '+esc(n)+' openen">'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'')+'</button><div class="cb"><b>'+esc(n)+'</b><small>'+(on?c.on.length+(c.on.length<c.vs.length?' van '+c.vs.length:'')+' nieuw':'0 van '+c.vs.length+' nieuw')+' · '+esc(c.m.fam)+'</small>'
+  const card=c=>{ const on=c.on.length>0, v=(on?c.on:c.vs).find(x=>img(x.img))||c.vs[0]; const n=v.pkn||v.nv||v.blom||'[Blom naam]', i=all.indexOf(c), nw=x=>x.filter(y=>!y.inA).length, af=x=>x.filter(y=>y.inA).length;
+    return '<div class="pk-card'+(on?'':' pk-off')+'"><button type="button" class="ci" data-opz="'+i+'" aria-label="Productkaart '+esc(n)+' openen">'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'')+'</button><div class="cb"><b>'+esc(n)+'</b><small>'+[nw(c.vs)?nw(c.on)+(nw(c.on)<nw(c.vs)?' van '+nw(c.vs):'')+' nieuw':'',af(c.vs)?af(c.on)+(af(c.on)<af(c.vs)?' van '+af(c.vs):'')+' in AFAS':''].filter(Boolean).join(' · ')+' · '+esc(c.m.fam)+'</small>'
       +(on?'':'<span class="opzn">Niet toegevoegd · open de kaart om aan te passen</span>')+'</div></div>'; };
-  $('pkaart').innerHTML='<div class="pk-bar"><small style="font-size:12.5px;color:#fff;font-family:var(--display);font-weight:500">Opzet online collectie · '+esc(SUP.name)+'</small><small>Nieuwe producten (nog niet in AFAS) uit series die je houdt of opneemt, met online collectie intern of klanten. Open een kaart om iets wel of niet toe te voegen.</small></div>'
+  $('pkaart').innerHTML='<div class="pk-bar"><small style="font-size:12.5px;color:#fff;font-family:var(--display);font-weight:500">Opzet online collectie · '+esc(SUP.name)+'</small><small>'+(OPZA?'Alle producten':'Nieuwe producten (nog niet in AFAS)')+' uit series die je houdt of opneemt, met online collectie intern of klanten, inclusief de serie die nu open staat. Open een kaart om iets wel of niet toe te voegen.</small></div>'
     +'<div class="pk-grid opz"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'
-    +'<div class="opzh" style="grid-column:1/-1"><span><b>'+o.cards.length+(o.cards.length===1?' productkaart':' productkaarten')+' toegevoegd</b> · '+o.cards.reduce((a,c)=>a+c.on.length,0)+' nieuwe artikelen'+(all.length>o.cards.length?' · '+(all.length-o.cards.length)+((all.length-o.cards.length)===1?' kaart':' kaarten')+' niet toegevoegd':'')+'</span>'
-    +'<div class="opzf"><span>Geschikt voor</span><button type="button" data-opzf="-1" class="'+(OPZF<0?'on':'')+'">Alles</button>'+LABELS.map((l,j)=>'<button type="button" data-opzf="'+j+'" class="'+(OPZF===j?'on':'')+'">'+l[0]+' <small>'+cnt(j)+'</small></button>').join('')+'</div></div>'
+    +'<div class="opzh" style="grid-column:1/-1"><span><b>'+o.cards.length+(o.cards.length===1?' productkaart':' productkaarten')+(OPZA?' online':' toegevoegd')+'</b> · '+o.cards.reduce((a,c)=>a+c.on.filter(x=>!x.inA).length,0)+' nieuwe artikelen'+(OPZA?' · '+o.cards.reduce((a,c)=>a+c.on.filter(x=>x.inA).length,0)+' uit AFAS':'')+(all.length>o.cards.length?' · '+(all.length-o.cards.length)+((all.length-o.cards.length)===1?' kaart':' kaarten')+' niet toegevoegd':'')+'</span>'
+    +'<div class="opzf"><span>Toon</span><button type="button" data-opza="1" class="'+(OPZA?'on':'')+'">Hele collectie</button><button type="button" data-opza="0" class="'+(OPZA?'':'on')+'">Alleen nieuw</button></div><div class="opzf"><span>Geschikt voor</span><button type="button" data-opzf="-1" class="'+(OPZF<0?'on':'')+'">Alles</button>'+LABELS.map((l,j)=>'<button type="button" data-opzf="'+j+'" class="'+(OPZF===j?'on':'')+'">'+l[0]+' <small>'+cnt(j)+'</small></button>').join('')+'</div></div>'
     +(list.length?list.map(card).join(''):'<p class="note" style="grid-column:1/-1">'+(all.length?'Geen producten met dit label.':'Je hebt nog geen nieuwe producten gekozen die online komen. Kies bij een serie Opnemen en zet de online collectie op intern of klanten.')+'</p>')+'</div>';
   $('pkaart').hidden=false;
   $('pkX').onclick=closePk; $('pkaart').onclick=e=>{ if(e.target===$('pkaart')) closePk(); };
   $('pkaart').querySelectorAll('[data-opzf]').forEach(b=>b.onclick=()=>{ OPZF=+b.dataset.opzf; openOpzet(); });
-  $('pkaart').querySelectorAll('[data-opz]').forEach(b=>b.onclick=()=>{ const c=all[+b.dataset.opz]; openPk(c.m,c.k,D[c.m.id]); });
+  $('pkaart').querySelectorAll('[data-opza]').forEach(b=>b.onclick=()=>{ OPZA=b.dataset.opza==='1'; openOpzet(); });
+  $('pkaart').querySelectorAll('[data-opz]').forEach(b=>b.onclick=()=>{ const c=all[+b.dataset.opz]; openPk(c.m,c.k,c.r); });
   $('pkaart').querySelectorAll('[data-opzt]').forEach(b=>b.onclick=()=>{ const c=all[+b.dataset.opzt]; const on=b.dataset.val!=='1'; if((c.on.length>0)===!on) return; setAdd(c.m,c.vs.map(v=>v.id),!on); toast(on?'Kaart '+(c.vs[0].pkn||c.vs[0].nv)+' niet toegevoegd':'Kaart '+(c.vs[0].pkn||c.vs[0].nv)+' weer toegevoegd'); const st=$('pkaart').scrollTop; openOpzet().then(()=>{ $('pkaart').scrollTop=st; }); });
 }
 
@@ -1529,7 +1534,7 @@ function renderDeckDone(){
   B.innerHTML='<div class="deck ddone"><div class="dbig">'+(yes.length?OK(34):NO(34))+'</div><h2>'+(yes.length?'Klaar!':'Niets gekozen')+'</h2>'
     +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+' producten '+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
     +'<div class="dgrid">'+ks.map(k=>{const p=m.p[k], a=m.v[p.idx[0]], on=p.idx.some(i=>F.v[m.v[i].id]===1); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(shortTitle(m,k))+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(p.idx.map(i=>m.v[i]).find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
-    +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (opgeslagen series)</button>'
+    +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (met deze serie)</button>'
     +'<div class="dbtns2"><button type="button" class="ghost" id="dAgain">Opnieuw swipen</button><button type="button" class="ghost" id="dList2">Overzicht</button><button type="button" class="cta" id="dNext"'+(yes.length?'':' disabled')+'>Opslaan en volgende serie →</button></div>'
     +'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>⌫</kbd> laatste terug</span></div></div>';
   B.querySelectorAll('[data-flip]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.flip, ids=m.p[k].idx.map(i=>m.v[i].id), on=ids.some(id=>F.v[id]===1); ids.forEach(id=>F.v[id]=on?0:(d.ex[id]?0:1)); renderDeckDone(); });
