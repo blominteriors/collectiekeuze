@@ -1,7 +1,7 @@
 name: Publiceren
 
-# main         -> https://blominteriors.github.io/collectiekeuze/       (live, Database V1)
-# ontwikkeling -> https://blominteriors.github.io/collectiekeuze/test/  (test, Test project)
+# main         -> https://blominteriors.github.io/collectiekeuze/       (Database V1, versie v1, bucket v1)
+# ontwikkeling -> https://blominteriors.github.io/collectiekeuze/test/  (Database V1, versie test, bucket test)
 # Welke database een adres gebruikt, legt deze actie vast; de app-code zelf bepaalt dat niet.
 
 on:
@@ -47,7 +47,8 @@ jobs:
             url: 'https://vvvsvgtmslsjegbxppjf.supabase.co',
             anonKey: 'sb_publishable_NG__lC-SYFruk6q0KO3vsw_adHP5mLa',
             domein: '@blominterieurs.nl',
-            bucket: 'collectie'
+            versie: 'v1',
+            bucket: 'v1'
           };
           EOF
           if [ -d test/js ]; then
@@ -56,8 +57,8 @@ jobs:
             cat > _site/test/js/config.js <<'EOF'
           window.BLOM_CONFIG = {
             omgeving: 'test',
-            url: 'https://zfsehloyeskeatyvdrfr.supabase.co',
-            anonKey: 'sb_publishable_3Bo-AmVowuB9H8xSKYbLqQ_PcflnlQw',
+            url: 'https://vvvsvgtmslsjegbxppjf.supabase.co',
+            anonKey: 'sb_publishable_NG__lC-SYFruk6q0KO3vsw_adHP5mLa',
             domein: '@blominterieurs.nl',
             versie: 'test',
             bucket: 'test'
