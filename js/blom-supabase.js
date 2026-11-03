@@ -8,6 +8,23 @@
   const CFG = window.BLOM_CONFIG;
   const DOMEIN = (CFG.domein || '@blominterieurs.nl').toLowerCase();
   const OMGEVING = CFG.omgeving || 'live';
+  /* Versies: elke versie (test, v1, v2 ...) heeft een eigen bucket met mappen
+     collectie/, afbeeldingen/<leverancier>/, prijzen/<leverancier>/ en algemeen/.
+     De keuzes staan in één tabel met een kolom versie. Bucket 'collectie' is de oude platte opzet. */
+  const VERSIE = CFG.versie || null;
+  const OUD = !VERSIE || CFG.bucket === 'collectie';
+  function bucketPad(pad) {
+    if (OUD) return pad;
+    const naam = pad.split('/').pop();
+    if (pad.startsWith('fonts/')) return 'algemeen/' + pad;
+    if (pad.startsWith('prijzen/')) {
+      const stam = naam.replace(/\.json$/, ''), m = stam.match(/^(.*)-(\d+)$/);
+      return 'prijzen/' + (m ? m[1] : stam) + '/' + naam;
+    }
+    if (naam.includes('-img-')) return 'afbeeldingen/' + naam.split('-img-')[0] + '/' + naam;
+    return 'collectie/' + naam;
+  }
+  const metVersie = q => (OUD ? q : q.eq('versie', VERSIE));
 
   /* Test en live staan op hetzelfde webadres en delen dus de lokale opslag van de browser.
      Op de testomgeving krijgt elke sleutel een eigen voorvoegsel, zodat lokaal bewaarde
@@ -39,7 +56,7 @@
 
   /* ---------- bestanden uit de privé opslag ---------- */
   async function download(pad) {
-    const { data, error } = await sb.storage.from(CFG.bucket).download(pad);
+    const { data, error } = await sb.storage.from(CFG.bucket).download(bucketPad(pad));
     if (error) throw norm(error);
     return data;
   }
@@ -65,7 +82,7 @@
     doc(id) {
       return {
         async get() {
-          const { data, error } = await sb.from('keuzes').select('naam,sup,c,laatst').eq('id', id).maybeSingle();
+          const { data, error } = await metVersie(sb.from('keuzes').select('naam,sup,c,laatst').eq('id', id)).maybeSingle();
           if (error) throw norm(error);
           return snap(id, data ? rij(data) : null);
         },
@@ -78,7 +95,7 @@
         onSnapshot(cb, onErr) {
           let gestopt = false, t = null;
           const laad = async () => {
-            const { data, error } = await sb.from('keuzes').select('id,naam,sup,c,laatst').eq(veld, waarde);
+            const { data, error } = await metVersie(sb.from('keuzes').select('id,naam,sup,c,laatst').eq(veld, waarde));
             if (gestopt) return;
             if (error) { if (onErr) onErr(norm(error)); return; }
             cb({ docs: data.map(r => snap(r.id, rij(r))) });
@@ -95,9 +112,9 @@
     }
   };
   async function zet(id, v, vervang) {
-    const { error } = await sb.rpc('keuze_zet', {
-      p_id: id, p_sup: v.sup, p_naam: v.naam, p_c: v.c || {}, p_vervang: vervang
-    });
+    const args = { p_id: id, p_sup: v.sup, p_naam: v.naam, p_c: v.c || {}, p_vervang: vervang };
+    if (!OUD) args.p_versie = VERSIE;
+    const { error } = await sb.rpc('keuze_zet', args);
     if (error) throw norm(error);
   }
   const DB = {

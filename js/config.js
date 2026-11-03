@@ -2,6 +2,8 @@
 // dit bestand per adres opnieuw, zodat het adres bepaalt welke database wordt gebruikt:
 //   blominteriors.github.io/collectiekeuze/       -> live project (Database V1)
 //   blominteriors.github.io/collectiekeuze/test/  -> testproject (Test project)
+// versie + bucket: welke versie (test, v1, v2 ...) en dus welke bucket en welke keuzes de app gebruikt.
+// Zonder versie (bucket 'collectie') werkt de app met de oude platte opzet.
 // De 'publishable key' mag openbaar zijn: alle data is afgeschermd met beveiligingsregels.
 window.BLOM_CONFIG = {
   omgeving: 'live',

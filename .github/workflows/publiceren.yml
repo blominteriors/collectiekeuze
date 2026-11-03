@@ -59,7 +59,8 @@ jobs:
             url: 'https://zfsehloyeskeatyvdrfr.supabase.co',
             anonKey: 'sb_publishable_3Bo-AmVowuB9H8xSKYbLqQ_PcflnlQw',
             domein: '@blominterieurs.nl',
-            bucket: 'collectie'
+            versie: 'test',
+            bucket: 'test'
           };
           EOF
           fi
