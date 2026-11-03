@@ -40,11 +40,17 @@
     } catch (e) { /* zonder lokale opslag werkt de app ook */ }
     document.addEventListener('DOMContentLoaded', () => {
       document.title = 'TEST · ' + document.title;
+      // smalle strook bovenaan met een klein label: valt niet over knoppen of tekst, op telefoon en pc
       const tag = document.createElement('div');
-      tag.textContent = 'Testomgeving · keuzes tellen niet mee voor live';
-      tag.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:150;background:#3A3A3A;color:#FFFFFF;' +
-        'font:500 11px/1 Verdana,sans-serif;letter-spacing:.06em;text-align:center;' +
-        'padding:4px 16px calc(4px + env(safe-area-inset-bottom,0px));pointer-events:none';
+      tag.textContent = 'Testomgeving';
+      tag.title = 'Testomgeving · keuzes tellen niet mee voor live';
+      tag.style.cssText = 'position:fixed;left:0;right:0;top:0;height:3px;z-index:150;background:#3A3A3A;pointer-events:none;' +
+        'font:500 8.5px/1 Verdana,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:transparent';
+      const lbl = document.createElement('span');
+      lbl.textContent = 'Test';
+      lbl.style.cssText = 'position:absolute;top:3px;left:50%;transform:translateX(-50%);background:#3A3A3A;color:#FFFFFF;padding:2px 6px 3px;' +
+        'font:500 8.5px/1 Verdana,sans-serif;letter-spacing:.12em;text-transform:uppercase';
+      tag.appendChild(lbl);
       document.body.appendChild(tag);
     });
   }

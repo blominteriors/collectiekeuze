@@ -117,8 +117,10 @@ main{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .vsum b{font-weight:500}
 .ico{display:block;flex:none}
 .now{margin:10px 16px 0;border:1px solid var(--ink);flex:none}
-.now .hd{display:flex;justify-content:space-between;align-items:center;height:22px;padding:0 10px;background:var(--grijs);border-bottom:1px solid var(--n500);font-size:10px}
-.now .hd b{letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.now .hd{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1px 10px;min-height:22px;padding:3px 10px;background:var(--grijs);border-bottom:1px solid var(--n500);font-size:10px}
+.now .hd b{letter-spacing:.14em;text-transform:uppercase;font-weight:500;white-space:nowrap}
+/* smalle schermen: kopregels netjes houden */
+@media (max-width:560px){ #hDate{display:none} #count{white-space:nowrap} .supbar>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} }
 .now .hd span{color:var(--g400)}
 .cells{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--n500)}
 .cell{display:flex;align-items:center;gap:6px;padding:0 8px;height:34px;border-right:1px solid var(--n500);font-size:11.5px;line-height:13px}
@@ -763,6 +765,13 @@ function chunk(n){ if(loadedChunks[n]) return loadedChunks[n]; const sup=SUP.id,
   return lc[n]=dfetch('data/'+sup+'-img-'+n+'.json').then(r=>r.json()).then(o=>{ if(SUP.id===sup) Object.assign(IMG,o); return true}).catch(()=>{delete lc[n]}); }
 async function ensureImgs(ms){ await Promise.all([...new Set(ms.flatMap(m=>m.ch))].map(chunk)); }
 const img=i=>i==null?null:IMG[i];
+// gekozen zijde (voor, links, rechts, achter) op de beoordeelkaart en in de grote fotoweergave; null = de standaardfoto
+let SIDE=null;
+const SIDES=['voor','links','rechts','achter'], SIDEL={voor:'Voorzijde',links:'Linkerzijde',rechts:'Rechterzijde',achter:'Achterzijde'};
+const sidesOf=v=>SIDES.filter(z=>v&&v.zijden&&v.zijden[z]&&img(v.zijden[z].img));
+const sideKey=v=>{ const zs=sidesOf(v); return SIDE&&zs.includes(SIDE)?SIDE:(v&&v.zijde&&zs.includes(v.zijde)?v.zijde:zs[0]||null); };
+const sideImg=v=>{ const z=sideKey(v); return z?img(v.zijden[z].img):img(v.img); };
+const sideBtns=(v,attr)=>{ const zs=sidesOf(v); if(zs.length<2) return ''; const k=sideKey(v); return '<div class="pk-zij">'+zs.map(z=>'<button type="button" class="'+(z===k?'on':'')+'" '+attr+'="'+z+'" aria-pressed="'+(z===k)+'">'+SIDEL[z]+'</button>').join('')+'</div>'; };
 const dstr=()=>SUP&&SUP.date?new Date(SUP.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
 
 /* ---------------- prices (beschermd document, alleen leesbaar voor ingelogde collega's) ---------------- */
@@ -907,7 +916,7 @@ function renderHome(){
   if(me) SUPS.forEach(x=>{ if(!(SUP&&x.id===SUP.id)&&!PROG[x.id]) progOther(x); });
   $('supList').innerHTML=SUPS.map(s=>{
     const isCur=SUP&&s.id===SUP.id; const mine=isCur?counts(D,M):null;
-    return `<div class="supcard"><span style="display:flex;align-items:center;gap:10px"><span class="nm">${esc(s.name)}</span><span title="Momentopname: data geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL')}" style="font-size:10px;font-weight:400;color:var(--g400);letter-spacing:.01em">geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'})}</span></span>
+    return `<div class="supcard"><span style="display:flex;align-items:baseline;flex-wrap:wrap;gap:0 10px"><span class="nm">${esc(s.name)}</span><span title="Momentopname: data geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL')}" style="font-size:10px;font-weight:400;color:var(--g400);letter-spacing:.01em">geïmporteerd op ${new Date(s.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'})}</span></span>
       <span class="mt">${fmt(s.models)} series · ${fmt(s.variants)} artikelen · ${fmt(s.inAfas||0)} in AFAS · ${esc(s.land||'')} </span>
       ${progHtml(s,isCur,mine)}
       <div class="row2"><button type="button" class="cta" data-go="swipe" data-sup="${esc(s.id)}">Beoordelen</button><button type="button" class="ghost" data-go="res" data-sup="${esc(s.id)}">Resultaten</button></div></div>`}).join('');
@@ -958,7 +967,7 @@ function cardHTML(m){
   const shown=x=>x===k?curVi:m.p[x].idx[0];
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
-  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+img(x.img)+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">'+(x.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>').join('');
+  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">'+(x.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>').join('');
   const qtxt=v.img==null?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
   const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
@@ -973,6 +982,7 @@ function cardHTML(m){
     ${typeChips}
     <div class="photo"><div class="strip" id="strip">${slides}</div>${v.img!=null?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
     <div class="phfoot"><span class="q">${v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
+    ${sideBtns(v,'data-czz')}
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
     <div class="prod"><span class="eye">Product</span><span class="pl">${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}${v.tguess?' <span style="font-size:11px;color:var(--g400)">(soort niet bevestigd: geen gegevens in prijslijst of op piaval.it)</span>':''}</span></div>
     ${fins}
@@ -993,17 +1003,17 @@ function pricesHTML(v){
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="prices"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px">Opnieuw proberen</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="prices"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
   if(prState!=='ok') return '<div class="prices"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
-  // kolom 1: eigen stof / COM; kolom 2: de werkelijk goedkoopste gestoffeerde uitvoering (niet automatisch Blom 1)
+  // kolom 1: eigen stof / COM; kolom 2: vanaf-prijs zoals in de Excel (goedkoopste prijsregel zonder COM, elke stofgroep telt mee)
   const comCat=supCat(pk(v),0);
   // gestoffeerd = stofgroepen die naar Blom 1 t/m 5 vertaald zijn (Blom 6 t/m 8 is leder, hogere nummers zijn bijzondere uitvoeringen)
   const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&c!=='COM'&&!/OUTDOOR/.test(c));
-    const stof=all.filter(c=>PR.bc&&PR.bc[c]>=1&&PR.bc[c]<=5), cs=stof.length?stof:all.filter(c=>PR.bc&&PR.bc[c]!=null);
+    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&c!=='COM');
     let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
   const B=[[0,comCat],[1,cheapCat]].filter(x=>x[1]!=null);
   let cats=B.map(x=>x[1]);
   let heads=B.map(([n,c])=>n===0
     ? '<span class="sg"><span class="sgb">Eigen stof / COM</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>'
-    : '<span class="sg"><span class="sgb">Goedkoopste gestoffeerde uitvoering</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>');
+    : '<span class="sg"><span class="sgb">Vanaf (goedkoopste stofgroep)</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>');
   if(!cats.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="prices"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cats=[cs[0]]; heads=[cs[0]?'Stofgroep '+cs[0]:'Prijs']; }
   const P=cats.map(c=>calc(pk(v),c));
   // Blom Care alleen als de prijslijst (Excel) een Blom Care-prijs voor dit artikel geeft; nooit zelf afleiden
@@ -1016,11 +1026,11 @@ function pricesHTML(v){
     ? '<div class="pr'+(cls?' '+cls:'')+(pf&&!lp?' two':'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+(lp?' <span class="pc">'+lp+'</span>':'')+'</div>'+P.map(p=>'<div'+cc(p)+'>'+f(p)+(pf&&!lp?'<small class="pc2">'+pf(p)+'</small>':'')+'</div>').join('')+'</div>'
     : '<div class="pr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+'</div>'+P.map(p=>'<div>'+f(p)+'</div><div class="pc">'+(pf?pf(p):'')+'</div>').join('')+'</div>';
   const same=P.every(p=>uText(p.u)===uText(P[0].u));
-  const lab=p=>!p.cat?'Prijs':p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Goedkoopste gestoffeerde uitvoering':'Stofgroep '+p.cat;
+  const lab=p=>!p.cat?'Prijs':p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Vanaf (goedkoopste stofgroep)':'Stofgroep '+p.cat;
   const forRows=same?uParts(P[0].u).map(([a,b])=>'<div><span>'+a+'</span>'+esc(b)+'</div>').join(''):P.map(p=>'<div><span>'+lab(p)+'</span>'+esc(uText(p.u))+'</div>').join('');
   const more=P.some(p=>p.n>1);
   return `<div class="prices${prOpen?' open':''}" id="prices">
-    <div class="ph" style="grid-template-columns:${cols}"><div><span style="font-size:10px;letter-spacing:.12em">Prijzen · ${esc(v.code)}</span></div>${heads.map(h=>'<div style="grid-column:span '+(narrow?1:2)+'">'+h+'</div>').join('')}</div>
+    <div class="ph" style="grid-template-columns:${cols}"><div><span style="font-size:10px;letter-spacing:.12em;line-height:1.25">Prijzen<br><span style="letter-spacing:0;text-transform:none;color:var(--g400)">${esc(v.code)}</span></span></div>${heads.map(h=>'<div style="grid-column:span '+(narrow?1:2)+'">'+h+'</div>').join('')}</div>
     ${row('Bruto inkoopprijs',p=>eur(p.b),'px')}
     ${row('Inkoopconditie',p=>'− '+eur(p.b-p.net),'px',()=>pct(PR.k),pct(PR.k))}
     ${row('Netto inkoopprijs',p=>eur(p.net),'b')}
@@ -1092,6 +1102,7 @@ function bindCard(m){
   const cp=$('confPop'); if(cp) cp.onclick=()=>{ cp.hidden=true; cb.setAttribute('aria-expanded','false'); };
   const vs=$('vstrip'); const on=vs&&vs.querySelector('.vbtn.on'); if(on) vs.scrollLeft=Math.max(0,on.getBoundingClientRect().left-vs.getBoundingClientRect().left+vs.scrollLeft-vs.clientWidth/2+on.clientWidth/2);
   $('sSwipe').querySelectorAll('[data-vi]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.vi));
+  $('sSwipe').querySelectorAll('[data-czz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.czz; setVi(m,curVi); });
   $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
   $('sSwipe').querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>setVi(m,groups(m)[+b.dataset.type].idx[0]));
   $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{ const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
@@ -1110,9 +1121,10 @@ function bindCard(m){
 
 /* ---------------- foto schermvullend ---------------- */
 function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p);
-  if(!img(v.img)) return;
-  $('zi').innerHTML='<img src="'+img(v.img)+'" alt="'+esc(m.fam+' '+v.code)+'">';
-  $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+' · Foto klopt '+v.conf+'%</small>';
+  if(!sideImg(v)) return;
+  $('zi').innerHTML='<img src="'+sideImg(v)+'" alt="'+esc(m.fam+' '+v.code)+'">';
+  $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+' · Foto klopt '+v.conf+'%</small>'+sideBtns(v,'data-zzz');
+  $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.zzz; setVi(m,curVi); openZoom(m); });
   $('zp').hidden=$('zn').hidden=g.pk.length<2;
   $('zp').onclick=()=>{ setVi(m,m.p[g.pk[(pos-1+g.pk.length)%g.pk.length]].idx[0]); openZoom(m); };
   $('zn').onclick=()=>{ setVi(m,m.p[g.pk[(pos+1)%g.pk.length]].idx[0]); openZoom(m); };
@@ -1159,6 +1171,7 @@ function openForm(m){
   }
   if(prev){ if(prev.v) F.v=Object.assign({},prev.v); if(prev.oc) F.oc=prev.oc; if(prev.lab) F.lab=prev.lab.slice(); F.g=JSON.parse(JSON.stringify(prev.g||[])); }
   // eerst per product swipen (Tinder), daarna online collectie en labels
+  DECK_T=Date.now()+600;   // korte pauze: een dubbele tik op 'Serie houden' mag het eerste product niet meteen goedkeuren
   F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>m.v[i].img!=null)?1:0)-(m.p[a].idx.some(i=>m.v[i].img!=null)?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
   // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
   // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), 'voorstel' (zoals de artikelen van deze serie die al in AFAS staan), of leeg
@@ -1200,7 +1213,7 @@ function finPrices(m,k){
   const min=Math.min(...vals); return {p,min,lbl,base:vs.find(v=>p[v.id]===min)};
 }
 // goedkoopste prijsregel van een product (zelfde keuze als pmin): verkoopprijs en de netto inkoopprijs van diezelfde regel
-function pminRow(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best[5])) best=r; }); }); return best; }
+function pminRow(m,k,only){ if(prState!=='ok') return null; let best=null; (only!=null?[only]:m.p[k].idx).forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best[5])) best=r; }); }); return best; }
 // alleen de meerprijs tonen; de goedkoopste afwerking krijgt geen extra label
 const mpTxt=(fp,id)=>{ if(!fp||fp.p[id]==null) return ''; const d=fp.p[id]-fp.min; return d>0.004?'+ '+eur(d):''; };
 const mpNote=fp=>fp?'<small class="mpn">meerprijs o.b.v. '+esc(fp.lbl)+'</small>':'';
@@ -1247,7 +1260,7 @@ function deckCard(k,top){
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
-    +(()=>{ const r=pminRow(m,k); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf'+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
+    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
     +(top?fins:'')+'</div></div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
@@ -1481,7 +1494,9 @@ function bindDeckSwipe(){
   c.addEventListener('pointerup',end); c.addEventListener('pointercancel',e=>{ if(e.pointerId===id){ dx=dy=0; end(e); } });
 }
 // keuze voor het product bovenop de stapel, met een vlieg-animatie
+let DECK_T=0;
 function deckGo(dir,fromDrag){
+  if(!fromDrag&&dir!=='up'&&Date.now()<DECK_T) return;
   const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
   if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
   if(dir==='yes'){ const open=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
