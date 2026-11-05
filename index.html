@@ -762,7 +762,7 @@ async function loadSup(id){
   if(SUP&&SUP.id===s.id&&DATA) return;
   SUP=s; ls.set('blom-ck-sup',SUP.id);
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
-  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zusterFoto(m);});
+  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); zusterFoto(m);});
   loadedChunks={}; for(const k in IMG) delete IMG[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
@@ -984,6 +984,12 @@ let TYPEN=null, TYPEN_M=null;
 function typeVan(code){ if(TYPEN_M!==M){ TYPEN={}; M.forEach(mm=>mm.v.forEach(y=>{ TYPEN[y.code]=y.type; })); TYPEN_M=M; } return TYPEN[code]; }
 const okBron=(x,c)=>{ if(!c||c===x.code) return true; const t=typeVan(c); return !t||!x.type||t===x.type; };
 function fotoVan(m,x){ return !!x&&x.img!=null&&okBron(x,x.imgc); }
+// zelfde artikelcode anders geschreven (bijvoorbeeld 140T/1 en 140/T1): de foto hoort bij dit artikel, dus exact
+const codeN=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function zelfdeCode(m){ m.v.forEach(y=>{ const fix=e=>{ if(!e||e.img==null||!e.imgc||e.imgc===y.code||codeN(e.imgc)!==codeN(y.code)) return;
+  e.why=['Foto hoort bij dit artikel: '+e.imgc+' is dezelfde code als '+y.code+'.'].concat((e.why||[]).filter(w=>!/^Foto is van artikel|staat niet in de prijslijst/.test(w)));
+  e.imgq='exact'; e.imgc=y.code; e.conf=Math.max(e.conf||0,95); };
+  fix(y); Object.values(y.zijden||{}).forEach(fix); }); }
 // andere afwerking van hetzelfde product (bijvoorbeeld walnut naast ash): zonder eigen foto, of met een foto van een ander
 // product, terwijl een zuster-afwerking wel een eigen foto heeft -> de foto van die zuster, met de notitie dat het frame afwijkt
 function zusterFoto(m){
@@ -1074,8 +1080,9 @@ function pricesHTML(v){
     ${row('Verrekenprijs',p=>eur(p.ver),'b px')}
     ${row('Verkoopconditie',p=>p.vk!=null?'+ '+eur(p.vk-p.ver):'','px',p=>p.vcp!=null?pct(p.vcp):'')}
     ${hasCare?row('Care-conditie',p=>careOk(p)?'+ '+eur(p.care-p.ver):'—','px',p=>careOk(p)&&p.ver?pct(p.care/p.ver-1):''):''}
-    <div class="pr vk" style="grid-template-columns:${cols}"><div style="line-height:1">${(hasCare?'Verkoopprijs':'Verkoopprijs')+'<br><small>'+(hasCare?'Interieurs · ':'')+'excl. btw'+(PR.o!=null?' · ×'+fmt(PR.o):'')+'</small>'}</div>${P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+(p.isCare?';color:var(--roze)':'')+'">'+(p.vk!=null?eur(p.vk)+(p.err?' <span style="color:var(--no,#C0392B)">!</span>':'')+(p.ver!=null&&p.vk?'<small style="display:block;font-size:10.5px;font-weight:400;color:var(--g400)">marge '+pct((p.vk-p.ver)/p.vk)+'</small>':''):'—')+'</div>').join('')}</div>
+    <div class="pr vk" style="grid-template-columns:${cols}"><div style="line-height:1">${(hasCare?'Verkoopprijs':'Verkoopprijs')+'<br><small>'+(hasCare?'Interieurs · ':'')+'excl. btw'+(PR.o!=null?' · ×'+fmt(PR.o):'')+'</small>'}</div>${P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+(p.isCare?';color:var(--roze)':'')+'">'+(p.vk!=null?eur(p.vk)+(p.err?' <span style="color:var(--no,#C0392B)">!</span>':''):'—')+'</div>').join('')}</div>
     ${hasCare?'<div class="pr vk care" style="grid-template-columns:'+cols+'"><div style="line-height:1">Blom Care prijs<br><small>excl. btw · marge ×'+fmt(PR.oc)+'</small></div>'+P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+'">'+(careOk(p)?eur(p.care):'—')+'</div>').join('')+'</div>':''}
+    ${row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—','b')}
     ${P.filter(p=>p.err).map(p=>'<div class="xerr px" style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11.5px;line-height:1.35"><b style="font-weight:500">'+esc(lab(p))+': </b>'+esc(p.err)+' Het bedrag staat zoals in de Excel.</div>').join('')}
     <button type="button" class="ptog" id="ptog" aria-expanded="${prOpen}"><b>Hele berekening</b><span>bruto · condities · transport</span><i aria-hidden="true">${prOpen?'−':'+'}</i></button>
     ${P.some(p=>p.err)?'<div class="pxs" style="margin-top:6px;font-size:11px;color:#C0392B">! Fout in de Excel bij deze prijs: open Hele berekening.</div>':''}
@@ -1296,7 +1303,7 @@ function deckCard(k,top){
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
-    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span style="font-size:11px;color:var(--g400)">marge '+pct((r[5]-r[4])/r[5])+'</span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
+    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span>Marge <b>'+pct((r[5]-r[4])/r[5])+'</b></span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
     +(top?fins:'')+'</div></div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
@@ -1453,7 +1460,9 @@ function deckInfo(k){
   const dims=(v.dim||[]).map((x,i)=>x!=null?'<div><span>'+dl[i]+'</span><span>'+fmt(x)+' cm</span></div>':'').join('');
   const OC3=[['niet','Niet online'],['intern','Online, intern'],['klant','Online, klanten']];
   const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id), ex=!!F.dk.ex[a.id];
-    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(fp&&fp.p[a.id]!=null?'<span class="ipr">'+eur(fp.p[a.id])+(mp&&mp!=='basis'?' <em>'+mp+'</em>':mp==='basis'?' <em class="b">basis</em>':'')+'</span>':'')+'</div>'
+    // rechtsboven per uitvoering: inkoopprijs (bij meerdere afwerkingen met meerprijs) en de marge, ook bij één uitvoering
+    const r=pminRow(m,k,i), ink=fp&&fp.p[a.id]!=null?fp.p[a.id]:r?r[3]:null, mg=r&&r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):null;
+    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(ink!=null||mg?'<span class="ipr">'+(ink!=null?'Inkoop '+eur(ink):'')+(fp&&mp&&mp!=='basis'?' <em>'+mp+'</em>':fp&&mp==='basis'?' <em class="b">basis</em>':'')+(mg?' · marge '+mg:'')+'</span>':'')+'</div>'
       +'<span class="inow">Nu: '+(a.inA?OK(12)+' in AFAS'+(a.blom?' als '+esc(a.blom):''):NO(12)+' niet in AFAS'+(a.nv?' · <span class="vst">Voorstel</span> naam <b>'+esc(a.nv)+'</b>'+(a.nvc?' (controleren)':''):''))+' · '+(a.online?OK(12):NO(12))+' online · '+(a.klant?OK(12):NO(12))+' klanten'+(a.inA?' · labels: '+(LABELS.filter((_,j)=>labOf(a)[j]===1).map(x=>x[0]).join(', ')||'geen'):'')+'</span>'
       +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o&&!ex)+'" class="'+(e.oc===o&&!ex?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'<button type="button" role="radio" aria-checked="'+ex+'" class="'+(ex?'on neg':'')+'" data-vex="'+esc(a.id)+'">Niet in AFAS</button></div>'
       +(ex?'':'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>')
