@@ -1,16 +1,16 @@
 /* Blom Collectiekeuze: koppeling met Supabase.
    Vervangt de Claude-functies die de app gebruikte:
-   - claude.use('db')        -> tabel 'keuzes' (lezen, opslaan, live bijwerken) en prijzen uit de privé opslag
+   - claude.use('db')        -> tabel 'keuzes' (lezen, opslaan, live bijwerken) en prijzen uit de privÃ© opslag
    - claude.use('downloads') -> gewone browserdownload
-   - fetch('data/...')       -> dfetch('data/...') uit de privé opslag
-   en zorgt voor inloggen met een e-mailcode, alleen voor @blominterieurs.nl. */
+   - fetch('data/...')       -> dfetch('data/...') uit de privÃ© opslag
+   en zorgt voor inloggen met e-mailadres en wachtwoord (eerste keer via een inloglink), alleen voor @blominterieurs.nl. */
 (function () {
   const CFG = window.BLOM_CONFIG;
   const DOMEIN = (CFG.domein || '@blominterieurs.nl').toLowerCase();
   const OMGEVING = CFG.omgeving || 'live';
   /* Versies: elke versie (test, v1, v2 ...) heeft een eigen bucket met mappen
      collectie/, afbeeldingen/<leverancier>/, prijzen/<leverancier>/ en algemeen/.
-     De keuzes staan in één tabel met een kolom versie. Bucket 'collectie' is de oude platte opzet. */
+     De keuzes staan in Ã©Ã©n tabel met een kolom versie. Bucket 'collectie' is de oude platte opzet. */
   const VERSIE = CFG.versie || null;
   const OUD = !VERSIE || CFG.bucket === 'collectie';
   function bucketPad(pad) {
@@ -39,11 +39,11 @@
       P.removeItem = function (k) { return del.call(this, eigen(this) ? pre + k : k); };
     } catch (e) { /* zonder lokale opslag werkt de app ook */ }
     document.addEventListener('DOMContentLoaded', () => {
-      document.title = 'TEST · ' + document.title;
+      document.title = 'TEST Â· ' + document.title;
       // smalle strook bovenaan met een klein label: valt niet over knoppen of tekst, op telefoon en pc
       const tag = document.createElement('div');
       tag.textContent = 'Testomgeving';
-      tag.title = 'Testomgeving · keuzes tellen niet mee voor live';
+      tag.title = 'Testomgeving Â· keuzes tellen niet mee voor live';
       tag.style.cssText = 'position:fixed;left:0;right:0;top:0;height:3px;z-index:150;background:#3A3A3A;pointer-events:none;' +
         'font:500 8.5px/1 Verdana,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:transparent';
       const lbl = document.createElement('span');
@@ -54,20 +54,13 @@
       document.body.appendChild(tag);
     });
   }
-  /* Komt deze pagina binnen via de inloglink uit de mail? En wacht deze browser zelf op die link
-     (dan is hier op 'Stuur inloglink' geklikt)? Zo niet, dan is de link op een ander apparaat
-     geopend dan waar is ingelogd, en tonen we meteen een code voor dat andere apparaat. */
-  const VIA_LINK = /access_token=|type=magiclink/.test(location.hash + location.search);
-  const WACHT = 'blom-wacht-op-link';
-  let wachtHier = false;
-  try { wachtHier = !!localStorage.getItem(WACHT); localStorage.removeItem(WACHT); } catch (e) {}
   const sb = window.supabase.createClient(CFG.url, CFG.anonKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
   window.sb = sb;
   const isBlom = u => !!(u && u.email && u.email.toLowerCase().endsWith(DOMEIN));
 
-  /* ---------- bestanden uit de privé opslag ---------- */
+  /* ---------- bestanden uit de privÃ© opslag ---------- */
   async function download(pad) {
     const { data, error } = await sb.storage.from(CFG.bucket).download(bucketPad(pad));
     if (error) throw norm(error);
@@ -161,7 +154,7 @@
   };
   window.claude = { use: async k => (k === 'db' ? DB : k === 'downloads' ? DL : null) };
 
-  /* ---------- lettertypes uit de privé opslag ---------- */
+  /* ---------- lettertypes uit de privÃ© opslag ---------- */
   async function laadFonts() {
     const fonts = [['fonts/roc-medium.ttf', '500'], ['fonts/roc-light.ttf', '200']];
     for (const [pad, gewicht] of fonts) {
@@ -188,6 +181,8 @@
   .buit{margin:8px 0 0;font-size:11.5px;color:var(--g400,#616161)}
   .buit button{border:0;background:none;padding:0;font:inherit;text-decoration:underline;color:var(--ink,#3A3A3A);cursor:pointer}`;
   let scherm = null, email = '', gestart = false;
+  const LIMIET = 'Er kan nu even geen inlogmail worden verstuurd (maximaal 2 per uur). Heb je al een wachtwoord? Log daarmee in. Anders: probeer het over een uur opnieuw.';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function maakScherm() {
     if (!scherm) {
@@ -199,107 +194,130 @@
   }
   function toonLogin(melding) {
     maakScherm();
-    stapMail(melding);
+    stapInloggen(melding);
   }
-  function stapMail(melding) {
+  function adresOk(inp, fout) {
+    email = inp.value.trim().toLowerCase();
+    if (email.endsWith(DOMEIN)) return true;
+    fout.textContent = 'Alleen adressen eindigend op ' + DOMEIN + ' hebben toegang.'; fout.hidden = false; inp.focus(); return false;
+  }
+
+  /* Stap 1: inloggen met e-mailadres en wachtwoord. Geen wachtwoord (of vergeten)? Dan een inloglink per mail. */
+  function stapInloggen(melding) {
     scherm.innerHTML = `<form novalidate>
       <span class="eye">Blom Collectiekeuze</span>
       <h1>Inloggen</h1>
-      <p>Vul je Blom e-mailadres in. Je krijgt een mail met een inloglink.</p>
-      <input type="email" autocomplete="email" inputmode="email" placeholder="naam${DOMEIN}" required>
-      <button type="submit">Stuur inloglink</button>
-      <p class="fout" ${melding ? '' : 'hidden'}>${melding || ''}</p>
-      <button type="button" class="link">Al ingelogd op je telefoon? Log in met een code van je telefoon</button></form>`;
-    const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button'), fout = f.querySelector('.fout');
-    inp.value = email; inp.focus();
-    const adresOk = () => {
-      email = inp.value.trim().toLowerCase();
-      if (email.endsWith(DOMEIN)) return true;
-      fout.textContent = 'Alleen adressen eindigend op ' + DOMEIN + ' hebben toegang.'; fout.hidden = false; return false;
-    };
-    // geen mail nodig: de code komt van een apparaat waarop je al bent ingelogd
-    f.querySelector('.link').onclick = () => { if (adresOk()) stapCode(true); };
-    f.onsubmit = async e => {
-      e.preventDefault();
-      if (!adresOk()) return;
-      knop.disabled = true; knop.textContent = 'Versturen…';
-      const terug = location.origin + location.pathname;
-      const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
-      if (error) { knop.disabled = false; knop.textContent = 'Stuur inloglink'; fout.textContent = /rate|limit/i.test(error.message) ? 'Er zijn te veel mails verstuurd. Probeer het over een paar minuten opnieuw.' : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
-      try { localStorage.setItem(WACHT, String(Date.now())); } catch (e) {}
-      stapCode();
-    };
-  }
-  function stapCode(viaTelefoon) {
-    const uitleg = viaTelefoon
-      ? `<h1>Code van je telefoon</h1>
-      <p>Open de app op je telefoon (of een ander apparaat waarop je al bent ingelogd als <b>${email}</b>). Kies in het menu <b>Inloggen op een ander apparaat</b> en typ hier de code die je daar ziet.</p>`
-      : `<h1>Check je mail</h1>
-      <p>We hebben een mail gestuurd naar <b>${email}</b>. De mail bevat een link, geen code.</p>
-      <p><b>Mail op deze computer?</b> Klik op de link, dan ben je ingelogd.<br>
-      <b>Mail op je telefoon?</b> Tik daar op de link. Je telefoon toont dan een code van 6 cijfers. Typ die code hieronder.</p>`;
-    scherm.innerHTML = `<form novalidate>
-      <span class="eye">Blom Collectiekeuze</span>
-      ${uitleg}
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Inlogcode" maxlength="10" required>
+      <input type="email" name="email" autocomplete="username" inputmode="email" placeholder="naam${DOMEIN}" required>
+      <input type="password" name="wachtwoord" autocomplete="current-password" placeholder="Wachtwoord" required>
       <button type="submit">Inloggen</button>
-      <p class="fout" hidden></p>
-      <button type="button" class="link">Ander e-mailadres of nieuwe code</button></form>`;
-    const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
-    inp.focus();
-    f.querySelector('.link').onclick = () => stapMail();
+      <p class="fout" ${melding ? '' : 'hidden'}>${melding || ''}</p>
+      <button type="button" class="link">Nog geen wachtwoord, of vergeten? Stuur een inloglink</button></form>`;
+    const f = scherm.querySelector('form'), [inp, ww] = f.querySelectorAll('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
+    inp.value = email; (email ? ww : inp).focus();
+    f.querySelector('.link').onclick = () => { email = inp.value.trim().toLowerCase(); stapLink(); };
     f.onsubmit = async e => {
       e.preventDefault();
-      const code = inp.value.replace(/\s/g, '');
-      if (code.length < 6) return;
-      knop.disabled = true; knop.textContent = 'Controleren…';
-      let { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' });
-      if (error) ({ error } = await sb.auth.verifyOtp({ email, token: code, type: 'magiclink' }));
-      if (error) { knop.disabled = false; knop.textContent = 'Inloggen'; fout.textContent = 'Deze code klopt niet of is verlopen.'; fout.hidden = false; }
+      if (!adresOk(inp, fout)) return;
+      if (!ww.value) { ww.focus(); return; }
+      knop.disabled = true; knop.textContent = 'Inloggenâ€¦';
+      const { error } = await sb.auth.signInWithPassword({ email, password: ww.value });
+      if (error) {
+        knop.disabled = false; knop.textContent = 'Inloggen';
+        fout.textContent = /invalid login|credentials/i.test(error.message)
+          ? 'E-mailadres of wachtwoord klopt niet. Nog geen wachtwoord? Gebruik de inloglink hieronder.'
+          : 'Inloggen lukte niet: ' + error.message;
+        fout.hidden = false;
+      }
     };
   }
 
-  /* ---------- inloggen op een ander apparaat ----------
-     Wie hier al is ingelogd, vraagt een eenmalige inlogcode op (edge function apparaat-code)
-     en typt die op het andere apparaat in. Er gaat geen mail uit. */
-  async function toonApparaatCode(naLink) {
-    maakScherm();
-    const knopNieuw = '<button type="button" data-a="nieuw">Nieuwe code</button>';
-    const knopTerug = `<button type="button" class="link" data-a="terug">${naLink === true ? 'Nee, verder naar de app op dit apparaat' : 'Terug naar de app'}</button>`;
-    const kop = naLink === true ? 'Je bent ingelogd' : 'Inloggen op een ander apparaat';
-    const zet = html => {
-      scherm.innerHTML = `<form novalidate><span class="eye">Blom Collectiekeuze</span><h1>${kop}</h1>${html}</form>`;
-      const n = scherm.querySelector('[data-a=nieuw]'), t = scherm.querySelector('[data-a=terug]');
-      if (n) n.onclick = () => toonApparaatCode(naLink);
-      if (t) t.onclick = () => { scherm.hidden = true; };
+  /* Inloglink per mail: voor de eerste keer, of als het wachtwoord kwijt is. */
+  function stapLink() {
+    scherm.innerHTML = `<form novalidate>
+      <span class="eye">Blom Collectiekeuze</span>
+      <h1>Inloglink</h1>
+      <p>Vul je Blom e-mailadres in. Je krijgt een mail met een inloglink. Na het inloggen kies je een wachtwoord, daarna heb je geen mail meer nodig.</p>
+      <input type="email" autocomplete="email" inputmode="email" placeholder="naam${DOMEIN}" required>
+      <button type="submit">Stuur inloglink</button>
+      <p class="fout" hidden></p>
+      <button type="button" class="link">Terug naar inloggen met wachtwoord</button></form>`;
+    const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
+    inp.value = email; inp.focus();
+    f.querySelector('.link').onclick = () => { email = inp.value.trim().toLowerCase(); stapInloggen(); };
+    f.onsubmit = async e => {
+      e.preventDefault();
+      if (!adresOk(inp, fout)) return;
+      knop.disabled = true; knop.textContent = 'Versturenâ€¦';
+      const terug = location.origin + location.pathname;
+      const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
+      if (error) { knop.disabled = false; knop.textContent = 'Stuur inloglink'; fout.textContent = /rate|limit|security purposes/i.test(error.message) ? LIMIET : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
+      stapMailVerstuurd();
     };
-    zet('<p>Code maken…</p>' + knopTerug);
-    try {
-      const { data, error } = await sb.functions.invoke('apparaat-code', { method: 'POST' });
-      if (error || !data || !data.code) throw error || new Error('geen code');
-      zet(`${naLink === true ? '<p>Wil je ook inloggen op je computer? Typ daar deze code in het inlogscherm:</p>' : `<p>Open de app op je computer, vul <b>${data.email}</b> in en kies <b>Log in met een code van je telefoon</b>. Typ daar deze code:</p>`}
-        <p style="font-family:var(--display,Verdana,sans-serif);font-weight:500;font-size:38px;letter-spacing:.18em;color:var(--ink,#3A3A3A);margin:6px 0">${data.code}</p>
-        <p>De code werkt één keer en is ongeveer een uur geldig. Deel hem met niemand.</p>${knopNieuw}${knopTerug}`);
-    } catch (e) {
-      zet('<p class="fout">Een code maken lukte niet. Probeer het zo nog eens.</p>' + knopNieuw + knopTerug);
-    }
+  }
+  function stapMailVerstuurd() {
+    scherm.innerHTML = `<form novalidate>
+      <span class="eye">Blom Collectiekeuze</span>
+      <h1>Check je mail</h1>
+      <p>We hebben een mail gestuurd naar <b>${esc(email)}</b>. Klik op de link in die mail en kies daarna een wachtwoord.</p>
+      <p>Open je de mail op je telefoon? Dan log je daar in en kies je daar je wachtwoord. Log hier daarna in met je e-mailadres en dat wachtwoord.</p>
+      <button type="button">Inloggen met wachtwoord</button></form>`;
+    scherm.querySelector('button').onclick = () => stapInloggen();
+  }
+
+  /* Wachtwoord kiezen of wijzigen (alleen als je bent ingelogd). Bij het opslaan zetten we een
+     vlag in de gebruikersgegevens, zodat de app weet dat dit account een wachtwoord heeft. */
+  function toonWachtwoord(eerste) {
+    maakScherm();
+    scherm.innerHTML = `<form novalidate>
+      <span class="eye">Blom Collectiekeuze</span>
+      <h1>${eerste ? 'Kies een wachtwoord' : 'Wachtwoord wijzigen'}</h1>
+      <p>${eerste ? 'Daarmee log je voortaan op elk apparaat in met je e-mailadres en dit wachtwoord, zonder mail.' : 'Kies een nieuw wachtwoord.'} Minimaal 8 tekens.</p>
+      <input type="email" autocomplete="username" value="${esc(window.BLOM_USER ? window.BLOM_USER.email : email)}" readonly hidden>
+      <input type="password" autocomplete="new-password" placeholder="Nieuw wachtwoord" minlength="8" required>
+      <input type="password" autocomplete="new-password" placeholder="Herhaal wachtwoord" minlength="8" required>
+      <button type="submit">Wachtwoord opslaan</button>
+      <p class="fout" hidden></p>
+      <button type="button" class="link">${eerste ? 'Later' : 'Annuleren'}</button></form>`;
+    const f = scherm.querySelector('form'), [, w1, w2] = f.querySelectorAll('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
+    const meld = t => { fout.textContent = t; fout.hidden = false; };
+    w1.focus();
+    f.querySelector('.link').onclick = () => { scherm.hidden = true; };
+    f.onsubmit = async e => {
+      e.preventDefault();
+      if (w1.value.length < 8) return meld('Het wachtwoord moet minimaal 8 tekens hebben.');
+      if (w1.value !== w2.value) return meld('De twee wachtwoorden zijn niet gelijk.');
+      knop.disabled = true; knop.textContent = 'Opslaanâ€¦';
+      const { data, error } = await sb.auth.updateUser({ password: w1.value, data: { wachtwoord: true } });
+      if (error) {
+        knop.disabled = false; knop.textContent = 'Wachtwoord opslaan';
+        return meld(/reauth/i.test(error.message) ? 'Log eerst opnieuw in met een inloglink en kies dan je wachtwoord.'
+          : /weak|pwned|leaked/i.test(error.message) ? 'Dit wachtwoord is te zwak of komt voor in gelekte lijsten. Kies een ander.'
+          : /same|different from the old/i.test(error.message) ? 'Dit is je huidige wachtwoord. Kies een ander.'
+          : 'Opslaan lukte niet: ' + error.message);
+      }
+      if (data && data.user) window.BLOM_USER = data.user;
+      scherm.innerHTML = `<form novalidate><span class="eye">Blom Collectiekeuze</span><h1>Wachtwoord opgeslagen</h1>
+        <p>Log voortaan op elk apparaat in met <b>${esc(window.BLOM_USER.email)}</b> en dit wachtwoord.</p>
+        <button type="button">Verder naar de app</button></form>`;
+      scherm.querySelector('button').onclick = () => { scherm.hidden = true; };
+    };
   }
 
   function uitlogRegel(user) {
     const form = document.getElementById('nameForm');
     if (form && !form.querySelector('.buit')) {
       const p = document.createElement('p'); p.className = 'buit';
-      p.innerHTML = 'Ingelogd als ' + user.email + ' · <button type="button">Uitloggen</button> · <button type="button">Inloggen op een ander apparaat</button>';
-      const [uit, ander] = p.querySelectorAll('button');
+      p.innerHTML = 'Ingelogd als ' + esc(user.email) + ' Â· <button type="button">Uitloggen</button> Â· <button type="button">Wachtwoord wijzigen</button>';
+      const [uit, ww] = p.querySelectorAll('button');
       uit.onclick = async () => { await sb.auth.signOut(); location.reload(); };
-      ander.onclick = () => toonApparaatCode();
+      ww.onclick = () => toonWachtwoord(false);
       form.appendChild(p);
     }
     const help = document.getElementById('mHelp');
-    if (help && !document.getElementById('mApparaat')) {
+    if (help && !document.getElementById('mWachtwoord')) {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'item'; b.id = 'mApparaat'; b.textContent = 'Inloggen op een ander apparaat';
-      b.onclick = () => { const m = document.getElementById('menu'); if (m) m.hidden = true; toonApparaatCode(); };
+      b.type = 'button'; b.className = 'item'; b.id = 'mWachtwoord'; b.textContent = 'Wachtwoord wijzigen';
+      b.onclick = () => { const m = document.getElementById('menu'); if (m) m.hidden = true; toonWachtwoord(false); };
       help.after(b);
     }
   }
@@ -312,9 +330,8 @@
     uitlogRegel(user);
     laadFonts();
     if (typeof window.__blomBoot === 'function') window.__blomBoot();
-    // link uit de mail geopend op een ander apparaat dan waar de link is aangevraagd: toon meteen
-    // de code voor dat apparaat (buiten de inlog-callback van Supabase, anders blijft die hangen)
-    if (VIA_LINK && !wachtHier) setTimeout(() => toonApparaatCode(true), 0);
+    // nog geen wachtwoord gekozen: vraag erom (buiten de inlog-callback van Supabase, anders kan die blijven hangen)
+    if (!(user.user_metadata && user.user_metadata.wachtwoord)) setTimeout(() => toonWachtwoord(true), 0);
   }
 
   async function start() {
