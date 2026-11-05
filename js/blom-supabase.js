@@ -318,7 +318,10 @@
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'item'; b.id = 'mWachtwoord'; b.textContent = 'Wachtwoord wijzigen';
       b.onclick = () => { const m = document.getElementById('menu'); if (m) m.hidden = true; toonWachtwoord(false); };
-      help.after(b);
+      const uit = document.createElement('button');
+      uit.type = 'button'; uit.className = 'item'; uit.id = 'mUitloggen'; uit.textContent = 'Uitloggen';
+      uit.onclick = async () => { await sb.auth.signOut(); location.reload(); };
+      help.after(b, uit);
     }
   }
 

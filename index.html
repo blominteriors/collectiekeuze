@@ -1797,12 +1797,17 @@ $('xlsx').onclick=async()=>{
 $('menuBtn').onclick=()=>{ $('mInfo').textContent=(me?'Ingelogd als '+me.name+'. ':'')+(canShare===false?'Keuzes worden alleen op dit apparaat bewaard.':'Keuzes worden gedeeld met het team.'); $('menu').hidden=false; };
 $('mClose').onclick=()=>$('menu').hidden=true;
 $('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hidden=true; go(b.dataset.go); });
-$('mName').onclick=()=>{ $('menu').hidden=true; askName(); };
+$('mName').hidden=true;   // de naam komt van het inlogaccount
 $('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
 let afterName=null;
 const VASTE_GEBRUIKERS=['Jan','Johan','Test'];
-function askName(cb){ afterName=cb||null; $('nameInput').value='';
+/* De beoordelaar is het ingelogde account: de gebruikersnaam is het deel van het e-mailadres
+   voor de @ (s.korenstra@blominterieurs.nl -> S.korenstra). Kiezen van een naam is niet meer nodig. */
+const naamVan=email=>{ const d=String(email||'').split('@')[0]; return d.charAt(0).toUpperCase()+d.slice(1); };
+function meVanAccount(){ const u=window.BLOM_USER; if(!u||!u.email) return null; const n=naamVan(u.email); return {key:keyOf(n),name:n}; }
+function askName(cb){ if(!me) me=meVanAccount(); if(me){ if(cb) cb(); return; } kiesNaam(cb); }
+function kiesNaam(cb){ afterName=cb||null; $('nameInput').value='';
   // vaste gebruikers; een andere gebruiker via +
   const namen=[...VASTE_GEBRUIKERS]; $('nameNew').hidden=true;
   $('namePick').innerHTML=namen.map(n=>'<button type="button" class="'+(me&&me.name.toLowerCase()===n.toLowerCase()?'on':'')+'" data-naam="'+esc(n)+'">'+esc(n)+'</button>').join('')+'<button type="button" class="nplus" id="namePlus" aria-label="Andere gebruiker toevoegen">+</button>';
@@ -1820,11 +1825,12 @@ $('nameForm').addEventListener('submit',e=>{
   }
   hist=[]; $('nameModal').hidden=true; render(); if(afterName){const f=afterName; afterName=null; f();}
 });
-$('who').onclick=()=>askName();
+$('who').onclick=()=>$('menuBtn').click();
 
 /* ---------------- boot ---------------- */
 window.__blomBoot=async function boot(){
-  const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n};
+  me=meVanAccount();
+  if(!me){ const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n}; }
   try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }
   await loadSup(ls.get('blom-ck-sup')||SUPS[0].id);
   chunk(0);
