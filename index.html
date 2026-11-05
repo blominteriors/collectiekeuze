@@ -806,7 +806,7 @@ function uText(u){ const p=uParts(u); return p.length?p.map(([a,b])=>a+': '+b).j
 // COM-koppeling per leverancier: alleen 'Eigen stof / COM' noemen als bevestigd (Brees: stofgroep A = COM nog te bevestigen door JE of WH)
 const COM_OK={piaval:true,brees:true,blues:true,infiniti:true};   // Brees stofgroep A = COM: bevestigd door de gebruiker (28-10-2026); Blues: kolom C.O.M. in de prijslijst zelf
 const comOk=()=>!!(SUP&&COM_OK[SUP.id]);
-function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(c)+'</span></span>'; }
+function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(EIGEN(c)?eigenNaam(c):n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(c)+'</span></span>'; }
 function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(priceRows(code).map(r=>r[0]))].filter(c=>PR.bc[c]===n); return cs.find(c=>!/OUTDOOR/.test(c))||cs[0]||null; }
 const pk=v=>v.pk||v.code;   // prijzen per uitvoering (bij tafels die AFAS per maat heeft: per AFAS-artikel)
 // stofkeuze brandvertragend: de prijslijst noemt dit in het derde deel van de uitvoering ("Brandvertragend" / "Niet brandvertragend")
@@ -939,6 +939,7 @@ const plural=(t,n)=>n===1?(t?t.toLowerCase():'artikel'):(PL[t]||'artikelen');
 // laagste verkoopprijs (Excel) van een product; COM-regels alleen als er niets anders is
 // eigen materiaal van de klant, geen stofgroep van de leverancier: COM en COF (eigen stof), COL (eigen leer). Nooit de goedkoopste.
 const EIGEN=c=>/^(COM|COL|COF)$/i.test(c||'');
+const eigenNaam=c=>/^COL$/i.test(c)?'Eigen leer / COL':'Eigen stof / '+String(c).toUpperCase();
 function pmin(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>!EIGEN(r[0])); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best)) best=r[5]; }); }); return best; }
 // per soort (bank, fauteuil, stoel …) de producten van goedkoop naar duur; zonder prijzen de volgorde van de prijslijst
 function groups(m){ const gk=prState+'|'+FRSEL+'|'+frUse; if(m._g&&m._gp===gk) return m._g; const o=[], map={}; m.p.forEach((p,k)=>{ const t=p.t||''; if(!(t in map)){ map[t]=o.length; o.push({t,pk:[],idx:[]}); } o[map[t]].pk.push(k); });
@@ -975,6 +976,8 @@ function renderCard(soft){
 // modelnaam binnen de serie leesbaar maken: serienaam weg, rest met hoofdletter (BUTTERFLY ARM 24 -> Arm 24)
 // product zonder foto: groot kruis, uitleg en een knop om verder te gaan (data-act="next" = volgend product)
 const NOFOTO='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is uitgesteld: we hebben nog geen foto van dit product</b><button type="button" data-act="next">Verder</button></div>';
+// zelfde melding zonder knop, voor plekken met een eigen navigatie (deck, productkaart)
+const NOFOTO_K='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is uitgesteld: we hebben nog geen foto van dit product</b></div>';
 // heeft dit artikel een bruikbare foto? Een foto van een ander producttype (bijvoorbeeld een barkruk bij een stoel) telt niet
 function fotoVan(m,x){ if(x.img==null) return false; if(!x.imgc||x.imgc===x.code) return true; const b=m.v.find(y=>y.code===x.imgc); return !b||!b.type||!x.type||b.type===x.type; }
 function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
@@ -1044,7 +1047,7 @@ function pricesHTML(v){
     ? '<div class="pr'+(cls?' '+cls:'')+(pf&&!lp?' two':'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+(lp?' <span class="pc">'+lp+'</span>':'')+'</div>'+P.map(p=>'<div'+cc(p)+'>'+f(p)+(pf&&!lp?'<small class="pc2">'+pf(p)+'</small>':'')+'</div>').join('')+'</div>'
     : '<div class="pr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+'</div>'+P.map(p=>'<div>'+f(p)+'</div><div class="pc">'+(pf?pf(p):'')+'</div>').join('')+'</div>';
   const same=P.every(p=>uText(p.u)===uText(P[0].u));
-  const lab=p=>!p.cat?'Prijs':p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Vanaf (goedkoopste stofgroep)':'Stofgroep '+p.cat;
+  const lab=p=>!p.cat?'Prijs':EIGEN(p.cat)?eigenNaam(p.cat):p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Vanaf (goedkoopste stofgroep)':'Stofgroep '+p.cat;
   const forRows=same?uParts(P[0].u).map(([a,b])=>'<div><span>'+a+'</span>'+esc(b)+'</div>').join(''):P.map(p=>'<div><span>'+lab(p)+'</span>'+esc(uText(p.u))+'</div>').join('');
   const more=P.some(p=>p.n>1);
   return `<div class="prices${prOpen?' open':''}" id="prices">
@@ -1190,7 +1193,7 @@ function openForm(m){
   if(prev){ if(prev.v) F.v=Object.assign({},prev.v); if(prev.oc) F.oc=prev.oc; if(prev.lab) F.lab=prev.lab.slice(); F.g=JSON.parse(JSON.stringify(prev.g||[])); }
   // eerst per product swipen (Tinder), daarna online collectie en labels
   DECK_T=Date.now()+600;   // korte pauze: een dubbele tik op 'Serie houden' mag het eerste product niet meteen goedkeuren
-  F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>m.v[i].img!=null)?1:0)-(m.p[a].idx.some(i=>m.v[i].img!=null)?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
+  F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>fotoVan(m,m.v[i]))?1:0)-(m.p[a].idx.some(i=>fotoVan(m,m.v[i]))?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
   // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
   // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), 'voorstel' (zoals de artikelen van deze serie die al in AFAS staan), of leeg
   const prevRec=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
@@ -1222,7 +1225,7 @@ const ownIn=()=>false;
 // meerprijs per afwerking (bijv. beuken tegenover walnoot): netto inkoopprijs in dezelfde stofgroep, anders de laagste inkoopprijs
 function finPrices(m,k){
   if(prState!=='ok') return null; const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.length<2) return null;
-  const ink=(v,cat)=>{ const rs=priceRows(pk(v)).filter(r=>(cat==null||r[0]===cat)&&r[3]!=null); return rs.length?Math.min(...rs.map(r=>r[3])):null; };
+  const ink=(v,cat)=>{ let rs=priceRows(pk(v)).filter(r=>(cat==null||r[0]===cat)&&r[3]!=null); if(cat==null){ const nc=rs.filter(r=>!EIGEN(r[0])); if(nc.length) rs=nc; } return rs.length?Math.min(...rs.map(r=>r[3])):null; };
   let cat=null, lbl='laagste netto inkoopprijs';
   for(const n of [1,0]){ const cs=vs.map(v=>supCat(pk(v),n)); if(cs.every(c=>c!=null)&&new Set(cs).size===1){ cat=cs[0]; lbl='netto inkoopprijs, Blom '+n+(n===0?'/COM':''); break; } }
   const p={}; vs.forEach(v=>p[v.id]=ink(v,cat));
@@ -1273,7 +1276,7 @@ function deckCard(k,top){
   const pg=ownIn(m,k);
   return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
-    +'<div class="dimg">'+(a.img!=null&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">':'<span class="wait">'+(a.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>'
+    +'<div class="dimg">'+(fotoVan(m,a)&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">':'<span class="wait">foto laden…</span>')+'</div>'
     +'<div class="dmeta">'+(top?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
@@ -1333,8 +1336,8 @@ let OPZF=-1, OPZA=true;   // OPZA: ook de producten die al in AFAS staan en je h
 async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o.alle.map(c=>c.m))]);
   const all=o.alle, list=OPZF<0?all:all.filter(c=>c.lab.has(OPZF));
   const cnt=j=>o.cards.filter(c=>c.lab.has(j)).length;
-  const card=c=>{ const on=c.on.length>0, v=(on?c.on:c.vs).find(x=>img(x.img))||c.vs[0]; const n=v.pkn||v.nv||v.blom||'[Blom naam]', i=all.indexOf(c), nw=x=>x.filter(y=>!y.inA).length, af=x=>x.filter(y=>y.inA).length;
-    return '<div class="pk-card'+(on?'':' pk-off')+'"><button type="button" class="ci" data-opz="'+i+'" aria-label="Productkaart '+esc(n)+' openen">'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'')+'</button><div class="cb"><b>'+esc(n)+'</b><small>'+[nw(c.vs)?nw(c.on)+(nw(c.on)<nw(c.vs)?' van '+nw(c.vs):'')+' nieuw':'',af(c.vs)?af(c.on)+(af(c.on)<af(c.vs)?' van '+af(c.vs):'')+' in AFAS':''].filter(Boolean).join(' · ')+' · '+esc(c.m.fam)+'</small>'
+  const card=c=>{ const on=c.on.length>0, v=(on?c.on:c.vs).find(x=>fotoVan(c.m,x)&&img(x.img))||c.vs[0]; const n=v.pkn||v.nv||v.blom||'[Blom naam]', i=all.indexOf(c), nw=x=>x.filter(y=>!y.inA).length, af=x=>x.filter(y=>y.inA).length;
+    return '<div class="pk-card'+(on?'':' pk-off')+'"><button type="button" class="ci" data-opz="'+i+'" aria-label="Productkaart '+esc(n)+' openen">'+(fotoVan(c.m,v)&&img(v.img)?'<img src="'+img(v.img)+'" alt="">':'')+'</button><div class="cb"><b>'+esc(n)+'</b><small>'+[nw(c.vs)?nw(c.on)+(nw(c.on)<nw(c.vs)?' van '+nw(c.vs):'')+' nieuw':'',af(c.vs)?af(c.on)+(af(c.on)<af(c.vs)?' van '+af(c.vs):'')+' in AFAS':''].filter(Boolean).join(' · ')+' · '+esc(c.m.fam)+'</small>'
       +(on?'':'<span class="opzn">Niet toegevoegd · open de kaart om aan te passen</span>')+'</div></div>'; };
   $('pkaart').innerHTML='<div class="pk-bar"><small style="font-size:12.5px;color:#fff;font-family:var(--display);font-weight:500">Opzet online collectie · '+esc(SUP.name)+'</small><small>'+(OPZA?'Alle producten':'Nieuwe producten (nog niet in AFAS)')+' uit series die je houdt of opneemt, met online collectie intern of klanten, inclusief de serie die nu open staat. Open een kaart om iets wel of niet toe te voegen.</small></div>'
     +'<div class="pk-grid opz"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'
@@ -1354,7 +1357,9 @@ function pkPrijs(v){ if(prState!=='ok') return '<div><b>Prijzen</b><span>'+(prSt
   const rs=priceRows(pk(v)), nc=rs.filter(r=>!EIGEN(r[0])); let r=null; (nc.length?nc:rs).forEach(x=>{ if(x[5]!=null&&(r==null||x[5]<r[5])) r=x; });
   if(!r) return '<div><b>Prijzen</b><span>geen prijs voor deze uitvoering</span></div>';
   const vn='<small style="display:block;font-size:11px;color:#666">vanaf'+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small>';
-  return '<div><b>Verkoopprijs</b><span>'+eur(r[5])+vn+'</span></div>'+(careOn()&&r[7]!=null?'<div><b>Blom Care prijs</b><span>'+eur(r[7])+'</span></div>':'')+'<div><b>Inkoopprijs</b><span>'+eur(r[3])+'</span></div>'; }
+  return '<div><b>Verkoopprijs</b><span>'+eur(r[5])+vn+'</span></div>'+(careOn()&&r[7]!=null?'<div><b>Blom Care prijs</b><span>'+eur(r[7])+'</span></div>':'')+'<div><b>Inkoopprijs</b><span>'+eur(r[3])+'</span></div>'
+    // marge zoals in de prijslijst: (verkoopprijs - verrekenprijs) / verkoopprijs
+    +(r[4]!=null&&r[5]?'<div><b style="font-size:11px;font-weight:400">Marge</b><span style="font-size:11px;color:#666">'+pct((r[5]-r[4])/r[5])+'</span></div>':''); }
 function closePk(){ $('pkaart').hidden=true; }
 function renderPk(){
   const m=PK.m, k=PK.k, p=m.p[k], vs=pkVar(m,k), v=vs[Math.min(PK.vi,vs.length-1)], G=pkGroup(m,k);
@@ -1366,15 +1371,15 @@ function renderPk(){
   const nr=v.inA?(v.afas||''):'';
   const dims=[...new Set(allV.map(pkDims).filter(Boolean))];
   // foto's per zijde: de app toont voor, anders links, rechts, achter (v.zijde); op de productkaart kun je wisselen
-  const zs=ZIJ.filter(z=>v.zijden&&v.zijden[z]&&img(v.zijden[z].img)), zk=(PK.zijde&&zs.includes(PK.zijde))?PK.zijde:(v.zijde||zs[0]), pkSrc=(zk&&v.zijden&&v.zijden[zk])?img(v.zijden[zk].img):img(v.img);
+  const fok=fotoVan(m,v), zs=!fok?[]:ZIJ.filter(z=>v.zijden&&v.zijden[z]&&img(v.zijden[z].img)), zk=(PK.zijde&&zs.includes(PK.zijde))?PK.zijde:(v.zijde||zs[0]), pkSrc=!fok?null:(zk&&v.zijden&&v.zijden[zk])?img(v.zijden[zk].img):img(v.img);
   const bar='<div class="pk-bar">'+(PK.back?'<button type="button" class="pk-back" id="pkBack">← Terug naar opzet</button>':'')+'<div class="pk-sw" role="tablist"><button type="button" data-pkt="win" class="'+(PK.tab==='win'?'on':'')+'">Productvenster</button><button type="button" data-pkt="card" class="'+(PK.tab==='card'?'on':'')+'">Kaart in het overzicht</button></div><small>Voorbeeld met de gegevens uit deze app'+(nm.vs?' en het naamvoorstel':'')+'. Er wordt niets aangepast.</small></div>';
   let body='';
   if(PK.tab==='win'){
     const sel=(id,lbl,opts,cur)=>'<label for="'+id+'">'+lbl+'</label><select id="'+id+'">'+opts.map(([val,t])=>'<option value="'+esc(String(val))+'"'+(String(val)===String(cur)?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select>';
     body='<div class="pk-modal"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten">×</button><div class="pk-grid2">'
-      +'<div class="pk-img"><div class="ph">'+(pkSrc?'<img src="'+pkSrc+'" alt="">':'<span class="note">geen foto beschikbaar</span>')
+      +'<div class="pk-img"><div class="ph">'+(pkSrc?'<img src="'+pkSrc+'" alt="">':NOFOTO_K)
         +(G.length>1?'<button type="button" class="pk-nav-b l" data-pknav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="pk-nav-b r" data-pknav="1" aria-label="Volgende uitvoering">›</button><span class="pk-cnt">'+(G.indexOf(k)+1)+' / '+G.length+'</span>':'')+'</div>'
-        +(G.length>1?'<div class="pk-th">'+G.map(j=>{ const a=pkVar(m,j).find(x=>img(x.img))||pkVar(m,j)[0]; return '<button type="button" class="'+(j===k?'on':'')+'" data-pkj="'+j+'" title="'+esc(shortU(m,j))+'">'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'</button>'; }).join('')+'</div>':'')+(zs.length>1?'<div class="pk-zij" role="radiogroup" aria-label="Zijde">'+zs.map(z=>'<button type="button" role="radio" aria-checked="'+(z===zk)+'" class="'+(z===zk?'on':'')+'" data-pkz="'+z+'">'+ZIJL[z]+'</button>').join('')+'</div>':'')+'<small>Afbeelding dient ter illustratie van de modelserie; de werkelijke indeling en afmeting zijn afhankelijk van de gekozen configuratie.</small></div>'
+        +(G.length>1?'<div class="pk-th">'+G.map(j=>{ const a=pkVar(m,j).find(x=>fotoVan(m,x)&&img(x.img))||pkVar(m,j)[0]; return '<button type="button" class="'+(j===k?'on':'')+'" data-pkj="'+j+'" title="'+esc(shortU(m,j))+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'</button>'; }).join('')+'</div>':'')+(zs.length>1?'<div class="pk-zij" role="radiogroup" aria-label="Zijde">'+zs.map(z=>'<button type="button" role="radio" aria-checked="'+(z===zk)+'" class="'+(z===zk?'on':'')+'" data-pkz="'+z+'">'+ZIJL[z]+'</button>').join('')+'</div>':'')+'<small>Afbeelding dient ter illustratie van de modelserie; de werkelijke indeling en afmeting zijn afhankelijk van de gekozen configuratie.</small></div>'
       +'<div><div class="pk-title"><h2>'+esc(naam)+'</h2><span class="pk-badge'+(actief?'':nm.vs?' vs':' off')+'">'+(actief?'Actief':nm.vs?'Voorstel':'Niet online')+'</span></div>'
       +'<div class="pk-tabs"><span class="on">basic</span><span>specific</span></div>'
       +'<p class="pk-desc">'+(v.desc?esc(v.desc):'Nog geen omschrijving.')+'</p>'
@@ -1398,7 +1403,7 @@ function renderPk(){
     const card=(x,dim)=>'<div class="pk-card'+(dim?' pk-dim':'')+'"><div class="ci">'+(x.src?'<img src="'+x.src+'" alt="">':'')+(x.cnt>1?'<em>1/'+x.cnt+'</em>':'')+'</div><div class="cb"><b>'+esc(x.n)+'</b><small>'+esc(x.nr)+'</small><div class="cf"><span>Collection</span>'+icon('<path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11" stroke="#111"/>')+'</div></div></div>';
     const seen=new Set(G.map(j=>pkName(m.p[j].idx.map(i=>m.v[i])).n));
     const buren=[]; m.p.forEach((q,j)=>{ const qv=pkVar(m,j), qn=pkName(qv).n||'[Blom naam]'; if(seen.has(qn)||buren.length>=3) return; seen.add(qn); buren.push({src:img(qv[0].img),cnt:qv.length,n:qn,nr:qv[0].inA?(qv[0].afas||''):'nog niet in AFAS'}); });
-    body='<div class="pk-grid"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'+card({src:img(v.img),cnt:allV.filter(x=>x.img!=null).length,n:naam,nr:nr||'nog niet in AFAS'},false)+buren.map(b=>card(b,true)).join('')+'<p class="note" style="grid-column:1/-1;margin:0">Eén kaart per Blom naam: alle uitvoeringen met dezelfde naam staan op dezelfde productkaart. De lichtere kaarten zijn andere namen uit deze serie. Geen prijzen in het overzicht.</p></div>';
+    body='<div class="pk-grid"><button type="button" class="pk-x" id="pkX" aria-label="Sluiten" style="position:static;justify-self:end;grid-column:1/-1;margin:-12px -6px -6px 0">×</button>'+card({src:fotoVan(m,v)&&img(v.img),cnt:allV.filter(x=>fotoVan(m,x)).length,n:naam,nr:nr||'nog niet in AFAS'},false)+buren.map(b=>card(b,true)).join('')+'<p class="note" style="grid-column:1/-1;margin:0">Eén kaart per Blom naam: alle uitvoeringen met dezelfde naam staan op dezelfde productkaart. De lichtere kaarten zijn andere namen uit deze serie. Geen prijzen in het overzicht.</p></div>';
   }
   $('pkaart').innerHTML=bar+body;
   $('pkX').onclick=closePk;
@@ -1571,7 +1576,7 @@ function renderDeckDone(){
   const ks=d.order, yes=ks.filter(k=>m.p[k].idx.some(i=>F.v[m.v[i].id]===1));
   B.innerHTML='<div class="deck ddone"><div class="dbig">'+(yes.length?OK(34):NO(34))+'</div><h2>'+(yes.length?'Klaar!':'Niets gekozen')+'</h2>'
     +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+' producten '+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
-    +'<div class="dgrid">'+ks.map(k=>{const p=m.p[k], a=m.v[p.idx[0]], on=p.idx.some(i=>F.v[m.v[i].id]===1); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(shortTitle(m,k))+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(p.idx.map(i=>m.v[i]).find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
+    +'<div class="dgrid">'+ks.map(k=>{const p=m.p[k], a=m.v[p.idx[0]], on=p.idx.some(i=>F.v[m.v[i].id]===1); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(shortTitle(m,k))+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(p.idx.map(i=>m.v[i]).find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
     +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (met deze serie)</button>'
     +'<div class="dbtns2"><button type="button" class="ghost" id="dAgain">Opnieuw swipen</button><button type="button" class="ghost" id="dList2">Overzicht</button><button type="button" class="cta" id="dNext"'+(yes.length?'':' disabled')+'>Opslaan en volgende serie →</button></div>'
     +'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>⌫</kbd> laatste terug</span></div></div>';
@@ -1601,7 +1606,7 @@ function renderForm(){
   // swipen is leidend; het oude overzicht (lijst) blijft bereikbaar via 'Overzicht'
   if(F.view!=='list'){ F.view='deck'; $('form').classList.add('deckmode'); return renderDeck(); }
   $('form').classList.remove('deckmode');
-  const m=F.m, has=anyIn(m), v0=m.v.find(v=>img(v.img))||m.v[0];
+  const m=F.m, has=anyIn(m), v0=m.v.find(v=>fotoVan(m,v)&&img(v.img))||m.v[0];
   const yn=(key,val)=>'<div class="yn" role="group"><button type="button" class="nee'+(val===0?' on':'')+'" data-k="'+key+'" data-val="0" aria-pressed="'+(val===0)+'">'+CX+'Nee</button><button type="button" class="ja'+(val===1?' on':'')+'" data-k="'+key+'" data-val="1" aria-pressed="'+(val===1)+'">'+CK+'Ja</button></div>';
   const curTag='<span class="cur">AFAS-waarde '+dstr()+'</span>';
   const chosen=m.v.filter(v=>F.v[v.id]===1), cids=chosen.map(v=>v.id);
@@ -1616,11 +1621,11 @@ function renderForm(){
   const gsec=chosen.length?`<div class="fsec"><h2>4 · Afwijkende groepen <span class="opt">optioneel</span></h2>
     <p class="fnote">Wijkt een deel van de serie af van de standaard? Tik artikelen aan (of gebruik de snelkeuze) en zet ze in een eigen groep met andere instellingen.</p>
     <div class="qsel">${quick.map(([k,l])=>'<button type="button" data-q="'+esc(k)+'">'+esc(l)+'</button>').join('')}</div>
-    <div class="gchips">${chosen.map(v=>{const i=gi(v.id); return '<button type="button" class="gchip'+(F.sel[v.id]?' sel':'')+'" data-sel="'+esc(v.id)+'" aria-pressed="'+!!F.sel[v.id]+'"><span class="gl'+(i<0?'':' x')+'">'+(i<0?'A':GL(i))+'</span>'+(img(v.img)?'<img src="'+img(v.img)+'" alt="">':'<i></i>')+'<span class="gc">'+esc(v.code)+'</span></button>'}).join('')}</div>
+    <div class="gchips">${chosen.map(v=>{const i=gi(v.id); return '<button type="button" class="gchip'+(F.sel[v.id]?' sel':'')+'" data-sel="'+esc(v.id)+'" aria-pressed="'+!!F.sel[v.id]+'"><span class="gl'+(i<0?'':' x')+'">'+(i<0?'A':GL(i))+'</span>'+(fotoVan(m,v)&&img(v.img)?'<img src="'+img(v.img)+'" alt="">':'<i></i>')+'<span class="gc">'+esc(v.code)+'</span></button>'}).join('')}</div>
     <div class="gact"${nsel?'':' hidden'}><span><b>${nsel}</b> geselecteerd →</span><button type="button" data-mv="new">Nieuwe groep</button><button type="button" data-mv="care">Nieuwe groep: alleen Care</button>${F.g.map((g,i)=>g.vis.length?'<button type="button" data-mv="'+i+'">Naar groep '+GL(i)+'</button>':'').join('')}<button type="button" data-mv="-1">Terug naar standaard (A)</button></div>
     ${F.g.map((g,i)=>g.vis.length?'<div class="gcard"><div class="gh"><span><span class="gl x">'+GL(i)+'</span> Groep '+GL(i)+(g.n?' · '+esc(g.n):'')+' · '+g.vis.length+' art.'+(g.afas?' <span class="cur">uit AFAS '+dstr()+'</span>':'')+'</span><button type="button" data-gdel="'+i+'">Opheffen</button></div><div class="gcodes">'+g.vis.map(esc).join(', ')+'</div><div class="gsub">Online collectie</div>'+seg(g.oc,'data-goc="'+i+'" data-v')+'<div class="gsub">Labels</div>'+labChips(g.lab,i)+'</div>':'').join('')}
   </div>`:'';
-  $('formBody').innerHTML=`<div class="ftop"><div class="th">${img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':''}</div><div><div class="eye">${esc(SUP.name)} · ${m.v.filter(v=>v.inA).length} van ${m.v.length} in AFAS</div><h1>Serie ${esc(m.fam)} ${has?'houden':'opnemen'}</h1><div style="font-size:12px;margin-top:3px">${has?'Ingevuld met de AFAS-waarden van '+dstr()+'. Controleer en vul aan.':'Nieuw voor Blom: vul alles in.'}</div></div></div>
+  $('formBody').innerHTML=`<div class="ftop"><div class="th">${fotoVan(m,v0)&&img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':''}</div><div><div class="eye">${esc(SUP.name)} · ${m.v.filter(v=>v.inA).length} van ${m.v.length} in AFAS</div><h1>Serie ${esc(m.fam)} ${has?'houden':'opnemen'}</h1><div style="font-size:12px;margin-top:3px">${has?'Ingevuld met de AFAS-waarden van '+dstr()+'. Controleer en vul aan.':'Nieuw voor Blom: vul alles in.'}</div></div></div>
   <button type="button" class="redeck" id="reDeck">← Terug naar swipen <span>${m.p.length} producten · je keuzes uit dit overzicht gaan mee</span></button>
   <div class="fsec"><h2>1 · Welke artikelen uit de serie *</h2>${groups(m).map(g=>'<div class="fgrp"><div class="fgh"><span>'+esc(cap(plural(g.t,2)))+' <span style="color:var(--g400);font-weight:300">'+g.pk.length+' · '+g.pk.filter(x=>pIn(m,x)).length+' in AFAS</span></span>'+(g.idx.length>1?'<span class="fgb">alle: <div class="yn"><button type="button" class="nee" data-bulk="0" data-g="'+esc(g.t)+'">'+CX+'Nee</button><button type="button" class="ja" data-bulk="1" data-g="'+esc(g.t)+'">'+CK+'Ja</button></div></span>':'')+'</div>'+g.pk.map(k=>{const p=m.p[k], a0=m.v[p.idx[0]]; return '<div class="fprod"><div class="fpimg">'+(img(a0.img)?'<img src="'+img(a0.img)+'" alt="">':'')+'</div><div class="fpbody"><div class="fph"><span>'+esc(plabel(m,k))+'</span><button type="button" class="finfo" data-finfo="'+k+'" aria-label="Info en instellingen">ⓘ info</button></div>'+p.idx.map(i=>m.v[i]).map(v=>'<div class="frow">'+(v.fin?'<span class="nm">'+esc(cap(v.fin))+'</span>':'')+'<span class="st">'+esc(v.code)+(v.blom?' · '+esc(v.blom):'')+'<br>'+(v.inA?'<b>in AFAS</b>':'nog niet in AFAS'+(F.v[v.id]==null?' · <b>kies</b>':''))+'<br>'+listSet(v)+'</span>'+yn('v:'+v.id,F.v[v.id])+'</div>').join('')+'</div></div>'}).join('')+'</div>').join('')}</div>
   <div class="fsec"><div class="stdh"><span class="gl">A</span><div><b>Standaard voor de serie</b><span>Geldt voor ${F.g.some(g=>g.vis.length)?nA+' van '+chosen.length:'alle '+chosen.length} gekozen artikelen${F.g.some(g=>g.vis.length)?', de rest staat in een afwijkende groep':''}.</span></div></div>
@@ -1672,8 +1677,8 @@ function renderList(ps){
     if(fa==='in'&&!anyIn(m)) continue; if(fa==='uit'&&anyIn(m)) continue;
     const vs=sel.map(p=>({p,r:p.c[m.id]||{}})); const ss=vs.map(o=>o.r.s||'open');
     if(f==='split'){ if(!(ss.includes('wel')&&ss.includes('niet'))) continue; } else if(f!=='all'&&!ss.includes(f)) continue;
-    vis.push(m); const v0=m.v.find(v=>img(v.img))||m.v[0]; const nin=m.v.filter(v=>v.inA).length;
-    rows.push('<button type="button" class="mrow" data-id="'+esc(m.id)+'">'+(img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':'<span class="ni"></span>')+'<span><span class="nm">Serie '+esc(m.fam)+'</span><small>'+esc(m.cat)+' · '+m.v.length+' artikelen · '+nin+' in AFAS</small><span class="votes">'+vs.map(o=>'<span class="vote '+(o.r.s||'')+'">'+esc(o.p.naam.split(' ')[0])+': '+(o.r.s==='wel'?(nin?'houden':'opnemen'):o.r.s==='niet'?'niet':'open')+'</span>').join('')+'</span></span></button>');
+    vis.push(m); const v0=m.v.find(v=>fotoVan(m,v)&&img(v.img))||m.v[0]; const nin=m.v.filter(v=>v.inA).length;
+    rows.push('<button type="button" class="mrow" data-id="'+esc(m.id)+'">'+(fotoVan(m,v0)&&img(v0.img)?'<img src="'+img(v0.img)+'" alt="">':'<span class="ni"></span>')+'<span><span class="nm">Serie '+esc(m.fam)+'</span><small>'+esc(m.cat)+' · '+m.v.length+' artikelen · '+nin+' in AFAS</small><span class="votes">'+vs.map(o=>'<span class="vote '+(o.r.s||'')+'">'+esc(o.p.naam.split(' ')[0])+': '+(o.r.s==='wel'?(nin?'houden':'opnemen'):o.r.s==='niet'?'niet':'open')+'</span>').join('')+'</span></span></button>');
   }
   $('mList').innerHTML=rows.length?rows.join(''):'<p class="note" style="padding:14px">Geen series in deze selectie.</p>';
   if(!renderList.busy&&vis.some(m=>m.ch.some(c=>!loadedChunks[c]))){ renderList.busy=true; ensureImgs(vis).then(()=>{ renderList.busy=false; if(view==='res') renderList() }); }
@@ -1712,7 +1717,7 @@ $('xlsx').onclick=async()=>{
     // 1 Series
     note.textContent='Tabblad Series…';
     const w1=sheet('Series',[['Foto',11],['Leverancier',11],['Serie',18],['Productgroep',20],['Artikelen',11],['In AFAS',9],...pn.map(n=>[n,13]),['Aantal houden/opnemen',12],['Aantal niet',10]]);
-    for(const m of M){ const v0=m.v.find(v=>img(v.img))||m.v[0]; const vals=ps.map(p=>keuze(m,p.c[m.id])); const id=img(v0.img)?await addImg('i'+v0.img,toJpeg(img(v0.img),160)):null;
+    for(const m of M){ const v0=m.v.find(v=>fotoVan(m,v)&&img(v.img))||m.v[0]; const vals=ps.map(p=>keuze(m,p.c[m.id])); const id=fotoVan(m,v0)&&img(v0.img)?await addImg('i'+v0.img,toJpeg(img(v0.img),160)):null;
       await addRow(w1,['',sup.name,m.fam,m.cat,m.v.length,m.v.filter(v=>v.inA).length,...vals,vals.filter(x=>x==='HOUDEN'||x==='OPNEMEN').length,vals.filter(x=>x==='NIET').length],[[1,id]],pn.map((_,i)=>7+i)); }
     // 2 Artikelen
     note.textContent='Tabblad Artikelen…';
@@ -1722,7 +1727,7 @@ $('xlsx').onclick=async()=>{
     const w2=sheet('Artikelen',[...base,...pc,['Productpagina',36],['Naam Blom (voorstel)',26],['Toelichting naamvoorstel',70]]);
     const nowCols=[9,10,11,12,13,14,15,16], perStart=base.length+1;
     for(const m of M) for(const v of m.v){
-      const id=img(v.img)?await addImg('i'+v.img,toJpeg(img(v.img),160)):null;
+      const id=fotoVan(m,v)&&img(v.img)?await addImg('i'+v.img,toJpeg(img(v.img),160)):null;
       const pr=[]; if(prState==='ok'){ for(const n of [0,1,'-']){ const sc=n==='-'?null:supCat(pk(v),n); const p=n==='-'?calc(pk(v),''):sc!=null?calc(pk(v),sc):null; pr.push(p?p.b:'',p?p.net:'',p?p.ver:'',p&&p.vk!=null?p.vk:''); } if(careOn()) for(const n of [0,1]){ const sc=supCat(pk(v),n), p=sc!=null?calc(pk(v),sc):null; pr.push(p&&p.care!=null?p.care:''); } pr.push([...new Set(priceRows(pk(v)).map(r=>r[6]).filter(Boolean))].join(' ')); }
       const per=[]; ps.forEach(p=>{ const r=p.c[m.id]; const s=vStatus(r,v); per.push(s==='wel'?(v.inA?'HOUDEN':'OPNEMEN'):s==='niet'?'NIET':'', s==='wel'&&effOf(r,v.id).oc?OCL[effOf(r,v.id).oc]+(effOf(r,v.id).g!=='A'?' (groep '+effOf(r,v.id).g+')':''):'', s==='wel'&&effOf(r,v.id).lab?LABELS.filter((_,i)=>effOf(r,v.id).lab[i]).map(l=>l[0]).join(', ')||'geen':''); });
       const row=await addRow(w2,['',m.fam,v.code,v.type,m.p[v.p].l,cap(v.fin),v.blom,v.afas,v.inA?'J':'N',JN(v.online),JN(v.klant),...LABELS.map((_,i)=>v.lab?JN(v.lab[i]):''),v.dim[0]??'',v.dim[2]??'',v.dim[6]??'',v.bron,...pr,...per,v.url?{text:'Link',hyperlink:v.url}:'',v.inA?'':(v.nv||''),v.inA?'':((v.nvw||'')+(v.nvc?' (controleren)':''))],[[1,id]],[...nowCols,...ps.flatMap((_,i)=>[perStart+i*3,perStart+i*3+1])]);
