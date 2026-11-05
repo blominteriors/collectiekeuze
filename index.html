@@ -442,9 +442,9 @@ details.box .tablewrap{border:0}
 .dzoom:hover{background:var(--ink);color:#fff}
 /* schermvullende foto: klik (desktop) om verder in te zoomen, op mobiel met twee vingers */
 .zoom .zi img{cursor:zoom-in}
-.zoom .zi.groot{display:block;touch-action:pan-x pan-y pinch-zoom}
-.zoom .zi.groot img{max-width:none;max-height:none;width:220%;cursor:zoom-out;margin:0 auto}
-@media (max-width:767px){.zoom .zi.groot img{width:300%}}
+.zoom .zi.groot{display:flex;align-items:flex-start;justify-content:flex-start;touch-action:pan-x pan-y pinch-zoom}
+.zoom .zi.groot img{max-width:none;max-height:none;width:150%;cursor:zoom-out;margin:auto;flex:none}
+@media (max-width:767px){.zoom .zi.groot img{width:160%}}
 .dmeta{border-top:1px solid var(--n500);padding:10px 12px 12px;display:grid;gap:4px;flex:none}
 .dtype{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g400)}
 .dname{font-family:var(--display);font-weight:500;font-size:21px;line-height:1.1}
