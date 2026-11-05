@@ -65,6 +65,13 @@ jobs:
           };
           EOF
           fi
+          # versienummer achter de eigen scripts, zodat browsers na een publicatie meteen de nieuwe versie ophalen
+          V=$(git -C live rev-parse --short HEAD)
+          sed -i -E 's#(src="js/[^"?]+\.js)"#\1?v='"$V"'"#g' _site/index.html
+          if [ -d test/.git ] && [ -f _site/test/index.html ]; then
+            VT=$(git -C test rev-parse --short HEAD)
+            sed -i -E 's#(src="js/[^"?]+\.js)"#\1?v='"$VT"'"#g' _site/test/index.html
+          fi
           touch _site/.nojekyll
           echo "Live: $(git -C live log -1 --format='%h %s')"
           [ -d test/.git ] && echo "Test: $(git -C test log -1 --format='%h %s')" || echo "Test: geen tak ontwikkeling"
