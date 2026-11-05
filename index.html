@@ -763,6 +763,8 @@ async function loadSup(id){
   SUP=s; ls.set('blom-ck-sup',SUP.id);
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
   M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); zusterFoto(m);});
+  // live: geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
+  if(window.BLOM_CONFIG&&BLOM_CONFIG.omgeving==='live') M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
   loadedChunks={}; for(const k in IMG) delete IMG[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
