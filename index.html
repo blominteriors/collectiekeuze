@@ -998,7 +998,13 @@ function zusterFoto(m){
   const pOf={}; m.v.forEach(y=>{ pOf[y.code]=y.p; });
   const eigen=y=>y.img!=null&&(!y.imgc||y.imgc===y.code);
   m.p.forEach((p,k)=>{ const vs=p.idx.map(i=>m.v[i]), z=vs.find(eigen); if(!z) return;
-    vs.forEach(y=>{ if(y===z||eigen(y)||y.imgq==='fin'||(y.img!=null&&y.imgc&&pOf[y.imgc]===k)) return;
+    vs.forEach(y=>{ if(y===z||eigen(y)||y.imgq==='fin') return;
+      // de foto komt al van een andere afwerking van hetzelfde product (bijvoorbeeld walnut met de beukenfoto):
+      // dat is geen basisuitvoering met een lage zekerheid, maar dezelfde stoel met een ander frame
+      if(y.img!=null&&y.imgc&&pOf[y.imgc]===k){ const s=vs.find(v=>v.code===y.imgc&&eigen(v)); if(!s) return;
+        const fin=e=>{ if(!e||e.img==null||!e.imgc||pOf[e.imgc]!==k||e.imgc===y.code) return; e.imgq='fin'; e.conf=Math.min(s.conf||90,85);
+          e.why=['Foto van '+e.imgc+(s.fin?' ('+s.fin+')':'')+': zelfde product, '+(y.fin?'frame/afwerking '+y.fin:'andere afwerking')+' wijkt af.']; };
+        fin(y); Object.values(y.zijden||{}).forEach(fin); return; }
       y.img=z.img; y.imgq='fin'; y.imgc=z.code; y.conf=Math.min(z.conf||90,85); y.zijde=z.zijde;
       y.zijden=z.zijden?JSON.parse(JSON.stringify(z.zijden)):undefined;
       y.why=['Foto van '+z.code+(z.fin?' ('+z.fin+')':'')+': zelfde product, '+(y.fin?'frame/afwerking '+y.fin:'andere afwerking')+' wijkt af.'].concat(z.why||[]); }); });
