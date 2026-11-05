@@ -681,6 +681,24 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 .dstack{margin:8px 0 8px}
 .dbtns button{height:50px}
 .dkeys{margin-top:4px}
+
+/* rollen: een beoordelaar ziet geen resultaten, Excel of opzet */
+body.beoordelaar [data-view="res"],body.beoordelaar [data-go="res"],body.beoordelaar #sRes,body.beoordelaar .opzb{display:none!important}
+body.beoordelaar .tabs{grid-template-columns:repeat(2,1fr)}
+body.beoordelaar .supcard .row2{grid-template-columns:1fr}
+.empty.klaar{text-align:center;justify-items:center}.empty.klaar .kbig{margin:10px auto 4px}.empty.klaar h2{font-size:30px}
+/* gebruikersbeheer */
+.gbox{max-width:520px!important;max-height:calc(100vh - 32px);overflow-y:auto}
+.ghead{display:flex;justify-content:space-between;align-items:center}.gx{width:40px;height:40px;border:1px solid var(--ink);background:#fff;font-size:22px;line-height:1}
+.glist{display:grid;border-top:1px solid var(--n500)}
+.grow{display:grid;grid-template-columns:1fr auto 32px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--n500)}
+.gwie{display:grid;min-width:0}.gwie b{font-weight:500;font-size:14px}.gwie small{font-size:11px;color:var(--g400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grow select{height:36px;padding:0 6px;font-size:13px;line-height:1.2}
+.gdel{width:32px;height:32px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:#B3261E}
+.modal form.gform{padding:12px 0 0;gap:8px;max-width:none;background:none}
+.gform input[type=email],.gform input[type=text]{font-size:15px;height:40px;padding:0 10px;border:1px solid var(--g300)}
+.grol{display:flex;gap:16px;font-size:13.5px}.grol label{display:flex;align-items:center;gap:6px}.grol input{width:auto}
+.note.fout,.gmsg.fout{color:#B3261E}
 </style>
 
 <div class="app">
@@ -759,6 +777,7 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
     <button class="item" type="button" data-go="swipe">Beoordelen</button>
     <button class="item" type="button" data-go="res">Resultaten en Excel</button>
     <button class="item" type="button" id="mName">Naam wijzigen</button>
+    <button class="item" type="button" id="mUsers" hidden>Gebruikers</button>
     <button class="item" type="button" id="mHelp">Hoe werkt het?</button>
     <p class="note" id="mInfo"></p>
   </div>
@@ -776,6 +795,22 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
     </div>
   </form>
 </div>
+<div class="modal" id="usersModal" hidden>
+  <div class="box gbox">
+    <div class="ghead"><h2>Gebruikers</h2><button type="button" class="gx" id="usersClose" aria-label="Sluiten">×</button></div>
+    <p class="note">Alleen wie hier staat, kan inloggen. De eerste keer logt iemand in met een inloglink op zijn eigen e-mailadres en kiest dan een wachtwoord.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten.</p>
+    <div class="glist" id="gList"><p class="note">Laden…</p></div>
+    <form id="gForm" class="gform" autocomplete="off">
+      <b>Gebruiker toevoegen</b>
+      <input id="gEmail" type="email" placeholder="naam@blominterieurs.nl" required>
+      <input id="gNaam" type="text" placeholder="Naam (optioneel)">
+      <div class="grol"><label><input type="radio" name="gRol" value="beoordelaar" checked> Beoordelaar</label><label><input type="radio" name="gRol" value="beheerder"> Beheerder</label></div>
+      <button class="cta" type="submit">Toevoegen</button>
+      <p class="note gmsg" id="gMsg"></p>
+    </form>
+  </div>
+</div>
+
 <div class="modal" id="helpModal" hidden>
   <div class="box">
     <h2>Hoe werkt het?</h2>
@@ -798,6 +833,9 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 (function(){
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n).toLocaleString('nl-NL');
+// rol van de ingelogde gebruiker: beheerder (resultaten, export, onbeperkt aanpassen) of beoordelaar (elke leverancier één keer)
+const ROL=()=>(window.BLOM_ROL&&window.BLOM_ROL.rol)||'beheerder';
+const BEH=()=>ROL()==='beheerder';
 const eur=n=>'€ '+Number(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=n=>(n*100).toLocaleString('nl-NL',{maximumFractionDigits:1})+'%';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -982,6 +1020,7 @@ function render(soft){
   if(sw) renderCard(soft);
 }
 function show(v){
+  if(v==='res'&&!BEH()) v='home';
   view=v; $('sHome').hidden=v!=='home'; $('sSwipe').hidden=v!=='swipe'; $('sRes').hidden=v!=='res';
   $('main').scrollTop=0; cur=null; render();
 }
@@ -1036,6 +1075,11 @@ function variantName(v){ return [v.type,v.code].filter(Boolean).join(' ') }
 function renderCard(soft){
   const q=queue(), sec=$('sSwipe');
   $('bUndo').disabled=!hist.length;
+  if(!q.length&&!BEH()){
+    const nm=(window.BLOM_ROL&&window.BLOM_ROL.naam)||(me&&me.name)||'';
+    sec.innerHTML='<div class="empty klaar"><div class="kbig">'+OK(44)+'</div><h2>Klaar, bedankt'+(nm?' '+esc(nm):'')+'</h2><p class="note">Je hebt alle '+fmt(M.length)+' series van '+esc(SUP.name)+' beoordeeld. Je keuzes zijn opgeslagen; deze leverancier is afgerond.</p><button class="cta" type="button" id="goHome">Terug naar leveranciers</button></div>';
+    $('goHome').onclick=()=>show('home'); $('bNo').disabled=$('bYes').disabled=true; $('bUndo').disabled=true; hist=[]; cur=null; afronden(); return;
+  }
   if(!q.length){
     sec.innerHTML='<div class="empty"><h2>Alles gehad</h2><p class="note">Je hebt alle '+fmt(M.length)+' series van '+esc(SUP.name)+' beoordeeld.</p><button class="cta" type="button" id="goRes">Bekijk de resultaten</button><button type="button" class="ghost opzb" id="opzDone" style="margin-top:8px">Opzet online collectie</button></div>';
     $('goRes').onclick=()=>show('res'); $('opzDone').onclick=openOpzet; $('bNo').disabled=$('bYes').disabled=true; cur=null; return;
@@ -1895,6 +1939,35 @@ $('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hid
 $('mName').hidden=true;   // de naam komt van het inlogaccount
 $('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
+/* ---------------- afronden (beoordelaar) ---------------- */
+// na de laatste serie: eerst alle keuzes opslaan, dan de leverancier afronden (daarna kan een beoordelaar niets meer wijzigen)
+const AFGEROND={};
+function afronden(){ if(BEH()||!SUP||!me||!window.blomRpc||canShare===false) return; const id=SUP.id+'|'+docId(); if(AFGEROND[id]) return;
+  if(writing||Object.keys(pending).length){ setTimeout(afronden,600); return; }
+  AFGEROND[id]=1; window.blomRpc('keuze_afronden',{p_id:docId(),p_versie:(window.BLOM_CONFIG&&BLOM_CONFIG.versie)||'v1'}).then(r=>{ if(r&&r.error) AFGEROND[id]=0; }); }
+/* ---------------- gebruikersbeheer (beheerder) ---------------- */
+const ROLN={beheerder:'Beheerder',beoordelaar:'Beoordelaar'};
+const gMsg=(t,fout)=>{ const e=$('gMsg'); e.textContent=t||''; e.classList.toggle('fout',!!fout); };
+const gFout=e=>{ const m=(e&&(e.message||e.details))||'onbekende fout'; return /not_granted|permission/i.test(m)?'Alleen een beheerder kan gebruikers beheren.':m; };
+async function laadGebruikers(){
+  const box=$('gList'); const {data,error}=await window.blomRpc('gebruikers_lijst');
+  if(error){ box.innerHTML='<p class="note fout">'+esc(gFout(error))+'</p>'; return; }
+  const ik=(window.BLOM_USER&&BLOM_USER.email||'').toLowerCase();
+  box.innerHTML=(data||[]).map(g=>'<div class="grow"><div class="gwie"><b>'+esc(g.naam||g.email.split('@')[0])+(g.email===ik?' <small>(jij)</small>':'')+'</b><small>'+esc(g.email)+' · '+(g.laatst_ingelogd?'laatst ingelogd '+new Date(g.laatst_ingelogd).toLocaleDateString('nl-NL'):'nog niet ingelogd')+'</small></div>'
+    +'<select data-grol="'+esc(g.email)+'" aria-label="Rol van '+esc(g.email)+'">'+Object.entries(ROLN).map(([k,l])=>'<option value="'+k+'"'+(g.rol===k?' selected':'')+'>'+l+'</option>').join('')+'</select>'
+    +(g.email===ik?'<span class="gdel"></span>':'<button type="button" class="gdel" data-gdel="'+esc(g.email)+'" aria-label="'+esc(g.email)+' verwijderen" title="Verwijderen">×</button>')+'</div>').join('')||'<p class="note">Nog geen gebruikers.</p>';
+  box.querySelectorAll('[data-grol]').forEach(sel=>sel.onchange=async()=>{ const g=(data||[]).find(x=>x.email===sel.dataset.grol); const {error}=await window.blomRpc('gebruiker_zet',{p_email:g.email,p_naam:g.naam||'',p_rol:sel.value});
+    if(error){ gMsg(gFout(error),true); } else gMsg(g.email+' is nu '+ROLN[sel.value]+'.'); laadGebruikers(); });
+  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=async()=>{ const e=b.dataset.gdel; if(!confirm(e+' verwijderen? Deze persoon kan dan niet meer inloggen. Gemaakte keuzes blijven bewaard.')) return;
+    const {error}=await window.blomRpc('gebruiker_verwijder',{p_email:e}); if(error) gMsg(gFout(error),true); else gMsg(e+' verwijderd.'); laadGebruikers(); });
+}
+$('mUsers').onclick=()=>{ $('menu').hidden=true; $('usersModal').hidden=false; gMsg(''); laadGebruikers(); };
+$('usersClose').onclick=()=>$('usersModal').hidden=true;
+$('gForm').addEventListener('submit',async e=>{ e.preventDefault(); const em=$('gEmail').value.trim().toLowerCase(), nm=$('gNaam').value.trim(), rol=(document.querySelector('input[name="gRol"]:checked')||{}).value||'beoordelaar';
+  if(!/^[^@\s]+@blominterieurs\.nl$/.test(em)){ gMsg('Gebruik een @blominterieurs.nl-adres.',true); return; }
+  const {error}=await window.blomRpc('gebruiker_zet',{p_email:em,p_naam:nm,p_rol:rol});
+  if(error){ gMsg(gFout(error),true); return; }
+  gMsg(em+' toegevoegd als '+ROLN[rol]+'. Deze persoon kan nu inloggen via het inlogscherm.'); $('gEmail').value=''; $('gNaam').value=''; laadGebruikers(); });
 let afterName=null;
 const VASTE_GEBRUIKERS=['Jan','Johan','Test'];
 /* De beoordelaar is het ingelogde account: de gebruikersnaam is het deel van het e-mailadres
@@ -1951,6 +2024,7 @@ function wisLokaleKeuzesPersoon(){
 }
 window.__blomBoot=async function boot(){
   wisLokaleKeuzes(); wisLokaleKeuzesPersoon();
+  document.body.classList.toggle('beoordelaar',!BEH()); $('mUsers').hidden=!BEH();
   me=meVanAccount();
   if(!me){ const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n}; }
   try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }

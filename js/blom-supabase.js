@@ -325,9 +325,31 @@
     }
   }
 
-  function ga(user) {
+  /* Rol ophalen: alleen wie in de gebruikerslijst staat, heeft toegang (beheerder of beoordelaar).
+     Bestaat de functie nog niet (database nog niet bijgewerkt), dan werkt de app zoals voorheen. */
+  async function haalRol() {
+    const { data, error } = await sb.rpc('mijn_rol');
+    if (error) {
+      if (error.code === 'PGRST202' || /mijn_rol/.test(error.message || '')) return { rol: 'beheerder', naam: null, oud: true };
+      throw error;
+    }
+    return data;
+  }
+  window.blomRpc = (fn, args) => sb.rpc(fn, args || {});
+
+  async function ga(user) {
     if (gestart) return;
     gestart = true;
+    let rol = null;
+    try { rol = await haalRol(); }
+    catch (e) { gestart = false; toonLogin('Je toegang kon niet worden gecontroleerd. Herlaad de pagina.'); return; }
+    if (!rol) {
+      gestart = false;
+      await sb.auth.signOut();
+      toonLogin('Je hebt nog geen toegang tot de Collectiekeuze. Vraag een beheerder om je toe te voegen.');
+      return;
+    }
+    window.BLOM_ROL = rol;
     if (scherm) scherm.hidden = true;
     window.BLOM_USER = user;
     uitlogRegel(user);
