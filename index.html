@@ -1458,8 +1458,7 @@ function deckInfo(k){
     +'<div class="isec"><h3>Per uitvoering: online en labels</h3>'+(fp?'<p class="imp">Meerprijs ten opzichte van '+esc(cap(fp.base.fin)||fp.base.code)+' ('+esc(fp.lbl)+').</p>':'')+rows+'</div>'
     +(dims?'<div class="isec"><h3>Maten</h3><div class="ikv">'+dims+'</div></div>':'')
     +(v.desc?'<div class="isec"><h3>Omschrijving</h3><p>'+esc(v.desc)+'</p>'+((v.opts&&v.opts.length)?'<p class="iopt"><b>Opties en meerprijzen:</b> '+v.opts.map(esc).join(' · ')+'</p>':'')+'</div>':'')
-    +'<div class="ibtns"><button type="button" class="ghost" id="iNo">'+NO(16)+' Niet</button><button type="button" class="cta" id="iYes">'+OK(16)+' <span class="dyl">'+(anyIn(m)?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
-    +'</div>';
+    +'</div>';   // Niet en Opnemen staan in de knoppenbalk onder het info-paneel; geen tweede set hier
 }
 // voorstel uit je eigen keuzes in deze serie: zodra je bij een product online collectie en labels kiest,
 // krijgen de producten zonder AFAS-waarde of voorstel dezelfde instelling (de meest gekozen), duidelijk als voorstel
@@ -1514,7 +1513,6 @@ function bindInfo(k){
   const keep=()=>{ const el=$('dinfo'), t=el?el.scrollTop:0; renderDeck(); const n=$('dinfo'); if(n){ n.style.animation='none'; n.scrollTop=t; } };
   $('dinfo').querySelectorAll('[data-voc]').forEach(b=>b.onclick=()=>{ const [id,o]=b.dataset.voc.split('|'); F.vs[id].oc=o; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
   $('dinfo').querySelectorAll('[data-vlab]').forEach(b=>b.onclick=()=>{ const [id,j]=b.dataset.vlab.split('|'); const l=F.vs[id].lab; l[+j]=l[+j]===1?0:1; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
-  $('iYes').onclick=()=>deckGo('yes'); $('iNo').onclick=()=>deckGo('no');
 }
 function bindDeckSwipe(){
   const c=$('dcard'), u=$('dstack').querySelector('.dcard.under'); if(!c) return;
