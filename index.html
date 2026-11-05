@@ -762,7 +762,7 @@ async function loadSup(id){
   if(SUP&&SUP.id===s.id&&DATA) return;
   SUP=s; ls.set('blom-ck-sup',SUP.id);
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
-  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m;});
+  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zusterFoto(m);});
   loadedChunks={}; for(const k in IMG) delete IMG[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
@@ -776,9 +776,9 @@ const img=i=>i==null?null:IMG[i];
 // gekozen zijde (voor, links, rechts, achter) op de beoordeelkaart en in de grote fotoweergave; null = de standaardfoto
 let SIDE=null;
 const SIDES=['voor','links','rechts','achter'], SIDEL={voor:'Voorzijde',links:'Linkerzijde',rechts:'Rechterzijde',achter:'Achterzijde'};
-const sidesOf=v=>SIDES.filter(z=>v&&v.zijden&&v.zijden[z]&&img(v.zijden[z].img));
+const sidesOf=v=>!fotoVan(null,v)?[]:SIDES.filter(z=>v.zijden&&v.zijden[z]&&img(v.zijden[z].img)&&okBron(v,v.zijden[z].imgc));
 const sideKey=v=>{ const zs=sidesOf(v); return SIDE&&zs.includes(SIDE)?SIDE:(v&&v.zijde&&zs.includes(v.zijde)?v.zijde:zs[0]||null); };
-const sideImg=v=>{ const z=sideKey(v); return z?img(v.zijden[z].img):img(v.img); };
+const sideImg=v=>{ if(!fotoVan(null,v)) return null; const z=sideKey(v); return z?img(v.zijden[z].img):img(v.img); };
 const sideBtns=(v,attr)=>{ const zs=sidesOf(v); if(zs.length<2) return ''; const k=sideKey(v); return '<div class="pk-zij">'+zs.map(z=>'<button type="button" class="'+(z===k?'on':'')+'" '+attr+'="'+z+'" aria-pressed="'+(z===k)+'">'+SIDEL[z]+'</button>').join('')+'</div>'; };
 const dstr=()=>SUP&&SUP.date?new Date(SUP.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
 
@@ -979,7 +979,22 @@ const NOFOTO='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveA
 // zelfde melding zonder knop, voor plekken met een eigen navigatie (deck, productkaart)
 const NOFOTO_K='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is uitgesteld: we hebben nog geen foto van dit product</b></div>';
 // heeft dit artikel een bruikbare foto? Een foto van een ander producttype (bijvoorbeeld een barkruk bij een stoel) telt niet
-function fotoVan(m,x){ if(x.img==null) return false; if(!x.imgc||x.imgc===x.code) return true; const b=m.v.find(y=>y.code===x.imgc); return !b||!b.type||!x.type||b.type===x.type; }
+// het bron-artikel wordt in de hele leverancier gezocht, niet alleen in de eigen serie
+let TYPEN=null, TYPEN_M=null;
+function typeVan(code){ if(TYPEN_M!==M){ TYPEN={}; M.forEach(mm=>mm.v.forEach(y=>{ TYPEN[y.code]=y.type; })); TYPEN_M=M; } return TYPEN[code]; }
+const okBron=(x,c)=>{ if(!c||c===x.code) return true; const t=typeVan(c); return !t||!x.type||t===x.type; };
+function fotoVan(m,x){ return !!x&&x.img!=null&&okBron(x,x.imgc); }
+// andere afwerking van hetzelfde product (bijvoorbeeld walnut naast ash): zonder eigen foto, of met een foto van een ander
+// product, terwijl een zuster-afwerking wel een eigen foto heeft -> de foto van die zuster, met de notitie dat het frame afwijkt
+function zusterFoto(m){
+  const pOf={}; m.v.forEach(y=>{ pOf[y.code]=y.p; });
+  const eigen=y=>y.img!=null&&(!y.imgc||y.imgc===y.code);
+  m.p.forEach((p,k)=>{ const vs=p.idx.map(i=>m.v[i]), z=vs.find(eigen); if(!z) return;
+    vs.forEach(y=>{ if(y===z||eigen(y)||y.imgq==='fin'||(y.img!=null&&y.imgc&&pOf[y.imgc]===k)) return;
+      y.img=z.img; y.imgq='fin'; y.imgc=z.code; y.conf=Math.min(z.conf||90,85); y.zijde=z.zijde;
+      y.zijden=z.zijden?JSON.parse(JSON.stringify(z.zijden)):undefined;
+      y.why=['Foto van '+z.code+(z.fin?' ('+z.fin+')':'')+': zelfde product, '+(y.fin?'frame/afwerking '+y.fin:'andere afwerking')+' wijkt af.'].concat(z.why||[]); }); });
+}
 function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
   return r.toLowerCase().replace(/(^|\s)([a-z])/g,(a,b,c)=>b+c.toUpperCase()).replace(/\bIi\b/g,'II'); }
 function cardHTML(m){
@@ -988,8 +1003,8 @@ function cardHTML(m){
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
   const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
-  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
-  const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
+  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
+  const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='fin'?'Foto: zelfde product, frame/afwerking wijkt af':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
   const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
   const blom=v.inA?`<span class="big">${esc(v.blom||'(geen Blom-naam in AFAS)')}</span><span class="r">${esc(v.afas)}</span>`:(v.nv?`<span class="big nvb" title="${esc(v.nvw||'')}"><span class="vst">Voorstel</span> ${esc(v.nv)}${v.nvc?' <i>controleren</i>':''}</span><span class="r mut">niet in AFAS</span>`:`<span class="mut">nog geen Blom-naam</span><span class="r mut">niet in AFAS</span>`);
@@ -1371,7 +1386,7 @@ function renderPk(){
   const nr=v.inA?(v.afas||''):'';
   const dims=[...new Set(allV.map(pkDims).filter(Boolean))];
   // foto's per zijde: de app toont voor, anders links, rechts, achter (v.zijde); op de productkaart kun je wisselen
-  const fok=fotoVan(m,v), zs=!fok?[]:ZIJ.filter(z=>v.zijden&&v.zijden[z]&&img(v.zijden[z].img)), zk=(PK.zijde&&zs.includes(PK.zijde))?PK.zijde:(v.zijde||zs[0]), pkSrc=!fok?null:(zk&&v.zijden&&v.zijden[zk])?img(v.zijden[zk].img):img(v.img);
+  const fok=fotoVan(m,v), zs=!fok?[]:ZIJ.filter(z=>v.zijden&&v.zijden[z]&&img(v.zijden[z].img)&&okBron(v,v.zijden[z].imgc)), zk=(PK.zijde&&zs.includes(PK.zijde))?PK.zijde:(v.zijde||zs[0]), pkSrc=!fok?null:(zk&&v.zijden&&v.zijden[zk])?img(v.zijden[zk].img):img(v.img);
   const bar='<div class="pk-bar">'+(PK.back?'<button type="button" class="pk-back" id="pkBack">← Terug naar opzet</button>':'')+'<div class="pk-sw" role="tablist"><button type="button" data-pkt="win" class="'+(PK.tab==='win'?'on':'')+'">Productvenster</button><button type="button" data-pkt="card" class="'+(PK.tab==='card'?'on':'')+'">Kaart in het overzicht</button></div><small>Voorbeeld met de gegevens uit deze app'+(nm.vs?' en het naamvoorstel':'')+'. Er wordt niets aangepast.</small></div>';
   let body='';
   if(PK.tab==='win'){
