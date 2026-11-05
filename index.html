@@ -1305,7 +1305,10 @@ function deckCard(k,top){
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
-    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span>Marge <b>'+pct((r[5]-r[4])/r[5])+'</b></span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
+    +(()=>{ // prijs van de aangezette afwerkingen (de goedkoopste daarvan), niet altijd van de eerste
+      const aan=p.idx.filter(i=>!d.ex[m.v[i].id]), opties=(aan.length?aan:p.idx).map(i=>({i,r:pminRow(m,k,i)})).filter(o=>o.r&&o.r[5]!=null);
+      const best=opties.reduce((x,o)=>!x||o.r[5]<x.r[5]?o:x,null), r=best&&best.r, a=best?m.v[best.i]:m.v[p.idx[0]];
+      return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span>Marge <b>'+pct((r[5]-r[4])/r[5])+'</b></span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
     +(top?fins:'')+'</div></div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
