@@ -1863,7 +1863,21 @@ $('nameForm').addEventListener('submit',e=>{
 $('who').onclick=()=>$('menuBtn').click();
 
 /* ---------------- boot ---------------- */
+// Alle keuzes van live zijn gewist (5 november 2026). De keuzes die deze browser nog lokaal bewaart,
+// worden één keer weggegooid, anders zet de app ze bij de volgende keuze weer terug in de database.
+// Voor een nieuwe wisronde: zet hier een nieuwe datum. Inlog, leverancier en prijsinstelling blijven.
+const KEUZES_GEWIST='2026-11-05';
+function wisLokaleKeuzes(){
+  if(!OP_LIVE) return;
+  try{
+    if(localStorage.getItem('blom-ck-gewist')===KEUZES_GEWIST) return;
+    const blijft=['blom-ck-sup','blom-ck-frsel','blom-ck-gewist'];
+    Object.keys(localStorage).filter(k=>(k.startsWith('blom-ck-')||k.startsWith('blom-swipe-'))&&!blijft.includes(k)).forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem('blom-ck-gewist',KEUZES_GEWIST);
+  }catch(e){}
+}
 window.__blomBoot=async function boot(){
+  wisLokaleKeuzes();
   me=meVanAccount();
   if(!me){ const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n}; }
   try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }
