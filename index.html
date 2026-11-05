@@ -880,7 +880,7 @@ function subscribe(){
 const st=mid=>(D[mid]&&D[mid].s)||'';
 function vStatus(r,v){ if(!r||!r.s) return ''; if(r.s==='niet') return 'niet'; if(r.v&&r.v[v.id]!=null) return r.v[v.id]?'wel':'niet'; return 'wel'; }
 // series zonder enkele foto achteraan (sort is stabiel, dus verder dezelfde volgorde)
-function queue(){ const q=M.filter(m=>!st(m.id)).sort((a,b)=>(a.v.every(x=>x.img==null)?1:0)-(b.v.every(x=>x.img==null)?1:0)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
+function queue(){ const q=M.filter(m=>!st(m.id)).sort((a,b)=>(a.v.every(x=>!fotoVan(a,x))?1:0)-(b.v.every(x=>!fotoVan(b,x))?1:0)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
 function counts(c,list){let w=0,n=0;for(const m of list){const s=c[m.id]&&c[m.id].s; if(s==='wel')w++; else if(s==='niet')n++} return {w,n}}
 function people(){
   const map={}; for(const k in TEAM) map[k]={naam:TEAM[k].naam,c:TEAM[k].c||{},laatst:TEAM[k].laatst};
@@ -937,11 +937,13 @@ function renderHome(){
 const PL={Hocker:'hockers',Kussen:'kussens',Kamerscherm:'kamerschermen',Stoel:'stoelen',Armstoel:'armstoelen',Fauteuil:'fauteuils',Loungefauteuil:'loungefauteuils',Bank:'banken',Barkruk:'barkrukken',Poef:'poefs',Tafel:'tafels','':'overige'};
 const plural=(t,n)=>n===1?(t?t.toLowerCase():'artikel'):(PL[t]||'artikelen');
 // laagste verkoopprijs (Excel) van een product; COM-regels alleen als er niets anders is
-function pmin(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best)) best=r[5]; }); }); return best; }
+// eigen materiaal van de klant, geen stofgroep van de leverancier: COM en COF (eigen stof), COL (eigen leer). Nooit de goedkoopste.
+const EIGEN=c=>/^(COM|COL|COF)$/i.test(c||'');
+function pmin(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>!EIGEN(r[0])); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best)) best=r[5]; }); }); return best; }
 // per soort (bank, fauteuil, stoel …) de producten van goedkoop naar duur; zonder prijzen de volgorde van de prijslijst
 function groups(m){ const gk=prState+'|'+FRSEL+'|'+frUse; if(m._g&&m._gp===gk) return m._g; const o=[], map={}; m.p.forEach((p,k)=>{ const t=p.t||''; if(!(t in map)){ map[t]=o.length; o.push({t,pk:[],idx:[]}); } o[map[t]].pk.push(k); });
   // producten zonder foto achteraan, daarna op prijs (of de volgorde van de prijslijst)
-  const nf=k=>m.p[k].idx.every(i=>m.v[i].img==null)?1:0;
+  const nf=k=>m.p[k].idx.every(i=>!fotoVan(m,m.v[i]))?1:0;
   o.forEach(g=>{ const pr={}; if(prState==='ok') g.pk.forEach(k=>pr[k]=pmin(m,k)); g.pk.sort((a,b)=>(nf(a)-nf(b))||(prState==='ok'?((pr[a]??Infinity)-(pr[b]??Infinity)):0)||a-b); g.idx=g.pk.flatMap(k=>m.p[k].idx); });
   m._gp=gk; return m._g=o; }
 function grpOf(m,i){ const k=m.v[i].p; return groups(m).find(g=>g.pk.includes(k)); }
@@ -972,7 +974,9 @@ function renderCard(soft){
 }
 // modelnaam binnen de serie leesbaar maken: serienaam weg, rest met hoofdletter (BUTTERFLY ARM 24 -> Arm 24)
 // product zonder foto: groot kruis, uitleg en een knop om verder te gaan (data-act="next" = volgend product)
-const NOFOTO='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is niet beschikbaar, omdat we geen foto hebben</b><button type="button" data-act="next">Verder</button></div>';
+const NOFOTO='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is uitgesteld: we hebben nog geen foto van dit product</b><button type="button" data-act="next">Verder</button></div>';
+// heeft dit artikel een bruikbare foto? Een foto van een ander producttype (bijvoorbeeld een barkruk bij een stoel) telt niet
+function fotoVan(m,x){ if(x.img==null) return false; if(!x.imgc||x.imgc===x.code) return true; const b=m.v.find(y=>y.code===x.imgc); return !b||!b.type||!x.type||b.type===x.type; }
 function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
   return r.toLowerCase().replace(/(^|\s)([a-z])/g,(a,b,c)=>b+c.toUpperCase()).replace(/\bIi\b/g,'II'); }
 function cardHTML(m){
@@ -980,10 +984,10 @@ function cardHTML(m){
   const shown=x=>x===k?curVi:m.p[x].idx[0];
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
-  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':x.img==null?NOFOTO:'<span class="wait">foto laden…</span>')+'</div>').join('');
-  const lab=v.img!=null&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
-  const qtxt=v.img==null?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
-  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
+  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
+  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
+  const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
+  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
   const blom=v.inA?`<span class="big">${esc(v.blom||'(geen Blom-naam in AFAS)')}</span><span class="r">${esc(v.afas)}</span>`:(v.nv?`<span class="big nvb" title="${esc(v.nvw||'')}"><span class="vst">Voorstel</span> ${esc(v.nv)}${v.nvc?' <i>controleren</i>':''}</span><span class="r mut">niet in AFAS</span>`:`<span class="mut">nog geen Blom-naam</span><span class="r mut">niet in AFAS</span>`);
   const cell=(lbl,val,main)=>'<div class="cell'+(main?' main':'')+(val?' yes':' no')+'">'+(val?OK():NO())+'<span>'+lbl+'</span></div>';
@@ -994,8 +998,8 @@ function cardHTML(m){
     <div class="serie"><div class="sl"><span class="eye">Serie</span><span class="disp sn">${esc(m.fam)}</span></div><span class="ss">${m.p.length} ${m.p.length===1?'product':'producten'} · ${m.v.length} art. · ${nin} in AFAS</span></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${typeChips}
-    <div class="photo"><div class="strip" id="strip">${slides}</div>${lab}${v.img!=null?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
-    <div class="phfoot"><span class="q">${v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
+    <div class="photo"><div class="strip" id="strip">${slides}</div>${lab}${fotoVan(m,v)?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
+    <div class="phfoot"><span class="q">${fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
     ${sideBtns(v,'data-czz')}
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
     <div class="prod"><span class="eye">Product</span><span class="pl">${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}${v.tguess?' <span style="font-size:11px;color:var(--g400)">(soort niet bevestigd: geen gegevens in prijslijst of op piaval.it)</span>':''}</span></div>
@@ -1020,8 +1024,8 @@ function pricesHTML(v){
   // kolom 1: eigen stof / COM; kolom 2: vanaf-prijs zoals in de Excel (goedkoopste prijsregel zonder COM, elke stofgroep telt mee)
   const comCat=supCat(pk(v),0);
   // gestoffeerd = stofgroepen die naar Blom 1 t/m 5 vertaald zijn (Blom 6 t/m 8 is leder, hogere nummers zijn bijzondere uitvoeringen)
-  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&c!=='COM'&&!/OUTDOOR/.test(c));
-    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&c!=='COM');
+  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)&&!/OUTDOOR/.test(c));
+    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c));
     let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
   const B=[[0,comCat],[1,cheapCat]].filter(x=>x[1]!=null);
   let cats=B.map(x=>x[1]);
@@ -1227,7 +1231,7 @@ function finPrices(m,k){
   const min=Math.min(...vals); return {p,min,lbl,base:vs.find(v=>p[v.id]===min)};
 }
 // goedkoopste prijsregel van een product (zelfde keuze als pmin): verkoopprijs en de netto inkoopprijs van diezelfde regel
-function pminRow(m,k,only){ if(prState!=='ok') return null; let best=null; (only!=null?[only]:m.p[k].idx).forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best[5])) best=r; }); }); return best; }
+function pminRow(m,k,only){ if(prState!=='ok') return null; let best=null; (only!=null?[only]:m.p[k].idx).forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>!EIGEN(r[0])); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best[5])) best=r; }); }); return best; }
 // alleen de meerprijs tonen; de goedkoopste afwerking krijgt geen extra label
 const mpTxt=(fp,id)=>{ if(!fp||fp.p[id]==null) return ''; const d=fp.p[id]-fp.min; return d>0.004?'+ '+eur(d):''; };
 const mpNote=fp=>fp?'<small class="mpn">meerprijs o.b.v. '+esc(fp.lbl)+'</small>':'';
@@ -1347,7 +1351,7 @@ async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o
 
 // prijzen van de gekozen uitvoering op de productkaart (intern): laagste verkoopprijs, met de bijbehorende Care- en inkoopprijs
 function pkPrijs(v){ if(prState!=='ok') return '<div><b>Prijzen</b><span>'+(prState==='none'?'geen prijzen gevonden':'laden…')+'</span></div>';
-  const rs=priceRows(pk(v)), nc=rs.filter(r=>r[0]!=='COM'); let r=null; (nc.length?nc:rs).forEach(x=>{ if(x[5]!=null&&(r==null||x[5]<r[5])) r=x; });
+  const rs=priceRows(pk(v)), nc=rs.filter(r=>!EIGEN(r[0])); let r=null; (nc.length?nc:rs).forEach(x=>{ if(x[5]!=null&&(r==null||x[5]<r[5])) r=x; });
   if(!r) return '<div><b>Prijzen</b><span>geen prijs voor deze uitvoering</span></div>';
   const vn='<small style="display:block;font-size:11px;color:#666">vanaf'+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small>';
   return '<div><b>Verkoopprijs</b><span>'+eur(r[5])+vn+'</span></div>'+(careOn()&&r[7]!=null?'<div><b>Blom Care prijs</b><span>'+eur(r[7])+'</span></div>':'')+'<div><b>Inkoopprijs</b><span>'+eur(r[3])+'</span></div>'; }
