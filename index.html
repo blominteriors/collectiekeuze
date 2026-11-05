@@ -436,6 +436,14 @@ details.box .tablewrap{border:0}
 .dconf.hi{background:var(--groen)}.dconf.mid{background:var(--geel)}.dconf.lo{background:var(--rood)}
 .dimg img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;-webkit-user-drag:none}
 .dimg .wait{font-size:12px;color:var(--g300)}
+/* vergrootglas op de productfoto in 'Welke producten houd je?' */
+.dzoom{position:absolute;right:8px;bottom:8px;z-index:2;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--ink);background:#fff;color:var(--ink);padding:0;cursor:zoom-in}
+.dzoom:hover{background:var(--ink);color:#fff}
+/* schermvullende foto: klik (desktop) om verder in te zoomen, op mobiel met twee vingers */
+.zoom .zi img{cursor:zoom-in}
+.zoom .zi.groot{display:block;touch-action:pan-x pan-y pinch-zoom}
+.zoom .zi.groot img{max-width:none;max-height:none;width:220%;cursor:zoom-out;margin:0 auto}
+@media (max-width:767px){.zoom .zi.groot img{width:300%}}
 .dmeta{border-top:1px solid var(--n500);padding:10px 12px 12px;display:grid;gap:4px;flex:none}
 .dtype{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g400)}
 .dname{font-family:var(--display);font-weight:500;font-size:21px;line-height:1.1}
@@ -1176,6 +1184,7 @@ function bindCard(m){
 /* ---------------- foto schermvullend ---------------- */
 function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p);
   if(!sideImg(v)) return;
+  $('zi').classList.remove('groot');
   $('zi').innerHTML='<img src="'+sideImg(v)+'" alt="'+esc(m.fam+' '+v.code)+'">';
   $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+' · Foto klopt '+v.conf+'%</small>'+sideBtns(v,'data-zzz');
   $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.zzz; setVi(m,curVi); openZoom(m); });
@@ -1183,9 +1192,28 @@ function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p
   $('zp').onclick=()=>{ setVi(m,m.p[g.pk[(pos-1+g.pk.length)%g.pk.length]].idx[0]); openZoom(m); };
   $('zn').onclick=()=>{ setVi(m,m.p[g.pk[(pos+1)%g.pk.length]].idx[0]); openZoom(m); };
   $('zoom').hidden=false; }
-function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; }
+// schermvullende foto vanuit 'Welke producten houd je?': de foto's van de afwerkingen van dit product,
+// de aangezette eerst; met ‹ › blader je erdoorheen
+function openZoomDeck(m,k,j){
+  const d=F.dk, vs=m.p[k].idx.map(i=>m.v[i]).filter(v=>fotoVan(m,v)&&img(v.img));
+  const fotos=[...vs.filter(v=>!d.ex[v.id]),...vs.filter(v=>d.ex[v.id])].filter((v,i,a)=>a.findIndex(x=>x.img===v.img)===i);
+  if(!fotos.length) return;
+  const n=fotos.length, pos=((j||0)%n+n)%n, v=fotos[pos];
+  $('zi').classList.remove('groot');
+  $('zi').innerHTML='<img src="'+img(v.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'">';
+  $('zt').innerHTML=esc(m.fam)+' · '+esc(plabel(m,k))+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+(n>1?' · '+(pos+1)+' / '+n:'')+(v.conf!=null?' · Foto klopt '+v.conf+'%':'')+'</small>';
+  $('zp').hidden=$('zn').hidden=n<2;
+  $('zp').onclick=()=>openZoomDeck(m,k,pos-1);
+  $('zn').onclick=()=>openZoomDeck(m,k,pos+1);
+  $('zoom').hidden=false; }
+function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; $('zi').classList.remove('groot'); }
 $('zx').onclick=closeZoom;
-$('zi').onclick=e=>{ if(e.target===$('zi')) closeZoom(); };
+// klik op de foto: verder inzoomen op de plek waar je klikt, nog een keer klikken: terug
+$('zi').onclick=e=>{ const z=$('zi');
+  if(e.target===z){ if(z.classList.contains('groot')) z.classList.remove('groot'); else closeZoom(); return; }
+  if(e.target.tagName!=='IMG') return;
+  const r=e.target.getBoundingClientRect(), fx=(e.clientX-r.left)/r.width, fy=(e.clientY-r.top)/r.height;
+  if(z.classList.toggle('groot')){ z.scrollLeft=z.scrollWidth*fx-z.clientWidth/2; z.scrollTop=z.scrollHeight*fy-z.clientHeight/2; } };
 document.addEventListener('keydown',e=>{ if($('zoom').hidden) return; if(e.key==='Escape') closeZoom(); else if(e.key==='ArrowRight') $('zn').click(); else if(e.key==='ArrowLeft') $('zp').click(); });
 
 /* ---------------- deciding ---------------- */
@@ -1302,6 +1330,7 @@ function hasProp(k){ const m=F.m, d=F.dk; if(m.p[k].idx.some(i=>d.ax[m.v[i].id])
   return !v.inA||sigOf(e.oc,(e.lab||[]).map(x=>x===1?1:0))!==sigOf(afasOc(v),labOf(v).map(x=>x===1?1:0)); }); }
 // naamvoorstel (Blom naamvoering) voor een product dat nog niet in AFAS staat
 function nvOf(m,k){ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.some(v=>v.inA&&v.blom)) return null; const v=vs.find(v=>v.nv); return v?{n:v.nv,w:v.nvw,c:v.nvc}:null; }
+const ZOOMICO='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M11.5 11.5L16.5 16.5M5 7.5h5M7.5 5v5"/></svg>';
 const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="13" height="13"/><rect x="3.5" y="3.5" width="9" height="5.5"/><path d="M3.5 11h6M3.5 13h4"/></svg>';
 function deckCard(k,top){
   const m=F.m, p=m.p[k], a=m.v[p.idx[0]], inA=pIn(m,k), pr=pmin(m,k), has=anyIn(m), d=F.dk, fp=top?finPrices(m,k):null;
@@ -1309,7 +1338,7 @@ function deckCard(k,top){
   const pg=ownIn(m,k);
   return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
-    +'<div class="dimg">'+(fotoVan(m,a)&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">':'<span class="wait">foto laden…</span>')+'</div>'
+    +'<div class="dimg">'+(fotoVan(m,a)&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">'+(top?'<button type="button" class="dzoom" data-dzoom="'+k+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':''):'<span class="wait">foto laden…</span>')+'</div>'
     +'<div class="dmeta">'+(top&&!OP_LIVE?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
@@ -1526,11 +1555,12 @@ function renderDeck(){
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(k):'')+'</div>'
     +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+'Niet</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
-    +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
+    +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
   $('dList').onclick=toList;
   $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
+  B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openZoomDeck(F.m,+b.dataset.dzoom); });
   B.querySelectorAll('[data-ex]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.ex; d.ex[id]=!d.ex[id]; d.man[id]=true; delete d.ax[id]; const all=m.p[k].idx.every(i=>d.ex[m.v[i].id]); if(all){ d.ex[id]=false; toast('Minstens één afwerking aan, of veeg naar links'); } renderDeck(); });
   if(d.info) bindInfo(k);
   bindDeckSwipe();
@@ -1631,8 +1661,10 @@ function renderDeckDone(){
 }
 document.addEventListener('keydown',e=>{
   if(!$('pkaart').hidden){ if(e.key==='Escape') closePk(); return; }
+  if(!$('zoom').hidden) return;   // schermvullende foto open: pijltjes bladeren door de foto's
   if($('form').hidden||!F||F.view!=='deck'||e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return;
   const done=F.dk.i>=F.dk.order.length;
+  if((e.key==='z'||e.key==='Z')&&!done){ e.preventDefault(); openZoomDeck(F.m,F.dk.order[F.dk.i]); return; }
   if((e.key==='ArrowRight'||e.key==='Enter')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('yes'); }
   else if((e.key==='ArrowLeft'||e.key==='Delete')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('no'); }
   else if(e.key==='ArrowUp'&&!done){ e.preventDefault(); if(!F.dk.info) deckGo('up'); }
