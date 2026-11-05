@@ -623,53 +623,64 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 .modal input{width:100%;font-size:17px}
 .modal ol{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
 
-/* swipekaart (ontwerp 'Voorstel mobiel') */
-.dcard{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;display:block;border-width:1px;border-color:var(--n500)}
+/* swipekaart (ontwerp 'Voorstel mobiel'), past zonder scrollen: de foto krijgt de ruimte die overblijft */
+.dcard{display:flex;flex-direction:column;overflow:hidden;touch-action:none;border-width:1px;border-color:var(--n500)}
 .dcard.top{border-color:var(--ink)}
-.dimg{flex:none;height:min(40vh,320px);padding:14px 14px 12px;border-bottom:1px solid var(--n500)}
-.dzoom{width:44px;height:44px;right:10px;bottom:10px;border-color:var(--n500)}
-.dmeta{border-top:0;padding:16px 16px 14px;display:block}
-.dtype{font-size:11px;letter-spacing:.12em}
-.dname{font-size:30px;font-weight:400;line-height:1.1;margin:2px 0 4px}
-.dline2{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.dline{font-size:12.5px;color:var(--g400);min-width:0}
-.dafas{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap;flex:none}
-.dafas i{width:8px;height:8px;border-radius:50%;background:#2E9E5B;display:inline-block}.dafas.new i{background:#E5A800}
-.dpr{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--n500);margin-top:14px;font-variant-numeric:tabular-nums}
-.dpr>div{padding:9px 12px;border-right:1px solid var(--n500)}.dpr>div:nth-child(2n){border-right:0}
-.dpr .big{display:grid;gap:1px;border-bottom:1px solid var(--n500)}.dpr .big span{font-size:11.5px;color:var(--g400)}.dpr .big b{font-family:var(--display);font-weight:500;font-size:20px}
-.dpr .big.care{box-shadow:inset 0 3px 0 var(--roze)}
+.dcard .eye{font-size:10px}
+.dimg{flex:1 1 auto;min-height:70px;padding:8px 10px;border-bottom:1px solid var(--n500)}
+.dzoom{width:36px;height:36px;right:8px;bottom:8px;border-color:var(--n500)}
+.dmeta{flex:none;border-top:0;padding:8px 12px 8px;display:block}
+.dtype{font-size:10px;letter-spacing:.12em}
+.dname{font-size:22px;font-weight:400;line-height:1.1;margin:1px 0 2px}
+.dline2{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dline{font-size:11.5px;color:var(--g400);min-width:0}
+.dafas{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;white-space:nowrap;flex:none}
+.dafas i{width:7px;height:7px;border-radius:50%;background:#2E9E5B;display:inline-block}.dafas.new i{background:#E5A800}
+.dpr{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--n500);margin-top:7px;font-variant-numeric:tabular-nums}
+.dpr>div{padding:4px 9px;border-right:1px solid var(--n500);display:flex;justify-content:space-between;align-items:baseline;gap:6px;min-width:0}
+.dpr>div:nth-child(2n){border-right:0}
+.dpr span{font-size:11px;color:var(--g400);white-space:nowrap}
+.dpr .big{border-bottom:1px solid var(--n500)}.dpr .big b{font-family:var(--display);font-weight:500;font-size:15.5px;white-space:nowrap}
+.dpr .big.care{box-shadow:inset 0 2px 0 var(--roze)}
+.dpr .sm b{font-weight:500;font-size:12.5px;white-space:nowrap}
 .dpr.nocare .big{grid-column:1/-1;border-right:0}
 .dpr.nocare .sm:nth-child(2){border-right:1px solid var(--n500)}.dpr.nocare .sm:nth-child(3){border-right:0}
-.dpr .sm{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.dpr .sm span{font-size:11.5px;color:var(--g400)}.dpr .sm b{font-weight:500;font-size:14px}
-.dcap{margin:6px 0 0;font-size:11.5px;color:var(--g400)}
-.dfh{margin-top:16px;margin-bottom:8px}
-.dfins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
-.dfin{height:auto;min-height:52px;padding:8px 12px;border:1px solid var(--n500);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left;font-size:13px}
-.dfin span{display:grid;min-width:0}.dfin b{font-family:var(--display);font-weight:500;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dfin small{font-size:11px;opacity:.8}
+.dcap{margin:3px 0 0;font-size:10.5px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dfh{margin:7px 0 4px}
+.dfins{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0}
+.dfin{height:36px;padding:0 9px;border:1px solid var(--n500);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left}
+.dfin span{display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden}
+.dfin b{font-family:var(--display);font-weight:500;font-size:13.5px;white-space:nowrap}
+.dfin small{font-size:10.5px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dfin svg{flex:none}
 .dfin.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .dfin.auto{border-style:dashed;border-color:var(--ink);background:#FFF8E6}
-.dvis{background:var(--grijs);border-top:1px solid var(--n500);padding:14px 16px 18px}
-.dvh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}.dvh .eye{margin:0}
-.dvnow{font-size:12px;color:var(--g400)}.dvnow b{font-weight:600;color:var(--ink)}
+.dfins{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}.dfins:has(.dfin:nth-child(3)) .dfin{height:32px}.dfins:has(.dfin:nth-child(3)) .dfin small{display:none}
+.dvis{flex:none;background:var(--grijs);border-top:1px solid var(--n500);padding:8px 12px 10px}
+.dvh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}.dvh .eye{margin:0}
+.dvnow{font-size:11px;color:var(--g400);white-space:nowrap}.dvnow b{font-weight:600;color:var(--ink)}
 .dseg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ink);background:#fff}
-.dseg button{height:44px;border:0;border-right:1px solid var(--ink);background:#fff;font-size:13px;color:var(--ink)}
+.dseg button{height:34px;border:0;border-right:1px solid var(--ink);background:#fff;font-size:12.5px;color:var(--ink)}
 .dseg button:last-child{border-right:0}
 .dseg button.on{background:var(--ink);color:#fff;font-weight:600}
 .dvis.need .dseg{outline:2px solid #B3261E;outline-offset:2px}.dvis.need .dvh .eye{color:#B3261E}
-.dweg{display:flex;justify-content:flex-end;margin-top:6px}
-.dweg button{border:0;background:none;padding:2px 0;font-size:11.5px;color:#B3261E;text-decoration:underline}
-.dvnote{margin:6px 0 0;font-size:11px;color:var(--g400)}
-.dvlab{margin:14px 0 8px}
-.dlbs{display:flex;flex-wrap:wrap;gap:8px}
-.dlb{height:34px;padding:0 12px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink)}
-.dlb .dot{width:9px;height:9px;border-radius:50%;background:var(--lc);display:inline-block}
+.dvlh{display:flex;justify-content:space-between;align-items:baseline;margin:8px 0 5px}.dvlh .eye{margin:0}
+.dweg{border:0;background:none;padding:0;font-size:11px;color:#B3261E;text-decoration:underline}
+.dvnote{margin:4px 0 0;font-size:10.5px;color:var(--g400)}
+.dlbs{display:flex;flex-wrap:wrap;gap:5px}
+.dlb{height:28px;padding:0 8px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink)}
+.dlb .dot{width:8px;height:8px;border-radius:50%;background:var(--lc);display:inline-block}
 .dlb .ck{display:flex}
-.dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 11px;font-weight:500}
+.dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 7px;font-weight:500}
 .dlb.half{border-style:dashed;border-color:var(--ink)}
 .dcard.under .dvis button,.dcard.under .dfin{pointer-events:none}
-.dcard .eye{font-size:11px}
+@media (max-height:700px){ .dmeta{padding:6px 12px} .dtype,.dcap,.dvnote{display:none} .dname{font-size:19px} .dfh{margin:5px 0 3px} .dfin{height:30px} .dseg button{height:30px} .dlb{height:25px;font-size:11.5px} .dvlh{margin:6px 0 4px} .dvis{padding:6px 12px 8px} .dbtns button{height:46px} }
+/* minder ruimte boven de kaart */
+.deckmode .sbody{padding-top:6px}
+.dhead b{font-size:17px}
+.dstack{margin:8px 0 8px}
+.dbtns button{height:50px}
+.dkeys{margin-top:4px}
 </style>
 
 <div class="app">
@@ -1367,13 +1378,12 @@ function deckState(k,top){
   const att=top?' ':' tabindex="-1" ';
   const ocBtns=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('');
   const labBtns=LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('');
-  const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<p class="dvnote">Afwerkingen verschillen: zie ⓘ, of kies hier voor alle afwerkingen.</p>':'';
+  const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<p class="dvnote">Afwerkingen verschillen (zie ⓘ); een keuze hier geldt voor alle.</p>':'';
   return '<div class="dvis'+(d.need===k&&!ocAll?' need':'')+'">'
     +'<div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Nu: <b>'+(v.inA?OCT[nowOc]:'niet in AFAS')+'</b></span></div>'
     +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+ocBtns+'</div>'
-    +'<div class="dweg"><button type="button"'+att+'data-dweg="1" title="Niet in AFAS: dit product (alle aangezette afwerkingen) gaat eruit">Helemaal weg (niet in AFAS)</button></div>'
     +diff
-    +'<div class="eye dvlab">Labels</div><div class="dlbs">'+labBtns+'</div>'
+    +'<div class="dvlh"><span class="eye">Labels</span><button type="button"'+att+'class="dweg" data-dweg="1" title="Niet in AFAS: dit product (alle aangezette afwerkingen) gaat eruit">Helemaal weg (niet in AFAS)</button></div><div class="dlbs">'+labBtns+'</div>'
     +'</div>';
 }
 function hasProp(k){ const m=F.m, d=F.dk; if(m.p[k].idx.some(i=>d.ax[m.v[i].id])) return true; return m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]).some(v=>{ const e=effV(v.id); if(!e.oc||(e.src!=='vk'&&e.src!=='voorstel')) return false;
@@ -1392,10 +1402,10 @@ function deckCard(k,top){
   const price=r?'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
       +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div>'
       +'<p class="dcap">Vanafprijs'+(rv.fin?' · '+esc(cap(rv.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+' · excl. btw</p>':'';
-  const fins=p.idx.length>1?'<div class="eye dfh">Afwerking</div><div class="dfins">'+p.idx.map(i=>{ const v=m.v[i], mp=mpTxt(fp,v.id), on=!d.ex[v.id];
+  const fins=p.idx.length>1?'<div class="eye dfh"'+(fp?' title="Meerprijs o.b.v. '+esc(fp.lbl)+'"':'')+'>Afwerking</div><div class="dfins">'+p.idx.map(i=>{ const v=m.v[i], mp=mpTxt(fp,v.id), on=!d.ex[v.id];
       const sub=[mp?mp:fp&&fp.p[v.id]!=null?'Basisprijs':'', v.inA?'in AFAS':''].filter(Boolean).join(' · ');
-      return '<button type="button" class="dfin'+(on?' on':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(cap(v.fin)||v.code)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('')+'</div>'
-      +(fp?'<p class="dcap">Meerprijs o.b.v. '+esc(fp.lbl)+'</p>':'')
+      return '<button type="button" title="'+esc((cap(v.fin)||v.code)+(sub?' · '+sub:''))+'" class="dfin'+(on?' on':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(cap(v.fin)||v.code)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('')+'</div>'
+
       +(()=>{ const au=p.idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]); return au.length?'<p class="dcap">'+au.map(v=>esc(cap(v.fin)||v.code)).join(', ')+' staat uit op basis van je eerdere keuzes ('+au.map(v=>finRun(finKey(v))).reduce((a,b)=>Math.min(a,b))+'x niet gekozen)</p>':''; })():'';
   const naam=(()=>{ const x=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
       return x?esc(x.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>':esc(shortTitle(m,k)); })();
@@ -1594,14 +1604,12 @@ function renderDeck(){
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1];
-  const oc=$('dcard'), keepTop=oc&&d.sk===k?oc.scrollTop:0; d.sk=k;
   B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke producten '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+'</div></div>'
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(k):'')+'</div>'
     +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+'Niet</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
-  if(keepTop&&$('dcard')) $('dcard').scrollTop=keepTop;
   $('dList').onclick=toList;
   $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
