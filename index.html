@@ -699,6 +699,79 @@ body.beoordelaar .supcard .row2{grid-template-columns:1fr}
 .gform input[type=email],.gform input[type=text]{font-size:15px;height:40px;padding:0 10px;border:1px solid var(--g300)}
 .grol{display:flex;gap:16px;font-size:13.5px}.grol label{display:flex;align-items:center;gap:6px}.grol input{width:auto}
 .note.fout,.gmsg.fout{color:#B3261E}
+
+/* serie-scherm (ontwerp 'Voorstel scherm 1 en 2') */
+body.swv #supbar,body.swv #prog{display:none}
+.minibar{position:relative;display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 16px 10px;background:var(--grijs);border-bottom:1px solid var(--n500);font-size:13px;color:var(--g400)}
+.minibar b{color:var(--ink);font-weight:500}.minibar #mbL{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.minibar #mbR{white-space:nowrap;color:var(--ink)}
+.minibar i{position:absolute;left:0;bottom:-1px;height:3px;background:var(--ink)}
+.stitle{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px}
+.stitle .sn{font-size:26px;line-height:1.1}
+.stitle .ss{font-size:12px;color:var(--g400);flex:1;min-width:0}
+.stitle .sprog{font-size:12.5px;white-space:nowrap}.stitle .sprog b{font-weight:600}
+.sbar{height:2px;background:var(--n300);margin:6px 0 10px}.sbar i{display:block;height:2px;background:var(--ink);min-width:12px}
+.types button{background:#fff;color:var(--ink);border:1px solid var(--n500)}
+.types button.on{background:#fff;color:var(--ink);border:2px solid var(--ink);font-weight:500}
+.types button span{opacity:1}
+.photo{border:1px solid var(--n500);display:flex;flex-direction:column;max-height:430px}
+.photo .strip{position:relative;inset:auto;flex:1 1 auto;min-height:80px}
+.ptabs,.phfoot2{flex:none;position:relative;z-index:2}
+.ptabs{margin-right:130px}
+.ptabs{display:flex;gap:16px;padding:10px 12px 0;border-bottom:1px solid var(--n300);margin:0 12px}
+.ptabs button{border:0;background:none;padding:2px 2px 7px;font-size:12.5px;color:var(--g400);border-bottom:2px solid transparent;margin-bottom:-1px}
+.ptabs button.on{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+.phfoot2{display:flex;justify-content:space-between;align-items:center;padding:4px 12px 8px;font-size:12px;color:var(--g400)}
+.phfoot2 b{color:var(--ink);font-weight:500}
+.phfoot2 .phnav{display:flex;align-items:center;gap:6px}.phfoot2 .phnav button{width:30px;height:30px;border:0;background:none;font-size:20px;line-height:1;color:var(--ink)}
+.phfoot2 .num{font-size:12.5px;color:var(--ink)}
+.vstrip .vbtn{position:relative}
+.vstrip .vbtn .bd{display:none}
+.adot{display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;flex:none}
+.adot.in{background:var(--ink)}
+.vstrip .vbtn .adot{position:absolute;top:4px;right:4px}
+.vstrip .vbtn.on{outline:2px solid var(--ink);outline-offset:-2px}
+.ptitle{display:grid;gap:1px;margin-top:10px}
+.ptitle>b{font-family:var(--display);font-weight:500;font-size:17px;line-height:1.2}
+.ptitle>span{font-size:12px;color:var(--g400)}.ptitle>span b{color:var(--ink);font-weight:600}
+.ptitle .tg{font-size:10.5px;color:var(--g400)}.ptitle .mut{color:var(--g400)}
+.fins2{display:flex;align-items:center;gap:10px;margin-top:10px}
+.fins2>.eye{flex:none}
+.fins2 .fb{display:flex;flex-wrap:wrap;gap:6px}
+.fins2 button{height:34px;padding:0 10px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink)}
+.fins2 button b{font-weight:400}.fins2 button.on{border:2px solid var(--ink);padding:0 9px}.fins2 button.on b{font-weight:600}
+.fins2 .mp{font-size:12px}
+.psum{margin-top:12px}
+.psum .locked{font-size:12px;color:var(--g400);padding:8px 0}
+.psr{display:grid;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--n300);font-variant-numeric:tabular-nums}
+.psr>span{text-align:right;font-size:13px;white-space:nowrap}.psr>span:first-child{text-align:left;color:var(--ink)}
+.psr.psh{border-bottom:1px solid var(--n500);padding-top:0}.psr.psh>span{font-size:11.5px;color:var(--g400)}.psr.psh .eye{font-size:10px}
+.psr.vk>span:not(:first-child){font-family:var(--display);font-weight:500;font-size:16px}
+.psr.care>span:first-child{border-left:3px solid var(--roze);padding-left:7px}
+.pfn{margin:5px 0 0;font-size:11px;color:var(--g400)}
+.status{border:1px solid var(--n500);margin:18px 0 0}
+.sth{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 12px;border-bottom:1px solid var(--n500)}
+.sth b{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}.sth span{font-size:11.5px;color:var(--g400)}
+.srow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-bottom:1px solid var(--n300);background:#fff;text-align:left;font-size:14px;color:var(--ink)}
+.srow span{flex:1}.srow em{font-style:normal;font-size:12px;color:var(--g400)}.srow[aria-pressed="true"] em{color:var(--ink);font-weight:600}
+.srow.chg{background:#FFF8E6}
+.cbx{width:22px;height:22px;border:1.5px solid var(--g300);display:flex;align-items:center;justify-content:center;background:#fff;flex:none}
+.cbx.on{background:var(--ink);border-color:var(--ink)}
+.stlab{padding:10px 12px 12px}.stlab .eye{display:block;margin-bottom:8px}
+.status .dlbs{display:flex;flex-wrap:wrap;gap:6px}
+.status .dlb{height:32px;padding:0 10px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink)}
+.status .dlb .dot{width:9px;height:9px;border-radius:50%;background:var(--lc);display:inline-block}
+.status .dlb .ck{display:flex}
+.status .dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 9px;font-weight:500}
+.status .dlb.chg{outline:2px dashed var(--ink);outline-offset:1px}
+#hbBox .prices{border:0;margin:0;padding:0}
+.stitle,.sbar,.ptitle,.fins2,.psum{margin-left:16px;margin-right:16px}
+.status{margin-left:16px;margin-right:16px}
+.types button.on span,.types button span{color:inherit}
+.stitle{margin-top:10px}
+.below details.box{border:0;border-top:1px solid var(--n500)}
+.below details.box:last-of-type{border-bottom:1px solid var(--n500)}
+.below details.box>summary{font-family:var(--display);font-weight:500;font-size:17px;padding:0 2px;min-height:52px}
+.below details.box>*:not(summary){margin:0 2px 14px}
 </style>
 
 <div class="app">
@@ -717,6 +790,7 @@ body.beoordelaar .supcard .row2{grid-template-columns:1fr}
     </nav>
     <div class="supbar" id="supbar"><span><span class="eye">Leverancier</span><b id="hSup">—</b><span id="hDate" style="font-size:9.5px;font-weight:400;color:var(--g400);margin-left:8px;letter-spacing:.01em"></span></span><span class="num" id="count" style="font-size:11px"></span></div>
     <div class="prog" id="prog"><i></i></div>
+    <div class="minibar" id="minibar" hidden><span id="mbL"></span><span id="mbR"></span><i id="mbB"></i></div>
     <div class="banner" id="banner" hidden></div>
   </header>
 
@@ -1021,7 +1095,7 @@ function render(soft){
 }
 function show(v){
   if(v==='res'&&!BEH()) v='home';
-  view=v; $('sHome').hidden=v!=='home'; $('sSwipe').hidden=v!=='swipe'; $('sRes').hidden=v!=='res';
+  view=v; document.body.classList.toggle('swv',v==='swipe'); updMini(); $('sHome').hidden=v!=='home'; $('sSwipe').hidden=v!=='swipe'; $('sRes').hidden=v!=='res';
   $('main').scrollTop=0; cur=null; render();
 }
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.view));
@@ -1142,36 +1216,60 @@ function cardHTML(m){
   const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
   const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
   const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='fin'?'Foto: zelfde product, frame/afwerking wijkt af':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
-  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
-  const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
-  const blom=v.inA?`<span class="big">${esc(v.blom||'(geen Blom-naam in AFAS)')}</span><span class="r">${esc(v.afas)}</span>`:(v.nv?`<span class="big nvb" title="${esc(v.nvw||'')}"><span class="vst">Voorstel</span> ${esc(v.nv)}${v.nvc?' <i>controleren</i>':''}</span><span class="r mut">niet in AFAS</span>`:`<span class="mut">nog geen Blom-naam</span><span class="r mut">niet in AFAS</span>`);
-  const cell=(lbl,val,main)=>'<div class="cell'+(main?' main':'')+(val?' yes':' no')+'">'+(val?OK():NO())+'<span>'+lbl+'</span></div>';
+  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot'+(n?' in':'')+'" aria-hidden="true"></i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
+  const fins=P.idx.length>1?'<div class="fins2" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span><div class="fb">'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'" title="'+esc(a.code)+(a.inA?' · in AFAS':' · niet in AFAS')+'"><b>'+esc(cap(a.fin)||a.code)+'</b>'+(mp?'<span class="mp">'+mp+'</span>':'')+'<i class="adot'+(a.inA?' in':'')+'" aria-hidden="true"></i></button>'}).join('')+'</div></div>':'';
+  const bnaam=v.inA?(v.blom||'(geen Blom-naam in AFAS)'):(v.nv||'');
   const dr=drOf(m,v), afLab=labOf(v);
-  const chips=LABELS.map(([n,c],i)=>{const on=dr.lab[i]===1, ch=dr.lab[i]!==afLab[i]; return '<button type="button" class="chip'+(on?' on':'')+(ch?' chg':'')+'" data-dlab="'+i+'" aria-pressed="'+on+'">'+(on?OK(12):NO(12))+'<span class="sw" style="background:'+c+'"></span>'+n+'</button>'}).join('');
-  const cellB=(act,lbl,val,main,ch)=>'<button type="button" class="cell'+(main?' main':'')+(val?' yes':' no')+(ch?' chg':'')+'" data-dact="'+act+'">'+(val?OK():NO())+'<span>'+lbl+'</span></button>';
+  const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
+  const full=pricesHTML(v), hasFull=/id="prices"/.test(full);
   return `<div class="fold">
-    <div class="serie"><div class="sl"><span class="eye">Serie</span><span class="disp sn">${esc(m.fam)}</span></div><span class="ss">${m.p.length} ${m.p.length===1?'product':'producten'} · ${m.v.length} art. · ${nin} in AFAS</span></div>
+    <div class="stitle"><span class="disp sn">${esc(m.fam)}</span><span class="ss">${esc(SUP.short||SUP.name)} · ${m.p.length} ${m.p.length===1?'product':'producten'} · ${nin} in AFAS</span><span class="sprog">${Math.min(done+1,M.length)}/${M.length} · <b>${pctd}%</b></span></div>
+    <div class="sbar"><i style="width:${pctd}%"></i></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${typeChips}
-    <div class="photo"><div class="strip" id="strip">${slides}</div>${lab}${fotoVan(m,v)?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
-    <div class="phfoot"><span class="q">${fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
-    ${sideBtns(v,'data-czz')}
+    <div class="photo">${sideTabs(v)}<div class="strip" id="strip">${slides}</div>${lab}${fotoVan(m,v)?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}
+      <div class="phfoot2"><span class="q">${fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b>'+gin+'</b> van '+g.pk.length+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b>${pos+1}</b> / ${g.pk.length}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div></div>
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
-    <div class="prod"><span class="eye">Product</span><span class="pl">${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}${v.tguess?' <span style="font-size:11px;color:var(--g400)">(soort niet bevestigd: geen gegevens in prijslijst of op piaval.it)</span>':''}</span></div>
+    <div class="ptitle"><b>${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}</b>${v.tguess?'<small class="tg">soort niet bevestigd</small>':''}<span>${bnaam?'<b>'+esc(bnaam)+'</b>'+(v.inA&&v.afas?' · '+esc(v.afas):'')+' · ':'<span class="mut">nog niet in AFAS</span> · '}${esc(SUP.short||SUP.name)} ${esc(v.code)}</span></div>
     ${fins}
-    <div class="names">
-      <div class="nrow"><span class="eye" style="color:var(--ink)">Blom</span>${blom}</div>
-      <div class="nrow"><span class="eye">${esc(SUP.short||SUP.name)}</span><span style="font-size:12.5px;font-weight:400">${esc(m.fam)}${v.fin?' · '+esc(v.fin):''}</span><span class="r">${esc(v.code)}</span></div>
-    </div>
-    <div class="now">
-      <div class="hd"><b>${dr.keepSet||dr.setSet?'Jouw keuze':'Nu bij Blom'} · ${esc(v.code)}</b><span>${dr.keepSet||dr.setSet?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, stand '+dstr()+' · tik om te wijzigen'}</span></div>
-      <div class="cells">${cellB('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Niet in AFAS'),dr.keep===1,true,dr.keepSet)}${cellB('online','Online collectie',dr.oc!=='niet',false,dr.setSet&&(dr.oc!=='niet')!==!!v.online)}${cellB('klant','Zichtbaar<br>voor klanten',dr.oc==='klant',false,dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))}</div>
-      <div class="labs"><span class="eye">Labels</span><div class="chips">${chips}</div></div>
-    </div>
-    ${pricesHTML(v)}
+    ${pricesSum(v)}
   </div>
-  ${belowHTML(m,v)}`;
+  ${statusHTML(m,v,dr,afLab)}
+  ${belowHTML(m,v,hasFull?full:'')}`;
 }
+// zijde-tabs bovenin de foto (Voor, Links, Rechts, Achter)
+function sideTabs(v){ const zs=sidesOf(v); if(zs.length<2) return ''; const k=sideKey(v);
+  return '<div class="ptabs" role="tablist">'+zs.map(z=>'<button type="button" role="tab" class="'+(z===k?'on':'')+'" data-czz="'+z+'" aria-selected="'+(z===k)+'">'+cap(z)+'</button>').join('')+'</div>'; }
+// status bij Blom (AFAS) of jouw keuze: in AFAS, online collectie, zichtbaar voor klanten en labels
+function statusHTML(m,v,dr,afLab){
+  const row=(act,lbl,val,ch)=>'<button type="button" class="srow'+(ch?' chg':'')+'" data-dact="'+act+'" aria-pressed="'+!!val+'"><span>'+lbl+'</span><em>'+(val?'Aan':'Uit')+'</em><i class="cbx'+(val?' on':'')+'" aria-hidden="true">'+(val?'<svg width="16" height="16" viewBox="0 0 18 18"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="#fff" stroke-width="2.2"/></svg>':'')+'</i></button>';
+  const chips=LABELS.map(([n,c],i)=>{const on=dr.lab[i]===1, ch=dr.lab[i]!==afLab[i]; return '<button type="button" class="dlb'+(on?' on':'')+(ch?' chg':'')+'" style="--lc:'+c+'" data-dlab="'+i+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'}).join('');
+  const mine=dr.keepSet||dr.setSet;
+  return '<div class="status"><div class="sth"><b>'+(mine?'Jouw keuze':'Status bij Blom')+' · '+esc(v.code)+'</b><span>'+(mine?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, '+dstr())+'</span></div>'
+    +row('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Opnemen in AFAS'),dr.keep===1,dr.keepSet)
+    +row('online','Online collectie',dr.oc!=='niet',dr.setSet&&(dr.oc!=='niet')!==!!v.online)
+    +row('klant','Zichtbaar voor klanten',dr.oc==='klant',dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))
+    +'<div class="stlab"><span class="eye">Labels</span><div class="dlbs">'+chips+'</div></div></div>'; }
+// prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
+function pricesSum(v){
+  if(prState==='locked'&&prErr&&canShare!==false) return '<div class="psum"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff">Opnieuw</button></div></div>';
+  if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="psum"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
+  if(prState!=='ok') return '<div class="psum"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
+  const comCat=supCat(pk(v),0);
+  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)&&!/OUTDOOR/.test(c));
+    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c));
+    let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
+  let cols=[[comCat,'Eigen stof / COM'],[cheapCat,'Vanaf*']].filter(x=>x[0]!=null);
+  if(!cols.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="psum"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cols=[[cs[0],'Prijs']]; }
+  const P=cols.map(([c])=>calc(pk(v),c)), careOk=p=>careOn()&&p&&p.care!=null, hasCare=P.some(careOk);
+  const gt='minmax(0,1fr) '+P.map(()=>'minmax(0,1.1fr)').join(' ');
+  const row=(lbl,f,cls)=>'<div class="psr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+gt+'"><span>'+lbl+'</span>'+P.map(p=>'<span>'+f(p)+'</span>').join('')+'</div>';
+  return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span class="eye">Prijzen</span>'+cols.map(([c,l])=>'<span title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(l)+'</span>').join('')+'</div>'
+    +row('Verkoop',p=>p.vk!=null?eur(p.vk):'—','vk')
+    +(hasCare?row('Blom Care',p=>careOk(p)?eur(p.care):'—','vk care'):'')
+    +row('Netto inkoop',p=>eur(p.net))
+    +row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—')
+    +'<p class="pfn">'+(cols.some(x=>x[1]==='Vanaf*')?'* goedkoopste stofgroep · ':'')+'excl. btw'+(P.some(p=>p.err)?' · <span style="color:#C0392B">! fout in de Excel: zie Hele berekening</span>':'')+'</p></div>'; }
 function pricesHTML(v){
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="prices"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px">Opnieuw proberen</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="prices"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
@@ -1202,7 +1300,7 @@ function pricesHTML(v){
   const lab=p=>!p.cat?'Prijs':EIGEN(p.cat)?eigenNaam(p.cat):p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Vanaf (goedkoopste stofgroep)':'Stofgroep '+p.cat;
   const forRows=same?uParts(P[0].u).map(([a,b])=>'<div><span>'+a+'</span>'+esc(b)+'</div>').join(''):P.map(p=>'<div><span>'+lab(p)+'</span>'+esc(uText(p.u))+'</div>').join('');
   const more=P.some(p=>p.n>1);
-  return `<div class="prices${prOpen?' open':''}" id="prices">
+  return `<div class="prices open" id="prices">
     <div class="ph" style="grid-template-columns:${cols}"><div><span style="font-size:10px;letter-spacing:.12em;line-height:1.25">Prijzen<br><span style="letter-spacing:0;text-transform:none;color:var(--g400)">${esc(v.code)}</span></span></div>${heads.map(h=>'<div style="grid-column:span '+(narrow?1:2)+'">'+h+'</div>').join('')}</div>
     ${row('Bruto inkoopprijs',p=>eur(p.b),'px')}
     ${row('Inkoopconditie',p=>'− '+eur(p.b-p.net),'px',()=>pct(PR.k),pct(PR.k))}
@@ -1215,13 +1313,12 @@ function pricesHTML(v){
     ${hasCare?'<div class="pr vk care" style="grid-template-columns:'+cols+'"><div style="line-height:1">Blom Care prijs<br><small>excl. btw · marge ×'+fmt(PR.oc)+'</small></div>'+P.map(p=>'<div style="grid-column:span '+(narrow?1:2)+'">'+(careOk(p)?eur(p.care):'—')+'</div>').join('')+'</div>':''}
     ${row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—','b')}
     ${P.filter(p=>p.err).map(p=>'<div class="xerr px" style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11.5px;line-height:1.35"><b style="font-weight:500">'+esc(lab(p))+': </b>'+esc(p.err)+' Het bedrag staat zoals in de Excel.</div>').join('')}
-    <button type="button" class="ptog" id="ptog" aria-expanded="${prOpen}"><b>Hele berekening</b><span>bruto · condities · transport</span><i aria-hidden="true">${prOpen?'−':'+'}</i></button>
     ${P.some(p=>p.err)?'<div class="pxs" style="margin-top:6px;font-size:11px;color:#C0392B">! Fout in de Excel bij deze prijs: open Hele berekening.</div>':''}
     ${forRows?'<div class="pfor px"><b>Deze prijzen gelden voor</b>'+forRows+'</div>':''}
     <div class="pnote px">${more?'Andere frames of stofuitvoeringen hebben een eigen prijs: zie Alle prijzen hieronder. ':''}${B.some(x=>x[0]===0)?'Eigen stof / COM'+(comOk()?'':' (stofgroep '+esc(comCat)+', koppeling nog te bevestigen)')+': '+(PR.comNote?esc(PR.comNote.replace(/^COM:\s*/,''))+'. ':'verkoopprijs inclusief € '+PR.com+' per meter stof. '):''}${PR.o!=null?(hasCare?'Interieurs: marge ×':'Marge ×')+fmt(PR.o)+'. ':''}${hasCare?'Blom Care: uit de prijslijst, Care-marge ×'+fmt(PR.oc)+(PR.oc===PR.o?' (gelijk aan de verkoopprijs)':'')+'. ':''}Stand ${dstr()} (momentopname).</div>
   </div>`;
 }
-function belowHTML(m,v){
+function belowHTML(m,v,full){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
   const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
@@ -1249,9 +1346,10 @@ function belowHTML(m,v){
     return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div><span class="note">Nog niemand heeft deze serie beoordeeld.</span></div>';
   return `<div class="below">
     ${v.desc?'<section><h2>Omschrijving</h2><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section><h2>Omschrijving</h2><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
-    <details class="box"><summary>Specificaties <span>${esc(v.code)} · stand ${dstr()}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
+    ${full?'<details class="box" id="hbBox"'+(prOpen?' open':'')+'><summary>Hele berekening <span>bruto · condities · transport</span></summary>'+full+'</details>':''}
+    <details class="box"><summary>Specificaties <span>${esc(v.code)}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
     ${ptab}
-    <section><h2>Keuzes van het team</h2><div class="team">${team}</div></section>
+    <details class="box" id="tmBox"><summary>Keuzes van het team <span>${(()=>{ const n=people().filter(p=>p.c[m.id]&&p.c[m.id].s).length; return n?n+(n===1?' keuze':' keuzes'):'nog niemand'; })()}</span></summary><div class="team">${team}</div></details>
     ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">Productpagina '+esc(SUP.name)+' <span aria-hidden="true">↗</span></a></section>':''}
   </div>`;
 }
@@ -1290,6 +1388,8 @@ function bindCard(m){
   $('sSwipe').querySelectorAll('[data-dlab]').forEach(b=>b.onclick=()=>{ const d=drOf(m,v0), j=+b.dataset.dlab; d.lab[j]=d.lab[j]===1?0:1; setDrV(m,v0,undefined,d.oc,d.lab); setVi(m,curVi); });
   const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
   const ap=$('apBox'); if(ap) ap.addEventListener('toggle',()=>{ apOpen=ap.open; });
+  const hb=$('hbBox'); if(hb) hb.addEventListener('toggle',()=>{ prOpen=hb.open; });
+  updMini();
   $('sSwipe').querySelectorAll('[data-frsel]').forEach(b=>b.onclick=()=>{ FRSEL=+b.dataset.frsel; ls.set('blom-ck-frsel',String(FRSEL)); apOpen=true; setVi(m,curVi); });
 }
 
@@ -1939,6 +2039,13 @@ $('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hid
 $('mName').hidden=true;   // de naam komt van het inlogaccount
 $('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
+/* ---------------- vaste balk op het serie-scherm (na doorscrollen) ---------------- */
+function updMini(){ const mb=$('minibar'); if(!mb) return; const st=document.querySelector('#sSwipe .stitle');
+  const on=view==='swipe'&&!!cur&&!!st&&$('main').scrollTop>st.offsetTop+st.offsetHeight; mb.hidden=!on; if(!on) return;
+  const m=cur, v=m.v[curVi], g=grpOf(m,curVi), c0=counts(D,M), done=c0.w+c0.n, pc=Math.floor(done/(M.length||1)*100);
+  $('mbL').innerHTML='<b>'+esc(m.fam)+'</b> · '+esc(g.t||'Artikel')+' '+(g.pk.indexOf(v.p)+1)+'/'+g.pk.length+(v.fin?' · '+esc(cap(v.fin)):'');
+  $('mbR').innerHTML='Serie '+Math.min(done+1,M.length)+' van '+M.length+' · <b>'+pc+'%</b>'; $('mbB').style.width=pc+'%'; }
+$('main').addEventListener('scroll',updMini,{passive:true});
 /* ---------------- afronden (beoordelaar) ---------------- */
 // na de laatste serie: eerst alle keuzes opslaan, dan de leverancier afronden (daarna kan een beoordelaar niets meer wijzigen)
 const AFGEROND={};
