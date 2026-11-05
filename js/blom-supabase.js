@@ -54,6 +54,13 @@
       document.body.appendChild(tag);
     });
   }
+  /* Komt deze pagina binnen via de inloglink uit de mail? En wacht deze browser zelf op die link
+     (dan is hier op 'Stuur inloglink' geklikt)? Zo niet, dan is de link op een ander apparaat
+     geopend dan waar is ingelogd, en tonen we meteen een code voor dat andere apparaat. */
+  const VIA_LINK = /access_token=|type=magiclink/.test(location.hash + location.search);
+  const WACHT = 'blom-wacht-op-link';
+  let wachtHier = false;
+  try { wachtHier = !!localStorage.getItem(WACHT); localStorage.removeItem(WACHT); } catch (e) {}
   const sb = window.supabase.createClient(CFG.url, CFG.anonKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
@@ -219,6 +226,7 @@
       const terug = location.origin + location.pathname;
       const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
       if (error) { knop.disabled = false; knop.textContent = 'Stuur inloglink'; fout.textContent = /rate|limit/i.test(error.message) ? 'Er zijn te veel mails verstuurd. Probeer het over een paar minuten opnieuw.' : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
+      try { localStorage.setItem(WACHT, String(Date.now())); } catch (e) {}
       stapCode();
     };
   }
@@ -227,8 +235,9 @@
       ? `<h1>Code van je telefoon</h1>
       <p>Open de app op je telefoon (of een ander apparaat waarop je al bent ingelogd als <b>${email}</b>). Kies in het menu <b>Inloggen op een ander apparaat</b> en typ hier de code die je daar ziet.</p>`
       : `<h1>Check je mail</h1>
-      <p>We hebben een mail gestuurd naar <b>${email}</b>. Klik op de link in die mail.</p>
-      <p>Lees je de mail op een ander apparaat, zoals je telefoon? Dan logt de link dat apparaat in. Kies daar in het menu <b>Inloggen op een ander apparaat</b> en typ hier de code die je daar ziet.</p>`;
+      <p>We hebben een mail gestuurd naar <b>${email}</b>. De mail bevat een link, geen code.</p>
+      <p><b>Mail op deze computer?</b> Klik op de link, dan ben je ingelogd.<br>
+      <b>Mail op je telefoon?</b> Tik daar op de link. Je telefoon toont dan een code van 6 cijfers. Typ die code hieronder.</p>`;
     scherm.innerHTML = `<form novalidate>
       <span class="eye">Blom Collectiekeuze</span>
       ${uitleg}
@@ -253,21 +262,22 @@
   /* ---------- inloggen op een ander apparaat ----------
      Wie hier al is ingelogd, vraagt een eenmalige inlogcode op (edge function apparaat-code)
      en typt die op het andere apparaat in. Er gaat geen mail uit. */
-  async function toonApparaatCode() {
+  async function toonApparaatCode(naLink) {
     maakScherm();
     const knopNieuw = '<button type="button" data-a="nieuw">Nieuwe code</button>';
-    const knopTerug = '<button type="button" class="link" data-a="terug">Terug naar de app</button>';
+    const knopTerug = `<button type="button" class="link" data-a="terug">${naLink === true ? 'Nee, verder naar de app op dit apparaat' : 'Terug naar de app'}</button>`;
+    const kop = naLink === true ? 'Je bent ingelogd' : 'Inloggen op een ander apparaat';
     const zet = html => {
-      scherm.innerHTML = `<form novalidate><span class="eye">Blom Collectiekeuze</span><h1>Inloggen op een ander apparaat</h1>${html}</form>`;
+      scherm.innerHTML = `<form novalidate><span class="eye">Blom Collectiekeuze</span><h1>${kop}</h1>${html}</form>`;
       const n = scherm.querySelector('[data-a=nieuw]'), t = scherm.querySelector('[data-a=terug]');
-      if (n) n.onclick = toonApparaatCode;
+      if (n) n.onclick = () => toonApparaatCode(naLink);
       if (t) t.onclick = () => { scherm.hidden = true; };
     };
     zet('<p>Code maken…</p>' + knopTerug);
     try {
       const { data, error } = await sb.functions.invoke('apparaat-code', { method: 'POST' });
       if (error || !data || !data.code) throw error || new Error('geen code');
-      zet(`<p>Open de app op je computer, vul <b>${data.email}</b> in en kies <b>Log in met een code van je telefoon</b>. Typ daar deze code:</p>
+      zet(`${naLink === true ? '<p>Wil je ook inloggen op je computer? Typ daar deze code in het inlogscherm:</p>' : `<p>Open de app op je computer, vul <b>${data.email}</b> in en kies <b>Log in met een code van je telefoon</b>. Typ daar deze code:</p>`}
         <p style="font-family:var(--display,Verdana,sans-serif);font-weight:500;font-size:38px;letter-spacing:.18em;color:var(--ink,#3A3A3A);margin:6px 0">${data.code}</p>
         <p>De code werkt één keer en is ongeveer een uur geldig. Deel hem met niemand.</p>${knopNieuw}${knopTerug}`);
     } catch (e) {
@@ -282,7 +292,7 @@
       p.innerHTML = 'Ingelogd als ' + user.email + ' · <button type="button">Uitloggen</button> · <button type="button">Inloggen op een ander apparaat</button>';
       const [uit, ander] = p.querySelectorAll('button');
       uit.onclick = async () => { await sb.auth.signOut(); location.reload(); };
-      ander.onclick = toonApparaatCode;
+      ander.onclick = () => toonApparaatCode();
       form.appendChild(p);
     }
     const help = document.getElementById('mHelp');
@@ -302,6 +312,9 @@
     uitlogRegel(user);
     laadFonts();
     if (typeof window.__blomBoot === 'function') window.__blomBoot();
+    // link uit de mail geopend op een ander apparaat dan waar de link is aangevraagd: toon meteen
+    // de code voor dat apparaat (buiten de inlog-callback van Supabase, anders blijft die hangen)
+    if (VIA_LINK && !wachtHier) setTimeout(() => toonApparaatCode(true), 0);
   }
 
   async function start() {
