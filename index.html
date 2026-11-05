@@ -512,7 +512,7 @@ details.box .tablewrap{border:0}
 .ipr em::after{content:' meerprijs';font-weight:400}
 .ipr em.b{display:none}
 .inow{font-size:11px}
-.ioc{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--g300)}
+.ioc{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--g300)}
 .ioc button{height:34px;border:0;border-right:1px solid var(--g300);background:#fff;font-size:11.5px;color:var(--ink)}
 .ioc button:last-child{border-right:0}
 .ioc button.on{background:var(--groen);font-weight:500}.ioc button.on.neg{background:var(--rood)}
@@ -1304,7 +1304,12 @@ const PK_LOGO='<svg class="logo" viewBox="0 0 89.97 25.6" aria-label="Blom" role
 let PK={m:null,k:0,tab:'win',vi:0};
 const ZIJ=['voor','links','rechts','achter'], ZIJL={voor:'Voorzijde',links:'Linkerzijde',rechts:'Rechterzijde',achter:'Achterzijde'};
 const icon=d=>'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke-width="1.4">'+d+'</svg>';
-function pkVar(m,k){ return m.p[k].idx.map(i=>m.v[i]); }   // de productkaart toont alle uitvoeringen
+// de productkaart toont alleen de uitvoeringen die je kiest: in het deck de aangezette afwerkingen,
+// vanuit de opzet de gekozen artikelen; is er (nog) niets gekozen, dan alle uitvoeringen
+function pkVar(m,k){ const all=m.p[k].idx.map(i=>m.v[i]); let vs=all;
+  if(F&&F.m===m&&F.dk&&F.dk.ex) vs=all.filter(v=>!F.dk.ex[v.id]);
+  else if(PK&&PK.m===m&&PK.r&&PK.r.v) vs=all.filter(v=>PK.r.v[v.id]===1);
+  return vs.length?vs:all; }
 // naam van de productkaart: één naam per serie en productcategorie (pkn); anders de AFAS-naam of het naamvoorstel
 function pkName(vs){ const c=vs.find(v=>v.pkn); if(c) return {n:c.pkn,vs:!vs.some(v=>v.inA&&v.blom===c.pkn)}; const a=vs.find(v=>v.inA&&v.blom); if(a) return {n:a.blom,vs:false}; const v=vs.find(v=>v.nv); return v?{n:v.nv,vs:true}:{n:null,vs:true}; }
 // alle producten van de serie met dezelfde (voorgestelde) Blom naam staan op één productkaart
@@ -1447,12 +1452,12 @@ function deckInfo(k){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?'<div><span>'+dl[i]+'</span><span>'+fmt(x)+' cm</span></div>':'').join('');
   const OC3=[['niet','Niet online'],['intern','Online, intern'],['klant','Online, klanten']];
-  const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id);
+  const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id), ex=!!F.dk.ex[a.id];
     return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(fp&&fp.p[a.id]!=null?'<span class="ipr">'+eur(fp.p[a.id])+(mp&&mp!=='basis'?' <em>'+mp+'</em>':mp==='basis'?' <em class="b">basis</em>':'')+'</span>':'')+'</div>'
       +'<span class="inow">Nu: '+(a.inA?OK(12)+' in AFAS'+(a.blom?' als '+esc(a.blom):''):NO(12)+' niet in AFAS'+(a.nv?' · <span class="vst">Voorstel</span> naam <b>'+esc(a.nv)+'</b>'+(a.nvc?' (controleren)':''):''))+' · '+(a.online?OK(12):NO(12))+' online · '+(a.klant?OK(12):NO(12))+' klanten'+(a.inA?' · labels: '+(LABELS.filter((_,j)=>labOf(a)[j]===1).map(x=>x[0]).join(', ')||'geen'):'')+'</span>'
-      +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o)+'" class="'+(e.oc===o?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'</div>'
-      +'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>'
-      +(e.oc?'<div class="ist">'+({afas:'Huidige AFAS-waarde',eerder:'Je eerdere keuze',voorstel:'<span class="vst">Voorstel</span> zoals '+(e.n===1?'het artikel':'de '+e.n+' artikelen')+' van deze serie in AFAS: controleer dit',vk:'<span class="vst">Voorstel</span> op basis van je eerdere keuzes in deze serie ('+e.n+'x)'+(e.strong&&a.inA&&e.was?' · nu in AFAS: '+({niet:'niet online',intern:'online, intern',klant:'online, klanten'})[e.was]:'')+': controleer dit',gekozen:'Door jou gekozen'}[e.src]||'')+'</div>':'<div class="ist need">Kies de online collectie voor deze uitvoering</div>')+'</div>'}).join('');
+      +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o&&!ex)+'" class="'+(e.oc===o&&!ex?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'<button type="button" role="radio" aria-checked="'+ex+'" class="'+(ex?'on neg':'')+'" data-vex="'+esc(a.id)+'">Niet in AFAS</button></div>'
+      +(ex?'':'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>')
+      +(ex?'<div class="ist">Deze uitvoering wordt niet opgenomen (niet in AFAS)</div>':e.oc?'<div class="ist">'+({afas:'Huidige AFAS-waarde',eerder:'Je eerdere keuze',voorstel:'<span class="vst">Voorstel</span> zoals '+(e.n===1?'het artikel':'de '+e.n+' artikelen')+' van deze serie in AFAS: controleer dit',vk:'<span class="vst">Voorstel</span> op basis van je eerdere keuzes in deze serie ('+e.n+'x)'+(e.strong&&a.inA&&e.was?' · nu in AFAS: '+({niet:'niet online',intern:'online, intern',klant:'online, klanten'})[e.was]:'')+': controleer dit',gekozen:'Door jou gekozen'}[e.src]||'')+'</div>':'<div class="ist need">Kies de online collectie voor deze uitvoering</div>')+'</div>'}).join('');
   return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
     +(F.dk.need===k?'<div class="ineed">Nog niet in AFAS en geen voorstel mogelijk: kies per uitvoering de online collectie en de labels, en kies dan <b>'+(anyIn(m)?'Houden':'Opnemen')+'</b>.</div>':'')
     +'<div class="isec"><h3>Per uitvoering: online en labels</h3>'+(fp?'<p class="imp">Meerprijs ten opzichte van '+esc(cap(fp.base.fin)||fp.base.code)+' ('+esc(fp.lbl)+').</p>':'')+rows+'</div>'
@@ -1511,7 +1516,10 @@ function bindInfo(k){
   const m=F.m, ids=m.p[k].idx.map(i=>m.v[i].id);
   $('iClose').onclick=()=>{ F.dk.info=false; renderDeck(); };
   const keep=()=>{ const el=$('dinfo'), t=el?el.scrollTop:0; renderDeck(); const n=$('dinfo'); if(n){ n.style.animation='none'; n.scrollTop=t; } };
-  $('dinfo').querySelectorAll('[data-voc]').forEach(b=>b.onclick=()=>{ const [id,o]=b.dataset.voc.split('|'); F.vs[id].oc=o; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
+  $('dinfo').querySelectorAll('[data-voc]').forEach(b=>b.onclick=()=>{ const [id,o]=b.dataset.voc.split('|'); F.vs[id].oc=o; F.vs[id].src='gekozen'; F.dk.ex[id]=false; F.dk.man[id]=true; delete F.dk.ax[id]; F.dk.ct[k]=Date.now(); keep(); });
+  // per uitvoering: niet in AFAS = deze uitvoering niet opnemen; minstens één uitvoering van het product blijft over
+  $('dinfo').querySelectorAll('[data-vex]').forEach(b=>b.onclick=()=>{ const id=b.dataset.vex, d=F.dk; d.ex[id]=true; d.man[id]=true; delete d.ax[id];
+    if(m.p[k].idx.every(i=>d.ex[m.v[i].id])){ d.ex[id]=false; toast('Minstens één uitvoering opnemen; wil je niets, kies dan Niet voor het hele product'); } keep(); });
   $('dinfo').querySelectorAll('[data-vlab]').forEach(b=>b.onclick=()=>{ const [id,j]=b.dataset.vlab.split('|'); const l=F.vs[id].lab; l[+j]=l[+j]===1?0:1; F.vs[id].src='gekozen'; F.dk.ct[k]=Date.now(); keep(); });
 }
 function bindDeckSwipe(){
