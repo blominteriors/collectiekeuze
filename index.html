@@ -1855,8 +1855,21 @@ function wisLokaleKeuzes(){
     localStorage.setItem('blom-ck-gewist',KEUZES_GEWIST);
   }catch(e){}
 }
+// Keuzes van één persoon gereset: alleen diens lokaal bewaarde keuzes en concepten worden één keer weggegooid.
+// Voor een nieuwe reset: voeg de sleutel toe (keyOf van de gebruikersnaam) met een nieuwe datum.
+const PERSOON_GEWIST={'p-s-korenstra':'2026-11-05b'};
+function wisLokaleKeuzesPersoon(){
+  if(!OP_LIVE) return;
+  try{
+    Object.entries(PERSOON_GEWIST).forEach(([key,dat])=>{
+      const vlag='blom-ck-gewist-'+key; if(localStorage.getItem(vlag)===dat) return;
+      Object.keys(localStorage).filter(k=>k.startsWith('blom-ck-'+key+'-')||k.startsWith('blom-ck-draft-'+key+'-')).forEach(k=>localStorage.removeItem(k));
+      localStorage.setItem(vlag,dat);
+    });
+  }catch(e){}
+}
 window.__blomBoot=async function boot(){
-  wisLokaleKeuzes();
+  wisLokaleKeuzes(); wisLokaleKeuzesPersoon();
   me=meVanAccount();
   if(!me){ const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n}; }
   try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }
