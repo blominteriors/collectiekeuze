@@ -198,6 +198,7 @@ main{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .dpk{position:absolute;top:10px;right:12px;z-index:2;display:flex;align-items:center;gap:7px;max-width:150px;padding:6px 9px;border:1px solid var(--ink);background:#fff;font-size:10.5px;line-height:1.2;text-align:left;font-weight:500}
 .dpk:hover{background:var(--ink);color:#fff}
 .dcard.top .dtype,.dcard.top .dname{padding-right:158px}
+html.op-live .dcard.top .dtype,html.op-live .dcard.top .dname{padding-right:0}   /* live: geen knop productkaart */
 /* productkaart online collectie (voorbeeld), naar het productvenster van collection.blominteriors.com */
 .pk-zij{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}.fold>.pk-zij{margin:8px 16px 2px}.zoom .zf .pk-zij{margin:6px 0 0}.zoom .zf .pk-zij button{width:auto;height:28px;padding:0 10px;font-size:12px;border-color:var(--ink)}.zoom .zf .pk-zij button.on{background:var(--ink);color:#fff}.pk-zij button{height:28px;padding:0 10px;border:1px solid var(--ink);background:#fff;font-size:12px}.pk-zij button.on{background:var(--ink);color:#fff}
 .pkaart{position:fixed;inset:0;z-index:95;background:rgba(20,20,20,.86);overflow-y:auto;-webkit-overflow-scrolling:touch;font-family:var(--display);font-weight:200;color:#111;padding:12px 0 30px}
@@ -727,6 +728,8 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 document.addEventListener('toggle',e=>{ if(e.target&&e.target.classList&&e.target.classList.contains('srcl')) window.SRCOPEN=e.target.open; },true);
 function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>e.hidden=true,ms||2600)}
+const OP_LIVE=!!(window.BLOM_CONFIG&&BLOM_CONFIG.omgeving==='live');   // live adres (niet de testversie)
+document.documentElement.classList.toggle('op-live',OP_LIVE);
 const keyOf=n=>'p-'+n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
 const LABELS=[['Hospitality','var(--rood)'],['Care','var(--roze)'],['Student housing','var(--geel)'],['Leisure','var(--groen)'],['Smart living','var(--blauw)']];
 const OC=[['niet','Niet<br>online'],['intern','Online,<br>alleen intern'],['klant','Online,<br>voor klanten']];
@@ -763,7 +766,7 @@ async function loadSup(id){
   SUP=s; ls.set('blom-ck-sup',SUP.id);
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
   M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); zusterFoto(m);});
-  // live: geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
+  // live: geen knop 'Bekijk als productkaart online collectie' op de swipekaart; geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
   if(window.BLOM_CONFIG&&BLOM_CONFIG.omgeving==='live') M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
   loadedChunks={}; for(const k in IMG) delete IMG[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
@@ -1307,7 +1310,7 @@ function deckCard(k,top){
   return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
     +'<div class="dimg">'+(fotoVan(m,a)&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">':'<span class="wait">foto laden…</span>')+'</div>'
-    +'<div class="dmeta">'+(top?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
+    +'<div class="dmeta">'+(top&&!OP_LIVE?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
