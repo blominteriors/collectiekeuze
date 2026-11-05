@@ -1,8 +1,8 @@
 /* Blom Collectiekeuze: koppeling met Supabase.
    Vervangt de Claude-functies die de app gebruikte:
-   - claude.use('db')        -> tabel 'keuzes' (lezen, opslaan, live bijwerken) en prijzen uit de privÃ© opslag
+   - claude.use('db')        -> tabel 'keuzes' (lezen, opslaan, live bijwerken) en prijzen uit de privé opslag
    - claude.use('downloads') -> gewone browserdownload
-   - fetch('data/...')       -> dfetch('data/...') uit de privÃ© opslag
+   - fetch('data/...')       -> dfetch('data/...') uit de privé opslag
    en zorgt voor inloggen met e-mailadres en wachtwoord (eerste keer via een inloglink), alleen voor @blominterieurs.nl. */
 (function () {
   const CFG = window.BLOM_CONFIG;
@@ -10,7 +10,7 @@
   const OMGEVING = CFG.omgeving || 'live';
   /* Versies: elke versie (test, v1, v2 ...) heeft een eigen bucket met mappen
      collectie/, afbeeldingen/<leverancier>/, prijzen/<leverancier>/ en algemeen/.
-     De keuzes staan in Ã©Ã©n tabel met een kolom versie. Bucket 'collectie' is de oude platte opzet. */
+     De keuzes staan in één tabel met een kolom versie. Bucket 'collectie' is de oude platte opzet. */
   const VERSIE = CFG.versie || null;
   const OUD = !VERSIE || CFG.bucket === 'collectie';
   function bucketPad(pad) {
@@ -39,11 +39,11 @@
       P.removeItem = function (k) { return del.call(this, eigen(this) ? pre + k : k); };
     } catch (e) { /* zonder lokale opslag werkt de app ook */ }
     document.addEventListener('DOMContentLoaded', () => {
-      document.title = 'TEST Â· ' + document.title;
+      document.title = 'TEST · ' + document.title;
       // smalle strook bovenaan met een klein label: valt niet over knoppen of tekst, op telefoon en pc
       const tag = document.createElement('div');
       tag.textContent = 'Testomgeving';
-      tag.title = 'Testomgeving Â· keuzes tellen niet mee voor live';
+      tag.title = 'Testomgeving · keuzes tellen niet mee voor live';
       tag.style.cssText = 'position:fixed;left:0;right:0;top:0;height:3px;z-index:150;background:#3A3A3A;pointer-events:none;' +
         'font:500 8.5px/1 Verdana,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:transparent';
       const lbl = document.createElement('span');
@@ -60,7 +60,7 @@
   window.sb = sb;
   const isBlom = u => !!(u && u.email && u.email.toLowerCase().endsWith(DOMEIN));
 
-  /* ---------- bestanden uit de privÃ© opslag ---------- */
+  /* ---------- bestanden uit de privé opslag ---------- */
   async function download(pad) {
     const { data, error } = await sb.storage.from(CFG.bucket).download(bucketPad(pad));
     if (error) throw norm(error);
@@ -154,7 +154,7 @@
   };
   window.claude = { use: async k => (k === 'db' ? DB : k === 'downloads' ? DL : null) };
 
-  /* ---------- lettertypes uit de privÃ© opslag ---------- */
+  /* ---------- lettertypes uit de privé opslag ---------- */
   async function laadFonts() {
     const fonts = [['fonts/roc-medium.ttf', '500'], ['fonts/roc-light.ttf', '200']];
     for (const [pad, gewicht] of fonts) {
@@ -219,7 +219,7 @@
       e.preventDefault();
       if (!adresOk(inp, fout)) return;
       if (!ww.value) { ww.focus(); return; }
-      knop.disabled = true; knop.textContent = 'Inloggenâ€¦';
+      knop.disabled = true; knop.textContent = 'Inloggen…';
       const { error } = await sb.auth.signInWithPassword({ email, password: ww.value });
       if (error) {
         knop.disabled = false; knop.textContent = 'Inloggen';
@@ -247,7 +247,7 @@
     f.onsubmit = async e => {
       e.preventDefault();
       if (!adresOk(inp, fout)) return;
-      knop.disabled = true; knop.textContent = 'Versturenâ€¦';
+      knop.disabled = true; knop.textContent = 'Versturen…';
       const terug = location.origin + location.pathname;
       const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
       if (error) { knop.disabled = false; knop.textContent = 'Stuur inloglink'; fout.textContent = /rate|limit|security purposes/i.test(error.message) ? LIMIET : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
@@ -286,7 +286,7 @@
       e.preventDefault();
       if (w1.value.length < 8) return meld('Het wachtwoord moet minimaal 8 tekens hebben.');
       if (w1.value !== w2.value) return meld('De twee wachtwoorden zijn niet gelijk.');
-      knop.disabled = true; knop.textContent = 'Opslaanâ€¦';
+      knop.disabled = true; knop.textContent = 'Opslaan…';
       const { data, error } = await sb.auth.updateUser({ password: w1.value, data: { wachtwoord: true } });
       if (error) {
         knop.disabled = false; knop.textContent = 'Wachtwoord opslaan';
@@ -307,7 +307,7 @@
     const form = document.getElementById('nameForm');
     if (form && !form.querySelector('.buit')) {
       const p = document.createElement('p'); p.className = 'buit';
-      p.innerHTML = 'Ingelogd als ' + esc(user.email) + ' Â· <button type="button">Uitloggen</button> Â· <button type="button">Wachtwoord wijzigen</button>';
+      p.innerHTML = 'Ingelogd als ' + esc(user.email) + ' · <button type="button">Uitloggen</button> · <button type="button">Wachtwoord wijzigen</button>';
       const [uit, ww] = p.querySelectorAll('button');
       uit.onclick = async () => { await sb.auth.signOut(); location.reload(); };
       ww.onclick = () => toonWachtwoord(false);
