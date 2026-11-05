@@ -84,6 +84,14 @@ main{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .slide{flex:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;scroll-snap-stop:always;padding:6px 0}
 .slide img{width:94%;height:100%;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
 .slide .wait{font-size:12px;color:var(--g300)}
+/* foto van een ander model of een andere uitvoering: duidelijk op de foto zelf */
+.phlab{position:absolute;top:6px;left:6px;z-index:3;max-width:58%;padding:4px 8px;border:1px solid var(--ink);background:var(--geel);font-size:11.5px;font-weight:600;line-height:1.25}
+/* geen foto: groot kruis, uitleg en verder */
+.nofoto{position:relative;width:94%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:12px;cursor:default}
+.nofoto .x{position:absolute;inset:0;width:100%;height:100%}
+.nofoto .x line{stroke:var(--rood);stroke-width:6;stroke-linecap:round;opacity:.55}
+.nofoto b{position:relative;max-width:90%;padding:6px 10px;background:#fff;border:1px solid var(--ink);font-size:17px;font-weight:600;line-height:1.3}
+.nofoto button{position:relative;height:32px;padding:0 16px;border:1px solid var(--ink);background:#fff;font-size:12.5px;font-weight:500}
 .slide{cursor:zoom-in}
 .zoom{position:fixed;inset:0;z-index:90;background:#fff;display:flex;flex-direction:column}
 .zoom[hidden]{display:none}
@@ -871,7 +879,8 @@ function subscribe(){
 /* ---------------- decisions ---------------- */
 const st=mid=>(D[mid]&&D[mid].s)||'';
 function vStatus(r,v){ if(!r||!r.s) return ''; if(r.s==='niet') return 'niet'; if(r.v&&r.v[v.id]!=null) return r.v[v.id]?'wel':'niet'; return 'wel'; }
-function queue(){ const q=M.filter(m=>!st(m.id)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
+// series zonder enkele foto achteraan (sort is stabiel, dus verder dezelfde volgorde)
+function queue(){ const q=M.filter(m=>!st(m.id)).sort((a,b)=>(a.v.every(x=>x.img==null)?1:0)-(b.v.every(x=>x.img==null)?1:0)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
 function counts(c,list){let w=0,n=0;for(const m of list){const s=c[m.id]&&c[m.id].s; if(s==='wel')w++; else if(s==='niet')n++} return {w,n}}
 function people(){
   const map={}; for(const k in TEAM) map[k]={naam:TEAM[k].naam,c:TEAM[k].c||{},laatst:TEAM[k].laatst};
@@ -931,7 +940,9 @@ const plural=(t,n)=>n===1?(t?t.toLowerCase():'artikel'):(PL[t]||'artikelen');
 function pmin(m,k){ if(prState!=='ok') return null; let best=null; m.p[k].idx.forEach(i=>{ const rs=priceRows(pk(m.v[i])), nc=rs.filter(r=>r[0]!=='COM'); (nc.length?nc:rs).forEach(r=>{ if(r[5]!=null&&(best==null||r[5]<best)) best=r[5]; }); }); return best; }
 // per soort (bank, fauteuil, stoel …) de producten van goedkoop naar duur; zonder prijzen de volgorde van de prijslijst
 function groups(m){ const gk=prState+'|'+FRSEL+'|'+frUse; if(m._g&&m._gp===gk) return m._g; const o=[], map={}; m.p.forEach((p,k)=>{ const t=p.t||''; if(!(t in map)){ map[t]=o.length; o.push({t,pk:[],idx:[]}); } o[map[t]].pk.push(k); });
-  o.forEach(g=>{ if(prState==='ok'){ const pr={}; g.pk.forEach(k=>pr[k]=pmin(m,k)); g.pk.sort((a,b)=>((pr[a]??Infinity)-(pr[b]??Infinity))||a-b); } g.idx=g.pk.flatMap(k=>m.p[k].idx); });
+  // producten zonder foto achteraan, daarna op prijs (of de volgorde van de prijslijst)
+  const nf=k=>m.p[k].idx.every(i=>m.v[i].img==null)?1:0;
+  o.forEach(g=>{ const pr={}; if(prState==='ok') g.pk.forEach(k=>pr[k]=pmin(m,k)); g.pk.sort((a,b)=>(nf(a)-nf(b))||(prState==='ok'?((pr[a]??Infinity)-(pr[b]??Infinity)):0)||a-b); g.idx=g.pk.flatMap(k=>m.p[k].idx); });
   m._gp=gk; return m._g=o; }
 function grpOf(m,i){ const k=m.v[i].p; return groups(m).find(g=>g.pk.includes(k)); }
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
@@ -960,6 +971,8 @@ function renderCard(soft){
   if(need.some(x=>x.ch.some(c=>!loadedChunks[c]))) ensureImgs(need).then(()=>{ if(view==='swipe'&&cur===m) renderCard(true) });
 }
 // modelnaam binnen de serie leesbaar maken: serienaam weg, rest met hoofdletter (BUTTERFLY ARM 24 -> Arm 24)
+// product zonder foto: groot kruis, uitleg en een knop om verder te gaan (data-act="next" = volgend product)
+const NOFOTO='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="6" y1="6" x2="94" y2="94"/><line x1="94" y1="6" x2="6" y2="94"/></svg><b>Collectioneren van dit product is niet beschikbaar, omdat we geen foto hebben</b><button type="button" data-act="next">Verder</button></div>';
 function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
   return r.toLowerCase().replace(/(^|\s)([a-z])/g,(a,b,c)=>b+c.toUpperCase()).replace(/\bIi\b/g,'II'); }
 function cardHTML(m){
@@ -967,7 +980,8 @@ function cardHTML(m){
   const shown=x=>x===k?curVi:m.p[x].idx[0];
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
-  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">'+(x.img==null?'geen foto beschikbaar':'foto laden…')+'</span>')+'</div>').join('');
+  const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':x.img==null?NOFOTO:'<span class="wait">foto laden…</span>')+'</div>').join('');
+  const lab=v.img!=null&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
   const qtxt=v.img==null?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
   const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+'"><span class="bd">'+(n?OK(12):NO(12))+'</span>'+(img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span>'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'">'+(a.inA?OK(12):NO(12))+'<span>'+esc(cap(a.fin)||a.code)+(mp?' <b class="mp">'+mp+'</b>':'')+'</span><small>'+esc(a.pk?(a.afas||''):a.code)+'</small></button>'}).join('')+mpNote(FP)+'</div>':'';
@@ -980,7 +994,7 @@ function cardHTML(m){
     <div class="serie"><div class="sl"><span class="eye">Serie</span><span class="disp sn">${esc(m.fam)}</span></div><span class="ss">${m.p.length} ${m.p.length===1?'product':'producten'} · ${m.v.length} art. · ${nin} in AFAS</span></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${typeChips}
-    <div class="photo"><div class="strip" id="strip">${slides}</div>${v.img!=null?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
+    <div class="photo"><div class="strip" id="strip">${slides}</div>${lab}${v.img!=null?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}</div>
     <div class="phfoot"><span class="q">${v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b style="font-weight:500;color:var(--ink)">'+gin+' van '+g.pk.length+'</b> '+plural(g.t,g.pk.length)+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b style="font-weight:500">${pos+1}</b> / ${g.pk.length} ${plural(g.t,g.pk.length)}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div>
     ${sideBtns(v,'data-czz')}
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
@@ -1105,7 +1119,7 @@ function bindCard(m){
   $('sSwipe').querySelectorAll('[data-czz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.czz; setVi(m,curVi); });
   $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
   $('sSwipe').querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>setVi(m,groups(m)[+b.dataset.type].idx[0]));
-  $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{ const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
+  $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
   const v0=m.v[curVi];
   $('sSwipe').querySelectorAll('[data-dact]').forEach(b=>b.onclick=()=>{ const a=b.dataset.dact, d=drOf(m,v0);
     if(a==='reset'){ const x=DR[m.id]; if(x){ delete x.v[v0.id]; delete x.vs[v0.id]; if(!Object.keys(x.v).length&&!Object.keys(x.vs).length) delete DR[m.id]; saveDr(); } }
