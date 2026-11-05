@@ -1256,18 +1256,13 @@ function openForm(m){
   DECK_T=Date.now()+600;   // korte pauze: een dubbele tik op 'Serie houden' mag het eerste product niet meteen goedkeuren
   F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>fotoVan(m,m.v[i]))?1:0)-(m.p[a].idx.some(i=>fotoVan(m,m.v[i]))?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
   // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
-  // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), 'voorstel' (zoals de artikelen van deze serie die al in AFAS staan), of leeg
+  // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), of leeg
   const prevRec=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
-  // voorstel: de meest voorkomende instelling van de artikelen in deze serie die in AFAS al online staan of labels hebben
+  // geen voorstellen: uitvoeringen die nog niet in AFAS staan beginnen leeg (online collectie en labels kies je zelf)
   const leeg=v=>afasOc(v)==='niet'&&!labOf(v).some(x=>x===1), rich=m.v.filter(v=>v.inA&&!leeg(v)), nIn=rich.length;
-  const pc={}; rich.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); pc[k]=(pc[k]||0)+1; });
-  let pk1=Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0], pv=pk1?rich.find(v=>sigOf(afasOc(v),labOf(v))===pk1):null;
-  // geen AFAS-artikel online of met labels: neem dan de instelling van de AFAS-artikelen van de serie over (ook niet online)
-  if(!pv){ const allIn=m.v.filter(v=>v.inA), pc2={}; allIn.forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); pc2[k]=(pc2[k]||0)+1; }); pk1=Object.keys(pc2).sort((a,b)=>pc2[b]-pc2[a])[0]; pv=pk1?allIn.find(v=>sigOf(afasOc(v),labOf(v))===pk1):null; }
   F.vs={}; m.v.forEach(v=>{ const g=F.g.find(g=>g.ids.includes(v.id)); let oc=g?g.oc:F.oc, lab=g?g.lab:F.lab, src=null;
     if(prevRec) src='eerder';
     else if(v.inA&&!leeg(v)){ oc=afasOc(v); lab=labOf(v); src='afas'; }
-    else if(pv){ oc=afasOc(pv); lab=labOf(pv); src='voorstel'; }
     else if(v.inA){ oc=afasOc(v); lab=labOf(v); src='afas'; }
     else { oc=null; lab=null; }
     F.vs[v.id]={oc:oc||null, lab:(lab&&lab.length?lab:[0,0,0,0,0]).map(x=>x==null?0:x), src, n:nIn, leeg:src==='afas'&&leeg(v)}; });
@@ -1517,24 +1512,8 @@ function deckInfo(k){
     +(v.desc?'<div class="isec"><h3>Omschrijving</h3><p>'+esc(v.desc)+'</p>'+((v.opts&&v.opts.length)?'<p class="iopt"><b>Opties en meerprijzen:</b> '+v.opts.map(esc).join(' · ')+'</p>':'')+'</div>':'')
     +'</div>';   // Niet en Opnemen staan in de knoppenbalk onder het info-paneel; geen tweede set hier
 }
-// voorstel uit je eigen keuzes in deze serie: zodra je bij een product online collectie en labels kiest,
-// krijgen de producten zonder AFAS-waarde of voorstel dezelfde instelling (de meest gekozen), duidelijk als voorstel
 let TQ=[];   // meldingen over voorstellen, samen getoond
 const LEER=3;   // na zoveel dezelfde keuzes wordt het een voorstel voor de rest van de serie
-const OCN={niet:'Niet online',intern:'Online, intern',klant:'Online, klanten'};
-const sigTxt=(oc,lab)=>OCN[oc]+' · '+(LABELS.filter((_,j)=>lab&&lab[j]===1).map(x=>x[0]).join(', ')||'geen labels');
-function autoProp(){ const m=F.m, d=F.dk;
-  // eerst de vorige voorstellen uit je keuzes terugzetten naar de uitgangssituatie
-  m.v.forEach(v=>{ const e=F.vs[v.id]; if(e&&e.src==='vk') F.vs[v.id]=JSON.parse(JSON.stringify((F.vs0&&F.vs0[v.id])||{oc:null,lab:[0,0,0,0,0],src:null})); });
-  // je keuzes per product (niet per afwerking), op volgorde van kiezen
-  const ch=[]; m.p.forEach((p,k)=>{ const v=p.idx.map(i=>m.v[i]).find(v=>F.vs[v.id]&&F.vs[v.id].src==='gekozen'&&F.vs[v.id].oc); if(v) ch.push({k,v,s:sigOf(F.vs[v.id].oc,F.vs[v.id].lab),t:d.ct[k]||0}); });
-  if(!ch.length) return; ch.sort((a,b)=>a.t-b.t);
-  const c={}; ch.forEach(x=>c[x.s]=(c[x.s]||0)+1);
-  const last=ch[ch.length-1].s, strong=c[last]>=LEER, top=strong?last:Object.keys(c).sort((a,b)=>c[b]-c[a])[0], t=ch.find(x=>x.s===top).v, T=F.vs[t.id];
-  // tot 3x: alleen lege uitvoeringen invullen; vanaf 3x dezelfde keuze ook voorstellen en lege AFAS-waarden (niet online, geen labels) vervangen
-  m.v.forEach(v=>{ const e=F.vs[v.id]; if(!e||!e.oc||(strong&&(e.src==='voorstel'||e.leeg))) F.vs[v.id]={oc:T.oc,lab:T.lab.slice(),src:'vk',n:c[top],strong,was:e&&e.oc,leeg:e&&e.leeg}; });
-  if(strong&&!d.note['p'+top]){ d.note['p'+top]=1; TQ.push('Op basis van je eerdere keuzes ('+c[top]+'x) staat bij de volgende producten '+sigTxt(T.oc,T.lab)+' voorgesteld. Controleer het per product.'); }
-}
 // afwerkingen: zet je dezelfde afwerking (bijv. walnoot) 3x achter elkaar uit, dan staat die bij de volgende producten standaard uit
 const finKey=v=>(v.fin||'').toLowerCase().replace(/\s+/g,' ').trim();
 function finRun(f){ const l=F.dk.fl[f]||[]; let n=0; for(let i=l.length-1;i>=0&&l[i];i--) n++; return n; }
@@ -1547,7 +1526,7 @@ function autoEx(){ const m=F.m, d=F.dk;
   const cur=d.order[d.i]; if(cur!=null) m.p[cur].idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]).forEach(v=>{ const f=finKey(v); if(!d.note['f'+f]){ d.note['f'+f]=1; TQ.push(cap(v.fin)+' staat uit op basis van je eerdere keuzes ('+finRun(f)+'x niet gekozen). Tik erop om hem toch aan te zetten.'); } });
 }
 function renderDeck(){
-  autoProp(); if(F.dk.i<F.dk.order.length) autoEx(); if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
+  if(F.dk.i<F.dk.order.length) autoEx(); if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1];
