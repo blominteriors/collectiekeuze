@@ -553,6 +553,7 @@ details.box .tablewrap{border:0}
 .dpick{display:flex;flex-wrap:wrap;gap:4px}
 .dpick button{height:26px;padding:0 8px;border:1px solid var(--g300);background:#fff;font-size:11px;color:var(--ink);display:inline-flex;align-items:center;gap:4px}
 .dpick button.on{background:var(--groen);border-color:var(--ink);font-weight:500}.dpick button.on.neg{background:var(--rood)}
+.dpick button.neg{border-color:#B3261E;color:#B3261E}
 .dpick button.half{border-color:var(--ink);border-style:dashed}
 .dpick.labs button{padding:0 6px;font-size:10.5px}.dsr.lab{grid-template-columns:1fr}.dpick.labs{align-items:center}.dpick.labs .dsk{width:58px;flex:none}.dpick .sw{width:8px;height:8px;display:inline-block}
 .dsr.need .dpick button{border-color:var(--rood);border-width:2px}.dsr.need .dsk{color:#B3261E}
@@ -1322,7 +1323,8 @@ function deckState(k,top){
   const ocs=vs.map(x=>effV(x.id).oc), ocAll=ocs.every(o=>o===ocs[0])?ocs[0]:null;
   const labAll=j=>vs.every(x=>(effV(x.id).lab||[])[j]===1), labSome=j=>vs.some(x=>(effV(x.id).lab||[])[j]===1);
   const att=top?' ':' tabindex="-1" ';
-  const ocBtns=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="dpo'+(ocAll===o?' on'+(o==='niet'?' neg':''):'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('');
+  const ocBtns=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="dpo'+(ocAll===o?' on'+(o==='niet'?' neg':''):'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('')
+    +'<button type="button"'+att+'class="dpo neg" data-dweg="1" title="Niet in AFAS: dit product (alle aangezette afwerkingen) gaat eruit">Helemaal weg</button>';
   const labBtns=LABELS.map(([n,c],j)=>'<button type="button"'+att+'class="dpl'+(labAll(j)?' on':labSome(j)?' half':'')+'" data-dlb="'+j+'" aria-pressed="'+labAll(j)+'"><span class="sw" style="background:'+c+'"></span>'+n+'</button>').join('');
   const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<div class="dsr"><span></span><span class="dsrc">afwerkingen verschillen: zie ⓘ info, of kies hier voor alle afwerkingen</span></div>':'';
   return '<div class="dstate">'
@@ -1553,6 +1555,7 @@ function renderDeck(){
   const aanIds=()=>m.p[k].idx.map(i=>m.v[i].id).filter(id=>!d.ex[id]);
   const dc=$('dcard');
   if(dc){ dc.querySelectorAll('[data-doc]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const o=b.dataset.doc; aanIds().forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); x.oc=o; x.src='gekozen'; }); d.ct[k]=Date.now(); d.need=null; renderDeck(); });
+    dc.querySelectorAll('[data-dweg]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); deckGo('no'); });
     dc.querySelectorAll('[data-dlb]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const j=+b.dataset.dlb, ids=aanIds(), allOn=ids.every(id=>F.vs[id]&&(F.vs[id].lab||[])[j]===1);
       ids.forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); if(!x.lab) x.lab=[0,0,0,0,0]; x.lab[j]=allOn?0:1; x.src='gekozen'; }); d.ct[k]=Date.now(); renderDeck(); }); }
   B.querySelectorAll('[data-ex]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.ex; d.ex[id]=!d.ex[id]; d.man[id]=true; delete d.ax[id]; const all=m.p[k].idx.every(i=>d.ex[m.v[i].id]); if(all){ d.ex[id]=false; toast('Minstens één afwerking aan, of veeg naar links'); } renderDeck(); });
