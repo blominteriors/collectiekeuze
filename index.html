@@ -622,6 +622,54 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 .modal h2{font-family:var(--display);font-weight:500;font-size:26px;margin:0}
 .modal input{width:100%;font-size:17px}
 .modal ol{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
+
+/* swipekaart (ontwerp 'Voorstel mobiel') */
+.dcard{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;display:block;border-width:1px;border-color:var(--n500)}
+.dcard.top{border-color:var(--ink)}
+.dimg{flex:none;height:min(40vh,320px);padding:14px 14px 12px;border-bottom:1px solid var(--n500)}
+.dzoom{width:44px;height:44px;right:10px;bottom:10px;border-color:var(--n500)}
+.dmeta{border-top:0;padding:16px 16px 14px;display:block}
+.dtype{font-size:11px;letter-spacing:.12em}
+.dname{font-size:30px;font-weight:400;line-height:1.1;margin:2px 0 4px}
+.dline2{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dline{font-size:12.5px;color:var(--g400);min-width:0}
+.dafas{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap;flex:none}
+.dafas i{width:8px;height:8px;border-radius:50%;background:#2E9E5B;display:inline-block}.dafas.new i{background:#E5A800}
+.dpr{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--n500);margin-top:14px;font-variant-numeric:tabular-nums}
+.dpr>div{padding:9px 12px;border-right:1px solid var(--n500)}.dpr>div:nth-child(2n){border-right:0}
+.dpr .big{display:grid;gap:1px;border-bottom:1px solid var(--n500)}.dpr .big span{font-size:11.5px;color:var(--g400)}.dpr .big b{font-family:var(--display);font-weight:500;font-size:20px}
+.dpr .big.care{box-shadow:inset 0 3px 0 var(--roze)}
+.dpr.nocare .big{grid-column:1/-1;border-right:0}
+.dpr.nocare .sm:nth-child(2){border-right:1px solid var(--n500)}.dpr.nocare .sm:nth-child(3){border-right:0}
+.dpr .sm{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.dpr .sm span{font-size:11.5px;color:var(--g400)}.dpr .sm b{font-weight:500;font-size:14px}
+.dcap{margin:6px 0 0;font-size:11.5px;color:var(--g400)}
+.dfh{margin-top:16px;margin-bottom:8px}
+.dfins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.dfin{height:auto;min-height:52px;padding:8px 12px;border:1px solid var(--n500);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left;font-size:13px}
+.dfin span{display:grid;min-width:0}.dfin b{font-family:var(--display);font-weight:500;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dfin small{font-size:11px;opacity:.8}
+.dfin.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.dfin.auto{border-style:dashed;border-color:var(--ink);background:#FFF8E6}
+.dvis{background:var(--grijs);border-top:1px solid var(--n500);padding:14px 16px 18px}
+.dvh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}.dvh .eye{margin:0}
+.dvnow{font-size:12px;color:var(--g400)}.dvnow b{font-weight:600;color:var(--ink)}
+.dseg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ink);background:#fff}
+.dseg button{height:44px;border:0;border-right:1px solid var(--ink);background:#fff;font-size:13px;color:var(--ink)}
+.dseg button:last-child{border-right:0}
+.dseg button.on{background:var(--ink);color:#fff;font-weight:600}
+.dvis.need .dseg{outline:2px solid #B3261E;outline-offset:2px}.dvis.need .dvh .eye{color:#B3261E}
+.dweg{display:flex;justify-content:flex-end;margin-top:6px}
+.dweg button{border:0;background:none;padding:2px 0;font-size:11.5px;color:#B3261E;text-decoration:underline}
+.dvnote{margin:6px 0 0;font-size:11px;color:var(--g400)}
+.dvlab{margin:14px 0 8px}
+.dlbs{display:flex;flex-wrap:wrap;gap:8px}
+.dlb{height:34px;padding:0 12px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink)}
+.dlb .dot{width:9px;height:9px;border-radius:50%;background:var(--lc);display:inline-block}
+.dlb .ck{display:flex}
+.dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 11px;font-weight:500}
+.dlb.half{border-style:dashed;border-color:var(--ink)}
+.dcard.under .dvis button,.dcard.under .dfin{pointer-events:none}
+.dcard .eye{font-size:11px}
 </style>
 
 <div class="app">
@@ -1309,29 +1357,24 @@ function shortTitle(m,k){ const l=plabel(m,k), first=l==='standaard'?'':(DATA&&D
   const fam=m.fam, f2=DATA&&DATA.sup==='brees'?first:first.split(' ').map(w=>/[a-z]/.test(w.slice(1))?w.toLowerCase():w).join(' ');
   return first&&!fam.toLowerCase().includes(first.toLowerCase())?fam+' '+f2:fam; }
 // op de kaart: huidige situatie (AFAS) tegenover de nieuwe situatie (keuze of voorstel), voor online collectie en labels
-// online collectie en labels kies je direct op de kaart; ze gelden voor alle aangezette afwerkingen van het product
+// zichtbaarheid (online collectie) en labels kies je direct op de kaart; ze gelden voor alle aangezette afwerkingen van het product
 function deckState(k,top){
   const m=F.m, d=F.dk, vs=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]), v=vs.find(x=>effV(x.id).oc)||vs[0]; if(!v) return '';
   const e=effV(v.id), OCT={niet:'Niet online',intern:'Online, intern',klant:'Online, klanten'};
-  const nowOc=v.inA?afasOc(v):null, nowLab=v.inA?labOf(v).map(x=>x===1?1:0):[0,0,0,0,0], newLab=(e.lab||[]).map(x=>x===1?1:0);
-  const chip=(oc,cls)=>'<b class="doc '+(oc||'open')+(cls?' '+cls:'')+'">'+(oc?OCT[oc]:'Online: kiezen')+'</b>';
-  const labsNow=LABELS.map(([n,c],j)=>nowLab[j]?'<span class="dl"><i style="background:'+c+'"></i>'+n+'</span>':'').filter(Boolean).join('')||'<span class="dl none">geen labels</span>';
-  // nieuw: labels die erbij komen met +, labels die vervallen doorgestreept
-  const labsNew=LABELS.map(([n,c],j)=>newLab[j]&&nowLab[j]?'<span class="dl"><i style="background:'+c+'"></i>'+n+'</span>'
-      :newLab[j]?'<span class="dl add" title="Komt erbij"><i style="background:'+c+'"></i>+ '+n+'</span>'
-      :nowLab[j]&&e.oc?'<span class="dl del" title="Vervalt"><i style="background:'+c+'"></i>'+n+'</span>':'').filter(Boolean).join('')||(e.oc?'<span class="dl none">geen labels</span>':'');
+  const nowOc=v.inA?afasOc(v):null;
   const ocs=vs.map(x=>effV(x.id).oc), ocAll=ocs.every(o=>o===ocs[0])?ocs[0]:null;
   const labAll=j=>vs.every(x=>(effV(x.id).lab||[])[j]===1), labSome=j=>vs.some(x=>(effV(x.id).lab||[])[j]===1);
   const att=top?' ':' tabindex="-1" ';
-  const ocBtns=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="dpo'+(ocAll===o?' on'+(o==='niet'?' neg':''):'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('')
-    +'<button type="button"'+att+'class="dpo neg" data-dweg="1" title="Niet in AFAS: dit product (alle aangezette afwerkingen) gaat eruit">Helemaal weg</button>';
-  const labBtns=LABELS.map(([n,c],j)=>'<button type="button"'+att+'class="dpl'+(labAll(j)?' on':labSome(j)?' half':'')+'" data-dlb="'+j+'" aria-pressed="'+labAll(j)+'"><span class="sw" style="background:'+c+'"></span>'+n+'</button>').join('');
-  const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<div class="dsr"><span></span><span class="dsrc">afwerkingen verschillen: zie ⓘ info, of kies hier voor alle afwerkingen</span></div>':'';
-  return '<div class="dstate">'
-    +'<div class="dsr"><span class="dsk">Nu</span><span class="dsv">'+(v.inA?chip(nowOc)+labsNow:'<span class="dl none">nog niet in AFAS</span>')+'</span></div>'
-    +'<div class="dsr new'+(d.need===k&&!ocAll?' need':'')+'"><span class="dsk">Online</span><span class="dpick">'+ocBtns+'</span></div>'
-    +'<div class="dsr new lab"><span class="dpick labs"><span class="dsk">Labels</span>'+labBtns+'</span></div>'
-    +diff+'</div>';
+  const ocBtns=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('');
+  const labBtns=LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('');
+  const diff=vs.length>1&&vs.some(x=>sigOf(effV(x.id).oc,effV(x.id).lab)!==sigOf(e.oc,e.lab))?'<p class="dvnote">Afwerkingen verschillen: zie ⓘ, of kies hier voor alle afwerkingen.</p>':'';
+  return '<div class="dvis'+(d.need===k&&!ocAll?' need':'')+'">'
+    +'<div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Nu: <b>'+(v.inA?OCT[nowOc]:'niet in AFAS')+'</b></span></div>'
+    +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+ocBtns+'</div>'
+    +'<div class="dweg"><button type="button"'+att+'data-dweg="1" title="Niet in AFAS: dit product (alle aangezette afwerkingen) gaat eruit">Helemaal weg (niet in AFAS)</button></div>'
+    +diff
+    +'<div class="eye dvlab">Labels</div><div class="dlbs">'+labBtns+'</div>'
+    +'</div>';
 }
 function hasProp(k){ const m=F.m, d=F.dk; if(m.p[k].idx.some(i=>d.ax[m.v[i].id])) return true; return m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]).some(v=>{ const e=effV(v.id); if(!e.oc||(e.src!=='vk'&&e.src!=='voorstel')) return false;
   return !v.inA||sigOf(e.oc,(e.lab||[]).map(x=>x===1?1:0))!==sigOf(afasOc(v),labOf(v).map(x=>x===1?1:0)); }); }
@@ -1340,21 +1383,31 @@ function nvOf(m,k){ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.some(v=>v.inA&&v.b
 const ZOOMICO='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M11.5 11.5L16.5 16.5M5 7.5h5M7.5 5v5"/></svg>';
 const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="13" height="13"/><rect x="3.5" y="3.5" width="9" height="5.5"/><path d="M3.5 11h6M3.5 13h4"/></svg>';
 function deckCard(k,top){
-  const m=F.m, p=m.p[k], a=m.v[p.idx[0]], inA=pIn(m,k), pr=pmin(m,k), has=anyIn(m), d=F.dk, fp=top?finPrices(m,k):null;
-  const fins=p.idx.length>1?'<div class="dfins"><span>Afwerking</span>'+p.idx.map(i=>{const v=m.v[i], mp=mpTxt(fp,v.id); return '<button type="button" class="dfin'+(d.ex[v.id]?' ex':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+!d.ex[v.id]+'">'+esc(cap(v.fin)||v.code)+(mp?' <small class="mp">'+mp+'</small>':'')+(v.inA?' <small>AFAS</small>':'')+'</button>'}).join('')+mpNote(fp)+(()=>{ const au=p.idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]); return au.length?'<small class="dauto"><span class="vst">Voorstel</span> '+au.map(v=>esc(cap(v.fin)||v.code)).join(', ')+' uit, op basis van je eerdere keuzes ('+au.map(v=>finRun(finKey(v))).reduce((a,b)=>Math.min(a,b))+'x niet gekozen)</small>':''; })()+'</div>':'';
-  const pg=ownIn(m,k);
+  const m=F.m, p=m.p[k], a=m.v[p.idx[0]], inA=pIn(m,k), has=anyIn(m), d=F.dk, fp=finPrices(m,k);
+  const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  // prijs van de aangezette afwerkingen (de goedkoopste daarvan)
+  const aan=p.idx.filter(i=>!d.ex[m.v[i].id]), opties=(aan.length?aan:p.idx).map(i=>({i,r:pminRow(m,k,i)})).filter(o=>o.r&&o.r[5]!=null);
+  const best=opties.reduce((x,o)=>!x||o.r[5]<x.r[5]?o:x,null), r=best&&best.r, rv=best?m.v[best.i]:a;
+  const care=r&&careOn()&&r[7]!=null;
+  const price=r?'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
+      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div>'
+      +'<p class="dcap">Vanafprijs'+(rv.fin?' · '+esc(cap(rv.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+' · excl. btw</p>':'';
+  const fins=p.idx.length>1?'<div class="eye dfh">Afwerking</div><div class="dfins">'+p.idx.map(i=>{ const v=m.v[i], mp=mpTxt(fp,v.id), on=!d.ex[v.id];
+      const sub=[mp?mp:fp&&fp.p[v.id]!=null?'Basisprijs':'', v.inA?'in AFAS':''].filter(Boolean).join(' · ');
+      return '<button type="button" class="dfin'+(on?' on':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(cap(v.fin)||v.code)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('')+'</div>'
+      +(fp?'<p class="dcap">Meerprijs o.b.v. '+esc(fp.lbl)+'</p>':'')
+      +(()=>{ const au=p.idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]); return au.length?'<p class="dcap">'+au.map(v=>esc(cap(v.fin)||v.code)).join(', ')+' staat uit op basis van je eerdere keuzes ('+au.map(v=>finRun(finKey(v))).reduce((a,b)=>Math.min(a,b))+'x niet gekozen)</p>':''; })():'';
+  const naam=(()=>{ const x=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
+      return x?esc(x.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>':esc(shortTitle(m,k)); })();
   return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
-    +'<div class="dimg">'+(fotoVan(m,a)&&a.conf!=null?'<span class="dconf '+(a.conf>=90?'hi':a.conf>=60?'mid':'lo')+'" title="'+esc((a.why||[]).join(' · '))+'">Foto klopt '+a.conf+'%</span>':'')+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">'+(top?'<button type="button" class="dzoom" data-dzoom="'+k+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':''):'<span class="wait">foto laden…</span>')+'</div>'
-    +'<div class="dmeta">'+(top&&!OP_LIVE?'<button type="button" class="dpk" data-pk="'+k+'">'+PKICO+'<span>Bekijk als productkaart<br>online collectie</span></button>':'')+'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+(()=>{ const a=p.idx.map(i=>m.v[i]).find(v=>v.inA&&v.blom), nv=nvOf(m,k);
-      return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
-    +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
-    +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k,top)
-    +(()=>{ // prijs van de aangezette afwerkingen (de goedkoopste daarvan), niet altijd van de eerste
-      const aan=p.idx.filter(i=>!d.ex[m.v[i].id]), opties=(aan.length?aan:p.idx).map(i=>({i,r:pminRow(m,k,i)})).filter(o=>o.r&&o.r[5]!=null);
-      const best=opties.reduce((x,o)=>!x||o.r[5]<x.r[5]?o:x,null), r=best&&best.r, a=best?m.v[best.i]:m.v[p.idx[0]];
-      return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span>Marge <b>'+pct((r[5]-r[4])/r[5])+'</b></span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
-    +(top?fins:'')+'</div></div>';
+    +'<div class="dimg">'+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">'+(top?'<button type="button" class="dzoom" data-dzoom="'+k+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':''):'<span class="wait">foto laden…</span>')+'</div>'
+    +'<div class="dmeta">'
+    +'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+naam+'</div>'
+    +'<div class="dline2"><span class="dline">'+esc(SUP.short||SUP.name)+' · '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</span>'
+    +(inA?'<span class="dafas in"><i></i>In AFAS'+(p.idx.length>1?' ('+inA+'/'+p.idx.length+')':'')+'</span>':'<span class="dafas new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet"><i></i>Nog niet in AFAS</span>')+'</div>'
+    +price+fins
+    +'</div>'+deckState(k,top)+'</div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
 const PK_LOGO='<svg class="logo" viewBox="0 0 89.97 25.6" aria-label="Blom" role="img"><path fill="#3A3A3A" d="M14.96 15.2C14.96 12.35 13.320 10.49 10.84 10.49C8.36 10.49 6.71 12.35 6.71 15.2C6.71 18.04 8.36 19.9 10.84 19.9C13.32 19.9 14.96 18.04 14.96 15.2M21.75 15.2C21.75 21.65 17.8 25.6 12.01 25.6C9.74 25.6 7.77 24.79 6.71 23.52L6.71 25.3L0 25.3L0 0L6.71 0L6.71 6.66C7.81 5.67 9.49 4.8 12.11 4.8C17.8 4.8 21.75 8.74 21.75 15.2"/><path fill="#3A3A3A" d="M24.08 0h6.71v25.3h-6.71z"/><path fill="#3A3A3A" d="M48.52 15.2C48.52 12.35 46.88 10.49 44.4 10.49C41.92 10.49 40.28 12.35 40.28 15.2C40.28 18.04 41.92 19.9 44.4 19.9C46.88 19.9 48.52 18.04 48.52 15.2M33.49 15.2C33.49 9.1 38.05 4.8 44.4 4.8C50.75 4.8 55.31 9.1 55.31 15.2C55.31 21.29 50.75 25.6 44.4 25.6C38.05 25.6 33.49 21.29 33.49 15.2"/><path fill="#3A3A3A" d="M89.97 12.2L89.97 25.3L83.29 25.3L83.29 14.030C83.29 12.02 82.19 10.71 80.55 10.71C78.44 10.71 77.34 12.72 77.34 16.47L77.34 25.3L70.63 25.3L70.63 14.03C70.63 12.02 69.57 10.71 67.93 10.71C65.81 10.71 64.68 12.72 64.68 16.47L64.68 25.3L58 25.3L58 5.09L64.68 5.09L64.68 7.02C65.45 6 67.53 4.8 70.23 4.8C72.89 4.8 75.12 5.97 76.17 7.53C78.18 5.490 80.59 4.8 82.89 4.8C87.16 4.8 89.97 7.75 89.97 12.2"/></svg>';
@@ -1541,12 +1594,14 @@ function renderDeck(){
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1];
+  const oc=$('dcard'), keepTop=oc&&d.sk===k?oc.scrollTop:0; d.sk=k;
   B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke producten '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+'</div></div>'
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(k):'')+'</div>'
     +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+'Niet</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
+  if(keepTop&&$('dcard')) $('dcard').scrollTop=keepTop;
   $('dList').onclick=toList;
   $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
