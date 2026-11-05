@@ -1303,7 +1303,7 @@ function deckCard(k,top){
       return a?esc(a.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>'+(nv.c?' <i class="dnc">controleren</i>':''):esc(shortTitle(m,k)); })()+'</div>'
     +'<div class="dline">'+esc(SUP.short||SUP.name)+': '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</div>'
     +'<div class="dtags">'+(inA?'<span class="dtag in">Staat in AFAS'+(p.idx.length>1?' ('+inA+' van '+p.idx.length+')':'')+'</span>':'<span class="dtag new" title="Dit product staat nog niet in AFAS: Blom verkoopt het nu nog niet">Nog niet in AFAS</span>')+(pg?'<span class="dtag grp">eigen instellingen</span>':'')+'</div>'+deckState(k)
-    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span>'+(r[4]!=null&&r[5]?'<span>Marge <b>'+pct((r[5]-r[4])/r[5])+'</b></span>':'')+'<small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
+    +(()=>{ const r=pminRow(m,k,p.idx[0]); return r?'<div class="dprice"><span>Verkoop <b>'+eur(r[5])+'</b></span>'+(careOn()&&r[7]!=null?'<span class="dcare">Blom Care <b>'+eur(r[7])+'</b></span>':'')+'<span>Inkoop <b>'+eur(r[3])+'</b></span><small>vanaf'+(p.idx.length>1&&a.fin?' · '+esc(cap(a.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small></div>':''; })()
     +(top?fins:'')+'</div></div>';
 }
 /* ---------------- productkaart online collectie (voorbeeld, alleen weergave) ---------------- */
@@ -1460,9 +1460,9 @@ function deckInfo(k){
   const dims=(v.dim||[]).map((x,i)=>x!=null?'<div><span>'+dl[i]+'</span><span>'+fmt(x)+' cm</span></div>':'').join('');
   const OC3=[['niet','Niet online'],['intern','Online, intern'],['klant','Online, klanten']];
   const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id), ex=!!F.dk.ex[a.id];
-    // rechtsboven per uitvoering: inkoopprijs (bij meerdere afwerkingen met meerprijs) en de marge, ook bij één uitvoering
-    const r=pminRow(m,k,i), ink=fp&&fp.p[a.id]!=null?fp.p[a.id]:r?r[3]:null, mg=r&&r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):null;
-    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(ink!=null||mg?'<span class="ipr">'+(ink!=null?'Inkoop '+eur(ink):'')+(fp&&mp&&mp!=='basis'?' <em>'+mp+'</em>':fp&&mp==='basis'?' <em class="b">basis</em>':'')+(mg?' · marge '+mg:'')+'</span>':'')+'</div>'
+    // rechtsboven per uitvoering: inkoopprijs (bij meerdere afwerkingen met meerprijs), ook bij één uitvoering
+    const r=pminRow(m,k,i), ink=fp&&fp.p[a.id]!=null?fp.p[a.id]:r?r[3]:null;
+    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(ink!=null?'<span class="ipr">Inkoop '+eur(ink)+(fp&&mp&&mp!=='basis'?' <em>'+mp+'</em>':fp&&mp==='basis'?' <em class="b">basis</em>':'')+'</span>':'')+'</div>'
       +'<span class="inow">Nu: '+(a.inA?OK(12)+' in AFAS'+(a.blom?' als '+esc(a.blom):''):NO(12)+' niet in AFAS'+(a.nv?' · <span class="vst">Voorstel</span> naam <b>'+esc(a.nv)+'</b>'+(a.nvc?' (controleren)':''):''))+' · '+(a.online?OK(12):NO(12))+' online · '+(a.klant?OK(12):NO(12))+' klanten'+(a.inA?' · labels: '+(LABELS.filter((_,j)=>labOf(a)[j]===1).map(x=>x[0]).join(', ')||'geen'):'')+'</span>'
       +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o&&!ex)+'" class="'+(e.oc===o&&!ex?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'<button type="button" role="radio" aria-checked="'+ex+'" class="'+(ex?'on neg':'')+'" data-vex="'+esc(a.id)+'">Niet in AFAS</button></div>'
       +(ex?'':'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>')
