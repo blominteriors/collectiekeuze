@@ -182,41 +182,56 @@
   .buit button{border:0;background:none;padding:0;font:inherit;text-decoration:underline;color:var(--ink,#3A3A3A);cursor:pointer}`;
   let scherm = null, email = '', gestart = false;
 
-  function toonLogin(melding) {
+  function maakScherm() {
     if (!scherm) {
       const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
       scherm = document.createElement('div'); scherm.className = 'blogin';
       document.body.appendChild(scherm);
     }
     scherm.hidden = false;
+  }
+  function toonLogin(melding) {
+    maakScherm();
     stapMail(melding);
   }
   function stapMail(melding) {
     scherm.innerHTML = `<form novalidate>
       <span class="eye">Blom Collectiekeuze</span>
       <h1>Inloggen</h1>
-      <p>Vul je Blom e-mailadres in. Je krijgt een mail met een inlogcode.</p>
+      <p>Vul je Blom e-mailadres in. Je krijgt een mail met een inloglink.</p>
       <input type="email" autocomplete="email" inputmode="email" placeholder="naam${DOMEIN}" required>
-      <button type="submit">Stuur inlogcode</button>
-      <p class="fout" ${melding ? '' : 'hidden'}>${melding || ''}</p></form>`;
+      <button type="submit">Stuur inloglink</button>
+      <p class="fout" ${melding ? '' : 'hidden'}>${melding || ''}</p>
+      <button type="button" class="link">Al ingelogd op je telefoon? Log in met een code van je telefoon</button></form>`;
     const f = scherm.querySelector('form'), inp = f.querySelector('input'), knop = f.querySelector('button'), fout = f.querySelector('.fout');
     inp.value = email; inp.focus();
+    const adresOk = () => {
+      email = inp.value.trim().toLowerCase();
+      if (email.endsWith(DOMEIN)) return true;
+      fout.textContent = 'Alleen adressen eindigend op ' + DOMEIN + ' hebben toegang.'; fout.hidden = false; return false;
+    };
+    // geen mail nodig: de code komt van een apparaat waarop je al bent ingelogd
+    f.querySelector('.link').onclick = () => { if (adresOk()) stapCode(true); };
     f.onsubmit = async e => {
       e.preventDefault();
-      email = inp.value.trim().toLowerCase();
-      if (!email.endsWith(DOMEIN)) { fout.textContent = 'Alleen adressen eindigend op ' + DOMEIN + ' hebben toegang.'; fout.hidden = false; return; }
+      if (!adresOk()) return;
       knop.disabled = true; knop.textContent = 'Versturen…';
       const terug = location.origin + location.pathname;
       const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: terug } });
-      if (error) { knop.disabled = false; knop.textContent = 'Stuur inlogcode'; fout.textContent = /rate|limit/i.test(error.message) ? 'Er zijn te veel mails verstuurd. Probeer het over een paar minuten opnieuw.' : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
+      if (error) { knop.disabled = false; knop.textContent = 'Stuur inloglink'; fout.textContent = /rate|limit/i.test(error.message) ? 'Er zijn te veel mails verstuurd. Probeer het over een paar minuten opnieuw.' : 'Versturen lukte niet: ' + error.message; fout.hidden = false; return; }
       stapCode();
     };
   }
-  function stapCode() {
+  function stapCode(viaTelefoon) {
+    const uitleg = viaTelefoon
+      ? `<h1>Code van je telefoon</h1>
+      <p>Open de app op je telefoon (of een ander apparaat waarop je al bent ingelogd als <b>${email}</b>). Kies in het menu <b>Inloggen op een ander apparaat</b> en typ hier de code die je daar ziet.</p>`
+      : `<h1>Check je mail</h1>
+      <p>We hebben een mail gestuurd naar <b>${email}</b>. Klik op de link in die mail.</p>
+      <p>Lees je de mail op een ander apparaat, zoals je telefoon? Dan logt de link dat apparaat in. Kies daar in het menu <b>Inloggen op een ander apparaat</b> en typ hier de code die je daar ziet.</p>`;
     scherm.innerHTML = `<form novalidate>
       <span class="eye">Blom Collectiekeuze</span>
-      <h1>Check je mail</h1>
-      <p>We hebben een mail gestuurd naar <b>${email}</b>. Typ de code uit die mail, of klik op de link in de mail.</p>
+      ${uitleg}
       <input type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Inlogcode" maxlength="10" required>
       <button type="submit">Inloggen</button>
       <p class="fout" hidden></p>
@@ -229,18 +244,54 @@
       const code = inp.value.replace(/\s/g, '');
       if (code.length < 6) return;
       knop.disabled = true; knop.textContent = 'Controleren…';
-      const { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' });
+      let { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' });
+      if (error) ({ error } = await sb.auth.verifyOtp({ email, token: code, type: 'magiclink' }));
       if (error) { knop.disabled = false; knop.textContent = 'Inloggen'; fout.textContent = 'Deze code klopt niet of is verlopen.'; fout.hidden = false; }
     };
   }
 
+  /* ---------- inloggen op een ander apparaat ----------
+     Wie hier al is ingelogd, vraagt een eenmalige inlogcode op (edge function apparaat-code)
+     en typt die op het andere apparaat in. Er gaat geen mail uit. */
+  async function toonApparaatCode() {
+    maakScherm();
+    const knopNieuw = '<button type="button" data-a="nieuw">Nieuwe code</button>';
+    const knopTerug = '<button type="button" class="link" data-a="terug">Terug naar de app</button>';
+    const zet = html => {
+      scherm.innerHTML = `<form novalidate><span class="eye">Blom Collectiekeuze</span><h1>Inloggen op een ander apparaat</h1>${html}</form>`;
+      const n = scherm.querySelector('[data-a=nieuw]'), t = scherm.querySelector('[data-a=terug]');
+      if (n) n.onclick = toonApparaatCode;
+      if (t) t.onclick = () => { scherm.hidden = true; };
+    };
+    zet('<p>Code maken…</p>' + knopTerug);
+    try {
+      const { data, error } = await sb.functions.invoke('apparaat-code', { method: 'POST' });
+      if (error || !data || !data.code) throw error || new Error('geen code');
+      zet(`<p>Open de app op je computer, vul <b>${data.email}</b> in en kies <b>Log in met een code van je telefoon</b>. Typ daar deze code:</p>
+        <p style="font-family:var(--display,Verdana,sans-serif);font-weight:500;font-size:38px;letter-spacing:.18em;color:var(--ink,#3A3A3A);margin:6px 0">${data.code}</p>
+        <p>De code werkt één keer en is ongeveer een uur geldig. Deel hem met niemand.</p>${knopNieuw}${knopTerug}`);
+    } catch (e) {
+      zet('<p class="fout">Een code maken lukte niet. Probeer het zo nog eens.</p>' + knopNieuw + knopTerug);
+    }
+  }
+
   function uitlogRegel(user) {
     const form = document.getElementById('nameForm');
-    if (!form || form.querySelector('.buit')) return;
-    const p = document.createElement('p'); p.className = 'buit';
-    p.innerHTML = 'Ingelogd als ' + user.email + ' · <button type="button">Uitloggen</button>';
-    p.querySelector('button').onclick = async () => { await sb.auth.signOut(); location.reload(); };
-    form.appendChild(p);
+    if (form && !form.querySelector('.buit')) {
+      const p = document.createElement('p'); p.className = 'buit';
+      p.innerHTML = 'Ingelogd als ' + user.email + ' · <button type="button">Uitloggen</button> · <button type="button">Inloggen op een ander apparaat</button>';
+      const [uit, ander] = p.querySelectorAll('button');
+      uit.onclick = async () => { await sb.auth.signOut(); location.reload(); };
+      ander.onclick = toonApparaatCode;
+      form.appendChild(p);
+    }
+    const help = document.getElementById('mHelp');
+    if (help && !document.getElementById('mApparaat')) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'item'; b.id = 'mApparaat'; b.textContent = 'Inloggen op een ander apparaat';
+      b.onclick = () => { const m = document.getElementById('menu'); if (m) m.hidden = true; toonApparaatCode(); };
+      help.after(b);
+    }
   }
 
   function ga(user) {
