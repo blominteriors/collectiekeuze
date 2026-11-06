@@ -1115,9 +1115,9 @@ let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uit
 function frLabel(vs){
   if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
     if(!ja) return ''; const bron=cs.some(c=>BRAND.fr[c])?'prijslijst (uitvoering)':'omschrijving van het artikel';
-    return '<span class="frb" title="Volgens de '+bron+'">'+FLAM+(nee?'Ook brandvertragend':'Brandvertragend')+'</span>'; }
+    return '<span class="frb" title="Volgens de '+bron+'">'+FLAM+'Brandvertragend</span>'; }
   const fr=vs.flatMap(v=>rawRows(pk(v)).map(frOf)); if(!fr.length||!fr.some(x=>x===1)) return '';
-  return '<span class="frb" title="Volgens de prijslijst">'+FLAM+(fr.every(x=>x===1)?'Brandvertragend':'Ook brandvertragend')+'</span>'; }
+  return '<span class="frb" title="Volgens de prijslijst">'+FLAM+'Brandvertragend</span>'; }
 let frUse=true;   // uit tijdens de Excel-export: die bevat altijd alle prijsregels
 // alleen als een artikel beide stoffen heeft, tonen we de regels van de gekozen stof (en de regels zonder stofvermelding)
 function priceRows(code){ const rs=rawRows(code); if(!frUse||!frBoth(code)) return rs; return rs.filter(r=>frOf(r)!==(FRSEL?0:1)); }
