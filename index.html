@@ -879,8 +879,15 @@ body.swv #what{display:none}
 .mcard .dline{white-space:normal}
 .mlh{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 6px}.mlh span:last-child{font-size:12px;color:var(--g400)}
 .mtiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.mtile{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:66px;padding:8px 10px;border:1px solid var(--n500);background:#fff;color:var(--ink);text-align:left;min-width:0}
-.mtile>span{display:grid;gap:3px;min-width:0;justify-items:start}
+/* tegel: links een vinkje (houden of niet), rechts de uitvoering zelf (tik = deze uitvoering op de foto) */
+.mtile{display:flex;align-items:stretch;min-height:66px;border:1px solid var(--n500);background:#fff;color:var(--ink);text-align:left;min-width:0}
+.mtile .mck{flex:none;width:42px;display:flex;align-items:center;justify-content:center;border:0;border-right:1px solid var(--n500);border-radius:0;background:none;color:inherit;cursor:pointer;padding:0}
+.mtile .mck i{display:grid;place-items:center;width:22px;height:22px;border:1.5px solid currentColor;box-sizing:border-box}
+.mtile .mck svg{display:none}
+.mtile.on .mck{border-right-color:rgba(255,255,255,.35)}
+.mtile.on .mck i{background:#fff;color:var(--ink);border-color:#fff}
+.mtile.on .mck svg{display:block}
+.mtile .mtv{flex:1;display:grid;gap:3px;min-width:0;justify-items:start;align-content:center;padding:8px 10px;border:0;border-radius:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .mtile b{font-family:var(--display);font-weight:500;font-size:13.5px;line-height:1.2;overflow-wrap:anywhere}
 .mtile small{font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
 .mtile .mbp{font-size:11px;opacity:.75}
@@ -1016,7 +1023,7 @@ body.swv #what{display:none}
       <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
       <li>Per serie zie je de foto's, de prijzen (verkoop, Blom Care, netto inkoop, marge) en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties en de hele berekening.</li>
       <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
-      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart met alle uitvoeringen als tegels (bij Piaval: de code vóór de slash, bijvoorbeeld 32-61). De uitvoeringen staan eerst uit: tik op de tegels die je wilt houden. Tik op een gekozen tegel om hem te bekijken, en nog een keer om hem uit te zetten. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
+      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart met alle uitvoeringen als tegels (bij Piaval: de code vóór de slash, bijvoorbeeld 32-61). De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
       <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
       <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
     </ol>
@@ -1822,11 +1829,13 @@ function modelCard(k0,top){
     +'<div class="dimg mimgbox" data-mswipe="1">'+(!fotoVan(m,cur)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
     +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')+'</div>'
     +'<div class="mfoot"><span><b>'+esc(cur.code)+'</b>'+(z?' · '+ZK[z]:'')+'</span>'+(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
-  // uitvoeringen als tegels: label (alleen het verschil), de volledige code en de meerprijs op inkoop
+  // uitvoeringen als tegels: links een vinkje (houden), rechts label (alleen het verschil), de volledige code en de meerprijs op inkoop (tik = bekijken)
   const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
-  const tiles=vs.map(v=>{ const on=!!mu.sel[v.id], x=mp(v), hoofd=v.id===mu.hoofd;
-    return '<button type="button"'+att+'class="mtile'+(on?' on':'')+(v.id===cur.id?' nu':'')+'" data-mt="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(modelLab(mu,v))+'</b><small>'+esc(v.code)+'</small>'
-      +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('');
+  const tiles=vs.map(v=>{ const on=!!mu.sel[v.id], x=mp(v), hoofd=v.id===mu.hoofd, lab=modelLab(mu,v);
+    return '<div class="mtile'+(on?' on':'')+(v.id===cur.id?' nu':'')+'">'
+      +'<button type="button"'+att+'class="mck" data-mck="'+esc(v.id)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(lab+' '+v.code)+' houden"><i>'+WCK+'</i></button>'
+      +'<button type="button"'+att+'class="mtv" data-mt="'+esc(v.id)+'" aria-pressed="'+(v.id===cur.id)+'" title="Deze uitvoering bekijken"><b>'+esc(lab)+'</b><small>'+esc(v.code)+'</small>'
+      +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</button></div>'; }).join('');
   // prijsblok van de getoonde uitvoering
   const r=modelPrijs(m,cur), care=r&&careOn()&&r[7]!=null, xc=mp(cur);
   const price=r?'<div class="mlh"><span class="eye">Getoonde uitvoering · '+esc(cur.code)+' · '+(cur.inA?'in AFAS'+(cur.blom?' ('+esc(cur.blom)+')':''):'nog niet in AFAS')+'</span>'+(top?'<button type="button" class="minfo" data-minfo="1">Specificaties</button>':'')+'</div>'
@@ -1845,7 +1854,7 @@ function modelCard(k0,top){
     +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · '+esc(mu.basis)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
     +'<div class="dline">Hoofdartikel '+esc(h.code)+' · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
     +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+vs.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
-    +'<p class="mcap">Tik op de tegels die je wilt houden. Tik op een gekozen tegel om hem te bekijken, en nog een keer om hem uit te zetten.</p>'+price+'</div>'+vis+'</div>';
+    +'<p class="mcap">Vink de uitvoeringen aan die je wilt houden. Tik op een tegel om die uitvoering op de foto te zien.</p>'+price+'</div>'+vis+'</div>';
 }
 function deckCard(k,top){
   if(F.dk.grp&&F.dk.grp[k]) return modelCard(k,top);
@@ -2075,8 +2084,9 @@ function renderDeck(){
   // de kaart opnieuw tekenen zonder dat een gescrolde modelkaart terugspringt
   const rer=()=>{ const c0=$('dcard'), t=c0?c0.scrollTop:0; renderDeck(); const c1=$('dcard'); if(c1&&t) c1.scrollTop=t; };
   if(isM){ const dc0=$('dcard');
-    // tegel: toont de uitvoering; de getoonde tegel of een niet gekozen tegel zet je aan of uit
-    dc0.querySelectorAll('[data-mt]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.mt; if(!mu.sel[id]){ mu.sel[id]=true; mu.cur=id; modelZet(mu,id); } else if(mu.cur===id) mu.sel[id]=false; else mu.cur=id; syncModelEx(k); rer(); });
+    // vinkje: uitvoering houden of niet; de tegel zelf: deze uitvoering op de foto tonen
+    dc0.querySelectorAll('[data-mck]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.mck; mu.sel[id]=!mu.sel[id]; if(mu.sel[id]) modelZet(mu,id); syncModelEx(k); rer(); });
+    dc0.querySelectorAll('[data-mt]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.cur=b.dataset.mt; rer(); });
     // zijde van de foto: tabs, pijltjes en vegen over de foto (de kaart zelf veeg je buiten de foto)
     const stap=n=>{ const {zs,z}=modelZij(mu,mvOf(m,mu.cur)); if(zs.length<2) return; mu.zij=zs[(zs.indexOf(z)+n+zs.length)%zs.length]; rer(); };
     dc0.querySelectorAll('[data-mz]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.zij=b.dataset.mz; rer(); });
