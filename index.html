@@ -1286,7 +1286,7 @@ function statusHTML(m,v,dr,afLab){
   return '<div class="status"><div class="sth"><b>'+(mine?'Jouw keuze':'Status bij Blom')+' · '+esc(v.code)+'</b><span>'+(mine?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, '+dstr())+'</span></div>'
     +'<div class="stogs">'
     +tog('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Opnemen'),dr.keep===1,dr.keepSet)
-    +tog('online','Online collectie',dr.oc!=='niet',dr.setSet&&(dr.oc!=='niet')!==!!v.online)
+    +tog('online','Online collectie',dr.oc==='intern',dr.setSet&&(dr.oc==='intern')!==!!(v.online&&!v.klant))
     +tog('klant','Voor klanten',dr.oc==='klant',dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))
     +'</div><div class="dlbs">'+chips+'</div></div>'; }
 // prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
@@ -1422,8 +1422,9 @@ function bindCard(m){
   $('sSwipe').querySelectorAll('[data-dact]').forEach(b=>b.onclick=()=>{ const a=b.dataset.dact, d=drOf(m,v0);
     if(a==='reset'){ const x=DR[m.id]; if(x){ delete x.v[v0.id]; delete x.vs[v0.id]; if(!Object.keys(x.v).length&&!Object.keys(x.vs).length) delete DR[m.id]; saveDr(); } }
     else if(a==='keep') setDrV(m,v0,d.keep?0:1);
-    else if(a==='online') setDrV(m,v0,undefined,d.oc==='niet'?'intern':'niet',d.lab);
-    else if(a==='klant') setDrV(m,v0,undefined,d.oc==='klant'?'intern':'klant',d.lab);
+    // online collectie (intern) en voor klanten sluiten elkaar uit; nogmaals tikken = niet online
+    else if(a==='online') setDrV(m,v0,undefined,d.oc==='intern'?'niet':'intern',d.lab);
+    else if(a==='klant') setDrV(m,v0,undefined,d.oc==='klant'?'niet':'klant',d.lab);
     setVi(m,curVi); });
   $('sSwipe').querySelectorAll('[data-dlab]').forEach(b=>b.onclick=()=>{ const d=drOf(m,v0), j=+b.dataset.dlab; d.lab[j]=d.lab[j]===1?0:1; setDrV(m,v0,undefined,d.oc,d.lab); setVi(m,curVi); });
   const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
