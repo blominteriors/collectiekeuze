@@ -30,7 +30,7 @@ header{background:var(--wit)}
 .hright{display:flex;align-items:center;gap:10px}
 .avatar{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;border:0;display:grid;place-items:center;font-size:11px;font-weight:500;padding:0}
 .menubtn{height:32px;padding:0 10px;border:1px solid var(--ink);background:#fff;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--n500)}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--n500)}
 .tabs button{height:34px;border:0;border-bottom:1px solid var(--n500);background:#fff;font-size:12.5px;font-weight:400;color:var(--g400)}
 .tabs button.on{font-family:var(--display);font-weight:500;font-size:13px;color:var(--ink);border-bottom:2px solid var(--ink)}
 .supbar{height:28px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:var(--grijs)}
@@ -683,7 +683,7 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 
 /* rollen: een beoordelaar ziet geen resultaten, Excel of opzet */
 body.beoordelaar [data-view="res"],body.beoordelaar [data-go="res"],body.beoordelaar #sRes,body.beoordelaar .opzb{display:none!important}
-body.beoordelaar .tabs{grid-template-columns:repeat(2,1fr)}
+body.beoordelaar .tabs{grid-template-columns:1fr}
 body.beoordelaar .supcard .row2{grid-template-columns:1fr}
 .empty.klaar{text-align:center;justify-items:center}.empty.klaar .kbig{margin:10px auto 4px}.empty.klaar h2{font-size:30px}
 /* gebruikersbeheer */
@@ -898,8 +898,7 @@ body.swv #what{display:none}
       </div>
     </div>
     <nav class="tabs" aria-label="Hoofdmenu">
-      <button type="button" data-view="home">Leveranciers</button>
-      <button type="button" data-view="swipe">Beoordelen</button>
+      <button type="button" data-view="home">Beoordelen</button>
       <button type="button" data-view="res">Resultaten</button>
     </nav>
     <div class="supbar" id="supbar"><span><span class="eye">Leverancier</span><b id="hSup">—</b><span id="hDate" style="font-size:9.5px;font-weight:400;color:var(--g400);margin-left:8px;letter-spacing:.01em"></span></span><span class="num" id="count" style="font-size:11px"></span></div>
@@ -961,8 +960,7 @@ body.swv #what{display:none}
 <div class="sheet menu" id="menu" hidden>
   <div class="shead"><span class="disp" style="font-size:16px">Menu</span><button type="button" id="mClose">Sluiten</button></div>
   <div class="sbody">
-    <button class="item" type="button" data-go="home">Leveranciers</button>
-    <button class="item" type="button" data-go="swipe">Beoordelen</button>
+    <button class="item" type="button" data-go="home">Beoordelen</button>
     <button class="item" type="button" data-go="res">Resultaten en Excel</button>
     <button class="item" type="button" id="mName">Naam wijzigen</button>
     <button class="item" type="button" id="mUsers" hidden>Gebruikers</button>
@@ -1003,11 +1001,12 @@ body.swv #what{display:none}
   <div class="box">
     <h2>Hoe werkt het?</h2>
     <ol>
-      <li>Kies een leverancier. Je beoordeelt de collectie van de leverancier per serie: één scherm per serie, met alle artikelen van die serie.</li>
-      <li>Het blok <b>Nu bij Blom</b> laat de huidige situatie in AFAS zien: groen vinkje = ja, rood kruisje = nee.</li>
-      <li>Kies bovenaan de soort (bijvoorbeeld banken of fauteuils). Veeg over de foto voor de andere artikelen van die soort, of tik op een fotootje eronder.</li>
-      <li>Kies onderin <b>Houden</b> / <b>Opnemen</b> of <b>Niet</b>. Bij Houden of Opnemen vul je verplicht in welke artikelen, of de serie online komt en onder welke labels.</li>
-      <li>Met <b>Vorige</b> zet je je laatste keuze terug.</li>
+      <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
+      <li>Per serie zie je de foto's, de prijzen (verkoop, Blom Care, netto inkoop, marge) en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties en de hele berekening.</li>
+      <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
+      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Bij een model vink je de uitvoeringen en afwerkingen aan die je wilt houden; uitgevinkte tellen als niet gehouden.</li>
+      <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
+      <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
     </ol>
     <button class="cta" type="button" id="helpClose">Sluiten</button>
   </div>
@@ -1131,8 +1130,10 @@ function uText(u){ const p=uParts(u); return p.length?p.map(([a,b])=>a+': '+b).j
 // COM-koppeling per leverancier: alleen 'Eigen stof / COM' noemen als bevestigd (Brees: stofgroep A = COM nog te bevestigen door JE of WH)
 const COM_OK={piaval:true,brees:true,blues:true,infiniti:true};   // Brees stofgroep A = COM: bevestigd door de gebruiker (28-10-2026); Blues: kolom C.O.M. in de prijslijst zelf
 const comOk=()=>!!(SUP&&COM_OK[SUP.id]);
-function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(EIGEN(c)?eigenNaam(c):n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(c)+'</span></span>'; }
+function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep Blom">'+(EIGEN(c)?eigenNaam(c):n===0?'Eigen stof / COM':'Blom '+n)+'</span><span class="sgs" title="Stofgroep '+esc(SUP?SUP.name:'leverancier')+'">'+esc(SUP?(SUP.short||SUP.name):'')+' '+esc(catNaam(c))+'</span></span>'; }
 function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(priceRows(code).map(r=>r[0]))].filter(c=>PR.bc[c]===n); return cs.find(c=>!/OUTDOOR/.test(c))||cs[0]||null; }
+// stofgroep in beeld zonder het woord ACTIEPRIJS / (ACTIE) (bijv. Bree's 'B - ACTIEPRIJS' -> 'B'); de prijzen zelf blijven gelijk
+const catNaam=c=>String(c==null?'':c).replace(/\s*-\s*ACTIEPRIJS\b/ig,'').replace(/^ACTIEPRIJS\s+(stof(fen)?\s+)?/i,'').replace(/\s*\(ACTIE\)/ig,'').trim()||String(c);
 const pk=v=>v.pk||v.code;   // prijzen per uitvoering (bij tafels die AFAS per maat heeft: per AFAS-artikel)
 // stofkeuze brandvertragend: de prijslijst noemt dit in het derde deel van de uitvoering ("Brandvertragend" / "Niet brandvertragend")
 // brandvertragend per prijsregel: de uitvoering staat als lijst [frame, afwerking, stof] of als tekst 'Faggio · Brandvertragend'
@@ -1229,7 +1230,7 @@ const anyIn=m=>m.v.some(v=>v.inA);
 /* ---------------- render ---------------- */
 function render(soft){
   $('who').textContent=me?me.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase():'?';
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view||(b.dataset.view==='home'&&view==='swipe')));
   const sw=view==='swipe';
   $('supbar').hidden=!SUP; $('prog').hidden=!sw; $('actions').hidden=!sw;
   if(SUP){ const c=counts(D,M); const pct=Math.floor((c.w+c.n)/(M.length||1)*100); const klaar=M.length&&c.w+c.n>=M.length; $('count').innerHTML=sw?(klaar?'<b class="pct klaar">'+OK(12)+' Klaar</b>':'serie '+fmt(Math.min(c.w+c.n+1,M.length))+' van '+fmt(M.length)+' · <b class="pct">'+pct+'%</b>'):fmt(M.length)+' series'; $('prog').firstElementChild.style.width=((c.w+c.n)/(M.length||1)*100)+'%'; }
@@ -1438,7 +1439,7 @@ function pricesSum(v){
   const gt='minmax(0,1fr) '+P.map(()=>'minmax(0,1.1fr)').join(' ');
   const row=(lbl,f,cls)=>'<div class="psr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+gt+'"><span>'+lbl+'</span>'+P.map(p=>'<span>'+f(p)+'</span>').join('')+'</div>';
   return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span><span class="eye">Prijzen</span><small>'+esc(v.code)+' · excl. btw</small></span>'+cols.map(([c,l])=>'<span>'+l+'</span>').join('')+'</div>'
-    +'<div class="psr psg" style="grid-template-columns:'+gt+'"><span>Stofgroep</span>'+cols.map(([c])=>'<span><b title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(c)+'</b></span>').join('')+'</div>'
+    +'<div class="psr psg" style="grid-template-columns:'+gt+'"><span>Stofgroep</span>'+cols.map(([c])=>'<span><b title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(catNaam(c))+'</b></span>').join('')+'</div>'
     +row('Verkoop',p=>p.vk!=null?eur(p.vk):'—','vk')
     +(hasCare?row('Blom Care verkoop',p=>careOk(p)?eur(p.care):'—','vk care'):'')
     +row('Netto inkoop',p=>eur(p.net))
@@ -1457,8 +1458,8 @@ function pricesHTML(v){
   const B=[[0,comCat],[1,cheapCat]].filter(x=>x[1]!=null);
   let cats=B.map(x=>x[1]);
   let heads=B.map(([n,c])=>n===0
-    ? '<span class="sg"><span class="sgb">Eigen stof / COM</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>'
-    : '<span class="sg"><span class="sgb">Vanaf (goedkoopste stofgroep)</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(c)+'</span></span>');
+    ? '<span class="sg"><span class="sgb">Eigen stof / COM</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(catNaam(c))+'</span></span>'
+    : '<span class="sg"><span class="sgb">Vanaf (goedkoopste stofgroep)</span><span class="sgs" title="'+esc(SUP.short||SUP.name)+' stofgroep '+esc(c)+'">'+esc(catNaam(c))+'</span></span>');
   if(!cats.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="prices"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cats=[cs[0]]; heads=[cs[0]?'Stofgroep '+cs[0]:'Prijs']; }
   const P=cats.map(c=>calc(pk(v),c));
   // Blom Care alleen als de prijslijst (Excel) een Blom Care-prijs voor dit artikel geeft; nooit zelf afleiden
@@ -1509,7 +1510,7 @@ function belowHTML(m,v,full){
       if(many<=1) return per.map(x=>x.join(' / ')).filter(Boolean).map(esc).join('<br>');
       return g.rs.map(r=>vary.map(k=>val(r,k)).filter(Boolean).join(' · ')).map(esc).join('<br>'); };
     const frSel=frBoth(pk(v))?'<div class="frsel" role="radiogroup" aria-label="Stofkeuze"><span class="eye">Stof</span><div class="frseg"><button type="button" role="radio" data-frsel="0" aria-checked="'+(FRSEL===0)+'" class="'+(FRSEL===0?'on':'')+'">Niet brandvertragend</button><button type="button" role="radio" data-frsel="1" aria-checked="'+(FRSEL===1)+'" class="'+(FRSEL===1?'on fr':'')+'">Brandvertragend</button></div><small>Je keuze geldt ook voor de prijzen bovenaan en voor de volgende artikelen.</small></div>':'';
-    if(rows.length) ptab='<details class="box" id="apBox"'+(apOpen?' open':'')+'><summary>Alle prijzen <span>'+esc(v.code)+' · '+grp.length+(grp.length===1?' regel':' regels')+(frBoth(pk(v))?' · '+(FRSEL?'brandvertragend':'niet brandvertragend'):'')+'</span></summary>'+frSel+(fixed.length?'<div class="pfor" style="margin-bottom:8px"><b>Geldt voor alle regels</b>'+fixed.map(k=>'<div><span>'+k+'</span>'+esc(val(rows[0],k))+'</div>').join('')+'</div>':'')+'<div class="tablewrap"><table class="ptab ap"><thead><tr><th>Stof&shy;groep</th>'+(vary.length?'<th>'+vary.join(' / ')+'</th>':'')+'<th class="r">Bruto</th><th class="r">Netto<small>−'+pct(PR.k)+'</small></th><th class="r">Verreken<small>+'+pct(PR.t)+' transport</small></th><th class="r">Verkoop<small>×'+fmt(PR.o)+', afgerond</small></th>'+(careOn()?'<th class="r">Care<small>×'+fmt(PR.oc)+'</small></th>':'')+'</tr></thead><tbody>'+grp.map(g=>{ const p=g.p; return '<tr><td>'+(p.cat?(bc(p.cat)!=null?sgTag(bc(p.cat),p.cat):'<span class="sg"><span class="sgb" style="background:#fff;color:var(--ink);border:1px dashed var(--ink)">nog te bepalen</span><span class="sgs">'+esc(SUP.name)+' '+esc(p.cat)+'</span></span>'):'—')+'</td>'+(vary.length?'<td class="u">'+uCell(g)+'</td>':'')+'<td class="r">'+eur(p.b)+'</td><td class="r">'+eur(p.net)+'</td><td class="r">'+eur(p.ver)+'</td><td class="r vk">'+(p.vk!=null?eur(p.vk):'—')+(p.err?' <span style="color:#C0392B" title="'+esc(p.err)+'">!</span>':'')+'</td>'+(careOn()?'<td class="r" style="background:color-mix(in srgb,var(--roze) 22%,transparent)">'+(p.care!=null?eur(p.care):'—')+'</td>':'')+'</tr>'; }).join('')+'</tbody></table></div>'+(rows.some(p=>p.err)?'<div style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11px;line-height:1.35"><b style="font-weight:500">! Fout in Excel</b> ('+rows.filter(p=>p.err).length+(rows.filter(p=>p.err).length===1?' regel':' regels')+'): '+esc([...new Set(rows.filter(p=>p.err).map(p=>p.err.replace(/^Fout in Excel: /,'')))].join(' '))+' De bedragen staan zoals in de Excel.</div>':'')+'<div class="pkey">'
+    if(rows.length) ptab='<details class="box" id="apBox"'+(apOpen?' open':'')+'><summary>Alle prijzen <span>'+esc(v.code)+' · '+grp.length+(grp.length===1?' regel':' regels')+(frBoth(pk(v))?' · '+(FRSEL?'brandvertragend':'niet brandvertragend'):'')+'</span></summary>'+frSel+(fixed.length?'<div class="pfor" style="margin-bottom:8px"><b>Geldt voor alle regels</b>'+fixed.map(k=>'<div><span>'+k+'</span>'+esc(val(rows[0],k))+'</div>').join('')+'</div>':'')+'<div class="tablewrap"><table class="ptab ap"><thead><tr><th>Stof&shy;groep</th>'+(vary.length?'<th>'+vary.join(' / ')+'</th>':'')+'<th class="r">Bruto</th><th class="r">Netto<small>−'+pct(PR.k)+'</small></th><th class="r">Verreken<small>+'+pct(PR.t)+' transport</small></th><th class="r">Verkoop<small>×'+fmt(PR.o)+', afgerond</small></th>'+(careOn()?'<th class="r">Care<small>×'+fmt(PR.oc)+'</small></th>':'')+'</tr></thead><tbody>'+grp.map(g=>{ const p=g.p; return '<tr><td>'+(p.cat?(bc(p.cat)!=null?sgTag(bc(p.cat),p.cat):'<span class="sg"><span class="sgb" style="background:#fff;color:var(--ink);border:1px dashed var(--ink)">nog te bepalen</span><span class="sgs">'+esc(SUP.name)+' '+esc(catNaam(p.cat))+'</span></span>'):'—')+'</td>'+(vary.length?'<td class="u">'+uCell(g)+'</td>':'')+'<td class="r">'+eur(p.b)+'</td><td class="r">'+eur(p.net)+'</td><td class="r">'+eur(p.ver)+'</td><td class="r vk">'+(p.vk!=null?eur(p.vk):'—')+(p.err?' <span style="color:#C0392B" title="'+esc(p.err)+'">!</span>':'')+'</td>'+(careOn()?'<td class="r" style="background:color-mix(in srgb,var(--roze) 22%,transparent)">'+(p.care!=null?eur(p.care):'—')+'</td>':'')+'</tr>'; }).join('')+'</tbody></table></div>'+(rows.some(p=>p.err)?'<div style="margin-top:8px;padding:8px 10px;border-left:3px solid #C0392B;background:#FBEDEB;font-size:11px;line-height:1.35"><b style="font-weight:500">! Fout in Excel</b> ('+rows.filter(p=>p.err).length+(rows.filter(p=>p.err).length===1?' regel':' regels')+'): '+esc([...new Set(rows.filter(p=>p.err).map(p=>p.err.replace(/^Fout in Excel: /,'')))].join(' '))+' De bedragen staan zoals in de Excel.</div>':'')+'<div class="pkey">'
       +'<div><span>Bron</span>prijslijst (Excel), bedragen ongewijzigd</div>'
       +'<div><span>Rekenregel</span>netto −'+pct(PR.k)+' · verreken +'+pct(PR.t)+' transport · verkoop ×'+fmt(PR.o)+(careOn()?' · Care ×'+fmt(PR.oc):'')+' · afgerond op € 5</div>'
       +(PR.comNote?'<div><span>Eigen stof / COM</span>'+esc(PR.comNote.replace(/^COM:\s*/,''))+'</div>':'')
@@ -1761,7 +1762,7 @@ function modelCard(k0,top){
       return '<span class="mst'+(heeft?'':' grijs')+(mu.cf===f||(!mu.cf&&finKey(curV)===f)?' cur':'')+'"><button type="button" class="mck'+(on?' on':'')+'" data-mfs="'+esc(f)+'" aria-pressed="'+on+'">'+(on?CKW:'')+'</button><button type="button" class="mstn" data-mcf="'+esc(f)+'"'+(heeft?'':' title="Deze uitvoering bestaat niet in '+esc(cap(v.fin))+'"')+'>'+esc(cap(v.fin)||f)+'</button></span>'; }).join('')+'</div>':'';
   const ci=m.p[cur].idx.find(i=>m.v[i]===curV), r=pminRow(m,cur,ci), care=r&&careOn()&&r[7]!=null;
   const price=r?'<div class="eye mh">Gekozen uitvoering · '+esc(curV.code)+'</div><div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
-      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div><p class="dcap">Vanafprijs'+(curV.fin?' · '+esc(cap(curV.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+' · excl. btw</p>':'';
+      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div><p class="dcap">Vanafprijs'+(curV.fin?' · '+esc(cap(curV.fin)):'')+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</p>':'';
   // zichtbaarheid en labels: één keer per model, voor alle aangevinkte uitvoeringen
   const aan=itemVs(k0).filter(v=>!d.ex[v.id]), ocs=aan.map(v=>effV(v.id).oc), ocAll=aan.length&&ocs.every(o=>o===ocs[0])?ocs[0]:null;
   const labAll=j=>aan.length&&aan.every(v=>(effV(v.id).lab||[])[j]===1), labSome=j=>aan.some(v=>(effV(v.id).lab||[])[j]===1);
@@ -1789,7 +1790,7 @@ function deckCard(k,top){
   const care=r&&careOn()&&r[7]!=null;
   const price=r?'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
       +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div>'
-      +'<p class="dcap">Vanafprijs'+(rv.fin?' · '+esc(cap(rv.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+' · excl. btw</p>':'';
+      +'<p class="dcap">Vanafprijs'+(rv.fin?' · '+esc(cap(rv.fin)):'')+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</p>':'';
   const fins=p.idx.length>1?'<div class="eye dfh"'+(fp?' title="Meerprijs o.b.v. '+esc(fp.lbl)+'"':'')+'>Afwerking</div><div class="dfins">'+p.idx.map(i=>{ const v=m.v[i], mp=mpTxt(fp,v.id), on=!d.ex[v.id];
       const sub=[mp?mp:fp&&fp.p[v.id]!=null?'Basisprijs':'', v.inA?'in AFAS':''].filter(Boolean).join(' · ');
       return '<button type="button" title="'+esc((cap(v.fin)||v.code)+(sub?' · '+sub:''))+'" class="dfin'+(on?' on':'')+(d.ax[v.id]?' auto':'')+'" data-ex="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(cap(v.fin)||v.code)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('')+'</div>'
@@ -1883,7 +1884,7 @@ async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o
 function pkPrijs(v){ if(prState!=='ok') return '<div><b>Prijzen</b><span>'+(prState==='none'?'geen prijzen gevonden':'laden…')+'</span></div>';
   const rs=priceRows(pk(v)), nc=rs.filter(r=>!EIGEN(r[0])); let r=null; (nc.length?nc:rs).forEach(x=>{ if(x[5]!=null&&(r==null||x[5]<r[5])) r=x; });
   if(!r) return '<div><b>Prijzen</b><span>geen prijs voor deze uitvoering</span></div>';
-  const vn='<small style="display:block;font-size:11px;color:#666">vanaf'+(r[0]?' · stof cat. '+esc(r[0]):'')+', excl. btw</small>';
+  const vn='<small style="display:block;font-size:11px;color:#666">vanaf'+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+', excl. btw</small>';
   return '<div><b>Verkoopprijs</b><span>'+eur(r[5])+vn+'</span></div>'+(careOn()&&r[7]!=null?'<div><b>Blom Care prijs</b><span>'+eur(r[7])+'</span></div>':'')+'<div><b>Inkoopprijs</b><span>'+eur(r[3])+'</span></div>'
     // marge zoals in de prijslijst: (verkoopprijs - verrekenprijs) / verkoopprijs
     +(r[4]!=null&&r[5]?'<div><b style="font-size:11px;font-weight:400">Marge</b><span style="font-size:11px;color:#666">'+pct((r[5]-r[4])/r[5])+'</span></div>':''); }
