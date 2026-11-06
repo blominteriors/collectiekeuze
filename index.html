@@ -772,6 +772,10 @@ body.swv #supbar,body.swv #prog{display:none}
 .below details.box:last-of-type{border-bottom:1px solid var(--n500)}
 .below details.box>summary{font-family:var(--display);font-weight:500;font-size:17px;padding:0 2px;min-height:52px}
 .below details.box>*:not(summary){margin:0 2px 14px}
+
+/* hele berekening: alle bedragen op dezelfde rechterlijn */
+.prices .pr,.prices .ph{padding-right:6px}
+.pr span.pc{display:inline-block;margin-right:8px;font-size:9.5px;color:var(--g400)}
 </style>
 
 <div class="app">
@@ -1295,7 +1299,7 @@ function pricesHTML(v){
   const cols=narrow?'minmax(0,1fr) '+P.map(()=>'minmax(0,80px)').join(' '):'minmax(0,1fr) '+P.map(()=>'84px 40px').join(' ');
   const row=(lbl,f,cls,pf,lp)=>narrow
     ? '<div class="pr'+(cls?' '+cls:'')+(pf&&!lp?' two':'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+(lp?' <span class="pc">'+lp+'</span>':'')+'</div>'+P.map(p=>'<div'+cc(p)+'>'+f(p)+(pf&&!lp?'<small class="pc2">'+pf(p)+'</small>':'')+'</div>').join('')+'</div>'
-    : '<div class="pr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+'</div>'+P.map(p=>'<div>'+f(p)+'</div><div class="pc">'+(pf?pf(p):'')+'</div>').join('')+'</div>';
+    : '<div class="pr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+cols+'"><div>'+lbl+'</div>'+P.map(p=>'<div style="grid-column:span 2">'+(pf&&pf(p)?'<span class="pc">'+pf(p)+'</span>':'')+f(p)+'</div>').join('')+'</div>';
   const same=P.every(p=>uText(p.u)===uText(P[0].u));
   const lab=p=>!p.cat?'Prijs':EIGEN(p.cat)?eigenNaam(p.cat):p.cat===comCat?'Eigen stof / COM':p.cat===cheapCat?'Vanaf (goedkoopste stofgroep)':'Stofgroep '+p.cat;
   const forRows=same?uParts(P[0].u).map(([a,b])=>'<div><span>'+a+'</span>'+esc(b)+'</div>').join(''):P.map(p=>'<div><span>'+lab(p)+'</span>'+esc(uText(p.u))+'</div>').join('');
