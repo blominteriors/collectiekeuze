@@ -1326,13 +1326,16 @@ const FK={}; function fotoKey(i){ if(i==null) return null; if(FK[i]) return FK[i
 const maatVan=(m,v)=>{ const d=(v.dim||[]); if(d.some(x=>x!=null)) return d; const z=m.p[v.p].idx.map(i=>m.v[i]).find(x=>(x.dim||[]).some(y=>y!=null)); return z?z.dim:[]; };
 function zelfdeFotoAls(m,v){ const k=fotoKey(v.img); if(!k) return null;
   return m.v.find(x=>x.p!==v.p&&fotoVan(m,x)&&fotoKey(x.img)===k)||null; }
-function maatVerschil(m,v,x){ const dl=['breedte','zitbreedte','diepte','zitdiepte','zithoogte','armleuninghoogte','hoogte'], a=maatVan(m,v), b=maatVan(m,x), out=[];
-  [4,0,6,2].forEach(i=>{ if(a[i]!=null&&b[i]!=null&&a[i]!==b[i]) out.push(dl[i]+' '+fmt(a[i])+' cm (foto: '+fmt(b[i])+' cm)'); }); return out.slice(0,2); }
+// korte verschillen t.o.v. het product op de foto: '3 cm smaller · zithoogte 12 cm lager'
+function maatVerschil(m,v,x){ const a=maatVan(m,v), b=maatVan(m,x), out=[];
+  [[4,'zithoogte'],[0,'Breedte'],[6,'Hoogte'],[2,'Diepte']].forEach(([i,n])=>{ if(a[i]==null||b[i]==null||Math.abs(a[i]-b[i])<2) return; if(i===6&&a[4]!=null&&b[4]!=null&&Math.abs((a[6]-b[6])-(a[4]-b[4]))<1) return; const d=Math.round((a[i]-b[i])*10)/10, w=DIMW[n==='zithoogte'?'Zithoogte':n];
+    out.push(n==='zithoogte'?'zithoogte '+fmt(Math.abs(d))+' cm '+(d>0?'hoger':'lager'):fmt(Math.abs(d))+' cm '+w[d>0?0:1]); });
+  return out.slice(0,2); }
 function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
   if(v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'){ kop=v.imgq==='base'?'Foto van de basisuitvoering':v.imgq==='bekl'?'Zelfde model, andere bekleding':'Foto van een ander model'; regels=fotoVerschillen(v); }
-  else { const x=zelfdeFotoAls(m,v); if(x){ kop='Zelfde foto als '+x.code; regels=maatVerschil(m,v,x).map(t=>'Dit artikel: '+t); } }
+  else { const x=zelfdeFotoAls(m,v); if(x){ kop='Zelfde foto als '+x.code; regels=maatVerschil(m,v,x); } }
   if(!kop) return '';
-  return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+regels.slice(0,3).map(t=>'<span>'+esc(t)+'</span>').join('')+'</div>'; }
+  return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
 function cardHTML(m){
   const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=groups(m), g=grpOf(m,curVi), k=v.p, P=m.p[k], pos=g.pk.indexOf(k), gin=g.pk.filter(x=>pIn(m,x)).length;
   const shown=x=>x===k?curVi:m.p[x].idx[0];
