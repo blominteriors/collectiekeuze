@@ -621,6 +621,15 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 .modal h2{font-family:var(--display);font-weight:500;font-size:26px;margin:0}
 .modal input{width:100%;font-size:17px}
 .modal ol{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
+/* Hoe werkt het?: genummerde stappen met een screenshot eronder */
+#helpModal .box{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
+.modal ol.uitleg{list-style:none;padding:0;gap:22px;counter-reset:st}
+.uitleg li{counter-increment:st;position:relative;padding-left:34px;font-size:14px;line-height:1.45}
+.uitleg li::before{content:counter(st);position:absolute;left:0;top:-1px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font:500 13px/1 var(--display)}
+.uitleg img{display:block;width:100%;height:auto;margin-top:8px;border:1px solid var(--n500);box-shadow:0 2px 10px rgba(58,58,58,.08)}
+.uitleg img[hidden]{display:none}
+body.beoordelaar .uitleg .alleenbeheer{display:none}
+.uitleg b{font-weight:600}
 
 /* swipekaart (ontwerp 'Voorstel mobiel'), past zonder scrollen: de foto krijgt de ruimte die overblijft */
 .dcard{display:flex;flex-direction:column;overflow:hidden;touch-action:none;border-width:1px;border-color:var(--n500)}
@@ -1082,13 +1091,18 @@ body.swv #what{display:none}
 <div class="modal" id="helpModal" hidden>
   <div class="box">
     <h2>Hoe werkt het?</h2>
-    <ol>
-      <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
-      <li>Per serie zie je de foto's<span class="metprijs">, de prijzen (verkoop, Blom Care, netto inkoop, marge)</span> en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties<span class="metprijs"> en de hele berekening</span>.</li>
-      <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
-      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart per soort binnen de serie (stoel, fauteuil, bank …) met alle uitvoeringen als tegels<span class="metprijs">; het hoofdartikel is de goedkoopste uitvoering</span>. De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien.<span class="metprijs"> Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel.</span> Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
-      <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
-      <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
+    <p class="note">Je kiest per serie of Blom die houdt. Daarna kies je per model welke uitvoeringen blijven.</p>
+    <!-- de screenshots staan in de privé opslag (data/uitleg.json): deze repository is openbaar -->
+    <ol class="uitleg">
+      <li><b>Kies een leverancier.</b> Tik op <b>Beoordelen</b>.<img data-uitleg="s1" alt="Beginscherm met de knop Beoordelen" hidden></li>
+      <li><b>Bekijk de serie.</b> Je ziet één serie tegelijk, bijvoorbeeld Mamy. Tik op een fotootje of gebruik ‹ › voor de andere producten.<img data-uitleg="s2" alt="Seriekaart met foto en fotootjes" hidden></li>
+      <li><b>Meer weten?</b> Scrol omlaag voor alle modellen en de specificaties<span class="metprijs"> en prijzen</span>.<img data-uitleg="s3" alt="Modellen en specificaties onder de foto" hidden></li>
+      <li><b>Beslis.</b> Tik op <b>Serie houden</b> of <b>Serie niet houden</b>.<img data-uitleg="s4" alt="Knoppen Serie niet houden en Serie houden" hidden></li>
+      <li><b>Houd je de serie?</b> Dan krijg je per model een kaart, bijvoorbeeld de bank, de fauteuil en de stoel.<img data-uitleg="s5" alt="Kaart van één model" hidden></li>
+      <li><b>Vink de uitvoeringen aan die je wilt houden.</b> Wat je niet aanvinkt, houd je niet. Tik op een tegel om die uitvoering op de foto te zien.<span class="metprijs"> Het bedrag op de tegel is hoeveel duurder hij is in inkoop.</span><img data-uitleg="s6" alt="Tegels met aangevinkte uitvoeringen" hidden></li>
+      <li><b>Kies wie het mag zien</b> (niet online, intern of klanten) en kies de labels.<img data-uitleg="s7" alt="Zichtbaarheid en labels" hidden></li>
+      <li><b>Volgende model.</b> Tik op <b>Houden</b> of <b>Model niet</b>, of veeg naar rechts of links. Vergist? Met ↶ zet je je laatste keuze terug.<img data-uitleg="s8" alt="Knoppen Model niet en Houden" hidden></li>
+      <li class="alleenbeheer"><b>Beheerders</b> zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.<img data-uitleg="s9" alt="Scherm Resultaten met de Excel" hidden></li>
     </ol>
     <button class="cta" type="button" id="helpClose">Sluiten</button>
   </div>
@@ -2631,7 +2645,15 @@ $('menuBtn').onclick=()=>{ $('mInfo').textContent=(me?'Ingelogd als '+me.name+'.
 $('mClose').onclick=()=>$('menu').hidden=true;
 $('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hidden=true; go(b.dataset.go); });
 $('mName').hidden=true;   // de naam komt van het inlogaccount
-$('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
+$('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; $('helpModal').querySelector('.box').scrollTop=0; laadUitleg(); };
+// screenshots bij Hoe werkt het? komen uit de privé opslag; lukt dat niet, dan blijft alleen de tekst staan
+let uitlegP=null;
+function laadUitleg(){
+  if(uitlegP) return uitlegP;
+  return uitlegP=dfetch('data/uitleg.json').then(r=>r.json()).then(o=>{
+    $('helpModal').querySelectorAll('img[data-uitleg]').forEach(im=>{ const s=o[im.dataset.uitleg]; if(s){ im.src=s; im.hidden=false; } });
+  }).catch(()=>{ uitlegP=null; });
+}
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
 /* ---------------- vaste balk op het serie-scherm (na doorscrollen) ---------------- */
 function updMini(){ const mb=$('minibar'); if(!mb) return; const st=document.querySelector('#sSwipe .stitle');
