@@ -832,6 +832,14 @@ body.swv #what{display:none}
 .dinfo .dlb .dot{width:8px;height:8px;border-radius:50%;background:var(--lc);display:inline-block}
 .dinfo .dlb .ck{display:flex}
 .dinfo .dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 7px;font-weight:500}
+
+/* serie-scherm: status in de opzet van de swipekaart */
+.dvis.sv{margin:12px 16px 0;border:1px solid var(--n500)}
+.dvis.sv .dweg{font-size:11.5px}
+.dvis.sv.weg .dseg{opacity:.55}
+.dvis.sv .dlbs{display:flex;flex-wrap:wrap;gap:5px}
+.dvis.sv .dlb{height:30px;padding:0 9px;font-size:12.5px}.dvis.sv .dlb.on{padding:0 8px}
+.svmine{margin-top:8px!important}
 </style>
 
 <div class="app">
@@ -1303,18 +1311,18 @@ function sideTabs(v){ const zs=sidesOf(v); if(zs.length<2) return ''; const k=si
   return '<div class="ptabs" role="tablist">'+zs.map(z=>'<button type="button" role="tab" class="'+(z===k?'on':'')+'" data-czz="'+z+'" aria-selected="'+(z===k)+'">'+cap(z)+'</button>').join('')+'</div>'; }
 // status bij Blom (AFAS) of jouw keuze: in AFAS, online collectie, zichtbaar voor klanten en labels
 function statusHTML(m,v,dr,afLab){
-  // In AFAS: ja of nee; Online: één keuze uit niet online, intern of klanten; labels aan of uit.
-  // Wijkt je keuze af van AFAS, dan staat eronder wat er in AFAS staat (geen stippellijnen meer).
-  const OCK={niet:'Niet online',intern:'Intern',klant:'Klanten'}, OCA={niet:'niet online',intern:'online, intern',klant:'online, klanten'};
-  const seg=(attr,opts,cur)=>'<div class="sseg">'+opts.map(([val,l])=>'<button type="button" '+attr+'="'+val+'" class="'+(String(cur)===String(val)?'on':'')+'" aria-pressed="'+(String(cur)===String(val))+'">'+l+'</button>').join('')+'</div>';
-  const afOc=v.inA?afasOc(v):'niet', keepCh=dr.keepSet, ocCh=dr.oc!==afOc, labCh=dr.lab.some((x,i)=>x!==afLab[i]);
-  const was=t=>'<small class="swas">AFAS: '+t+'</small>';
+  // zelfde opzet als op de swipekaart: zichtbaarheid (één keuze) met de AFAS-stand, labels en 'helemaal weg'
+  const OCT={niet:'Niet online',intern:'Online, intern',klant:'Online, klanten'};
+  const oc=dr.keep===1?dr.oc:null, mine=dr.keepSet||dr.setSet;
+  const segB=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button" class="'+(oc===o?'on':'')+'" data-doc2="'+o+'" aria-pressed="'+(oc===o)+'">'+l+'</button>').join('');
   const chips=LABELS.map(([n,c],i)=>{const on=dr.lab[i]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-dlab="'+i+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'}).join('');
-  const mine=dr.keepSet||dr.setSet;
-  return '<div class="status"><div class="sth"><b>'+(mine?'Jouw keuze':'Status bij Blom')+' · '+esc(v.code)+'</b><span>'+(mine?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, '+dstr())+'</span></div>'
-    +'<div class="srow2"><span class="sk">'+(v.inA?'In AFAS':'Opnemen in AFAS')+'</span>'+seg('data-dkeep',[[1,OK(12)+' Ja'],[0,NO(12)+' Nee']],dr.keep)+(keepCh?was(v.inA?'ja':'nee'):'')+'</div>'
-    +'<div class="srow2"><span class="sk">Online</span>'+seg('data-doc2',Object.entries(OCK),dr.oc)+(ocCh?was(OCA[afOc]):'')+'</div>'
-    +'<div class="srow2 lab"><span class="sk">Labels</span><div class="dlbs">'+chips+'</div>'+(labCh?was(LABELS.filter((_,i)=>afLab[i]===1).map(x=>x[0]).join(', ')||'geen labels'):'')+'</div>'
+  return '<div class="dvis sv'+(dr.keep===1?'':' weg')+'">'
+    +'<div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Nu: <b>'+(v.inA?OCT[afasOc(v)]:'niet in AFAS')+'</b></span></div>'
+    +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+segB+'</div>'
+    +(dr.keep===1?'':'<p class="dvnote">'+(v.inA?'Gaat uit AFAS (helemaal weg).':'Staat niet in AFAS. Kies Intern of Klanten om op te nemen.')+'</p>')
+    +'<div class="dvlh"><span class="eye">Labels</span><button type="button" class="dweg" data-dkeep="'+(dr.keep===1?0:1)+'">'+(dr.keep===1?'Helemaal weg (niet in AFAS)':(v.inA?'Toch houden in AFAS':'Wel opnemen in AFAS'))+'</button></div>'
+    +'<div class="dlbs">'+chips+'</div>'
+    +(mine?'<p class="dvnote svmine">Jouw keuze wijkt af van AFAS · <button type="button" class="drreset" data-dact="reset">terug naar AFAS</button></p>':'')
     +'</div>'; }
 // prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
 function pricesSum(v){
@@ -1452,7 +1460,7 @@ function bindCard(m){
     if(a==='reset'){ const x=DR[m.id]; if(x){ delete x.v[v0.id]; delete x.vs[v0.id]; if(!Object.keys(x.v).length&&!Object.keys(x.vs).length) delete DR[m.id]; saveDr(); } }
     else if(a==='keep') setDrV(m,v0,d.keep?0:1);
     else if(a.startsWith('keep:')) setDrV(m,v0,+a.slice(5));
-    else if(a.startsWith('oc:')) setDrV(m,v0,undefined,a.slice(3),d.lab);
+    else if(a.startsWith('oc:')){ const o=a.slice(3); setDrV(m,v0,o==='niet'&&!v0.inA&&!d.keep?undefined:1,o,d.lab); }
     // online collectie (intern) en voor klanten sluiten elkaar uit; nogmaals tikken = niet online
     else if(a==='online') setDrV(m,v0,undefined,d.oc==='intern'?'niet':'intern',d.lab);
     else if(a==='klant') setDrV(m,v0,undefined,d.oc==='klant'?'niet':'klant',d.lab);
