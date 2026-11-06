@@ -1102,7 +1102,8 @@ function sgTag(n,c){ return '<span class="sg"><span class="sgb" title="Stofgroep
 function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(priceRows(code).map(r=>r[0]))].filter(c=>PR.bc[c]===n); return cs.find(c=>!/OUTDOOR/.test(c))||cs[0]||null; }
 const pk=v=>v.pk||v.code;   // prijzen per uitvoering (bij tafels die AFAS per maat heeft: per AFAS-artikel)
 // stofkeuze brandvertragend: de prijslijst noemt dit in het derde deel van de uitvoering ("Brandvertragend" / "Niet brandvertragend")
-const frOf=row=>{ const u=PR&&PR.u&&PR.u[row[1]]; const t=((u&&u[2])||'').trim().toLowerCase(); return t==='brandvertragend'?1:t==='niet brandvertragend'?0:null; };
+// brandvertragend per prijsregel: de uitvoering staat als lijst [frame, afwerking, stof] of als tekst 'Faggio · Brandvertragend'
+const frOf=row=>{ const u=PR&&PR.u&&PR.u[row[1]]; const t=(typeof u==='string'?u:Array.isArray(u)?u.join(' · '):'').toLowerCase(); return /niet\s+brandvertragend/.test(t)?0:/brandvertragend/.test(t)?1:null; };
 // prijsregels zonder prijs (bruto en verkoop 0 in de Excel) tellen niet mee, ook niet als goedkoopste
 const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
