@@ -1444,22 +1444,24 @@ function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
 function cardModelHTML(m){
   const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=alleModellen(m), gm=G.find(g=>g.vs.includes(v))||G[0], isH=G.some(g=>g.hoofd===v);
   const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
-  const zs=sidesOf(v), z=sideKey(v), pos=zs.indexOf(z), src=sideImg(v);
+  const pv=tegelFoto(m,gm.tiles.find(t=>t.ids.includes(v.id)),v), ft=fotoVanTegel(m,v,pv);
+  const zs=sidesOf(pv), z=sideKey(pv), pos=zs.indexOf(z), src=sideImg(pv);
   const tabs='<div class="mtabs">'+(zs.length>1?zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join(''):'')+'</div>';
   const foto='<div class="mfoto smfoto">'+tabs+frLabel([v])
-    +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,v)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(zs.length>1?'<button type="button" class="mar l" data-czn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-czn="1" aria-label="Volgende zijde">›</button>':'')+modelDisc(m,v)+'</div>'
-    +'<div class="mfoot"><span><b>'+esc(v.code)+'</b>'+(isH?' · hoofdartikel':'')+(z?' · '+ZK[z]:'')+(v.imgc&&v.imgc!==v.code&&fotoVan(m,v)?' · foto van '+esc(v.imgc):'')+'</span>'
+    +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(zs.length>1?'<button type="button" class="mar l" data-czn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-czn="1" aria-label="Volgende zijde">›</button>':'')+ft.disc+'</div>'
+    +'<div class="mfoot"><span><b>'+esc(v.code)+'</b>'+(isH?' · hoofdartikel':'')+(z?' · '+ZK[z]:'')+ft.foot+'</span>'
     +(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
   const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
   const blocks=G.map(g=>{ const h=g.hoofd, rh=modelPrijs(m,h), hin=g.vs.filter(x=>x.inA).length, hi=m.v.indexOf(h);
     let vanaf=null; if(prState==='ok') g.vs.forEach(x=>{ const r=modelPrijs(m,x); if(r&&r[5]!=null&&(vanaf==null||r[5]<vanaf)) vanaf=r[5]; });
     const mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
     const th=fotoVan(m,h)&&img(h.img)?'<img src="'+img(h.img)+'" alt="">':'<span class="ni"></span>';
-    const its=g.vs.map(x=>{ const hoofd=x===h, d=g.td[x.id], y=mp(x);
+    const its=g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, d=g.td[x.id], y=mp(x);
       return '<div class="mu'+(x===v?' nu':'')+'"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d&&!hoofd?'<small class="mud">'+esc(d)+'</small>':'')
-        +'<span class="muc">'+esc(x.code)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span></div>'; }).join('');
-    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+g.vs.length+(g.vs.length===1?' uitvoering':' uitvoeringen')+' · '+hin+' in AFAS</span></span><span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span></button>'
+        +'<span class="muc">'+esc(x.code)+ookTxt(x,t)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span></div>'; }).join('');
+    const nt=g.tiles.length, na=g.vs.length-nt;
+    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+hin+' in AFAS</span></span><span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span></button>'
       +'<div class="mgrid">'+its+'</div><p class="mcap">Meerprijs op inkoop ten opzichte van het hoofdartikel. Welke uitvoeringen je houdt, kies je na "Serie houden".</p></div>'; }).join('');
   let price;
   if(prState!=='ok') price=pricesSum(v);
@@ -1664,7 +1666,7 @@ function bindCard(m){
   $('sSwipe').querySelectorAll('[data-vi]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.vi));
   $('sSwipe').querySelectorAll('[data-czz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.czz; setVi(m,curVi); });
   // seriekaart met modellen: pijltjes bladeren door de zijden, een modelblok toont zijn hoofdartikel, tik op de foto = groot
-  $('sSwipe').querySelectorAll('[data-czn]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const v=m.v[curVi], zs=sidesOf(v), z=sideKey(v); if(zs.length<2) return; SIDE=zs[(zs.indexOf(z)+(+b.dataset.czn)+zs.length)%zs.length]; setVi(m,curVi); });
+  $('sSwipe').querySelectorAll('[data-czn]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const tb=[...$('sSwipe').querySelectorAll('.sfold [data-czz]')], zs=tb.map(x=>x.dataset.czz), z=(tb.find(x=>x.classList.contains('on'))||{dataset:{}}).dataset.czz; if(zs.length<2) return; SIDE=zs[(zs.indexOf(z)+(+b.dataset.czn)+zs.length)%zs.length]; setVi(m,curVi); });
   $('sSwipe').querySelectorAll('[data-mh]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.mh));
   const sf=$('sfoto'); if(sf) sf.onclick=e=>{ if(e.target.closest('button')) return; openZoom(m); };
   $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
@@ -1789,10 +1791,11 @@ function openForm(m){
   if(modelAan()){ modelGroepen(m,F.dk.order).forEach(g=>{ const vs=g.vs, ks=g.ks; if(vs.length<2) return;
       const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
       // bestaande keuzes per artikel (eerdere beoordeling of concept) terug in de tegels; bij een nieuw model staan alle uitvoeringen uit
-      const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null), sel={}; vs.forEach(v=>{ sel[v.id]=eerder?prev.v[v.id]===1:!!(dr&&dr.v&&dr.v[v.id]===1); });
-      const h=vs[0];
-      // tl/td = tegeltitel en maatregel per artikel; oc/lab = de zichtbaarheid en labels die je op de kaart kiest
-      F.dk.mu[k0]={basis:g.basis, naam:g.naam, type:g.type, hoofd:h.id, ids:vs.map(v=>v.id), tl:g.tl, td:g.td, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null, oc:null, lab:null};
+      // een tegel staat aan als een van zijn artikelen (afwerkingen) eerder gekozen was
+      const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null), sel={}; g.tiles.forEach(t=>{ sel[t.main]=eerder?t.ids.some(id=>prev.v[id]===1):!!(dr&&dr.v&&t.ids.some(id=>dr.v[id]===1)); });
+      const h=vs[0], hm=mvOf(m,g.tiles[0].main);
+      // tiles = tegels (main, ids, ook); tl/td = tegeltitel en maatregel per hoofdartikel van de tegel; oc/lab = de zichtbaarheid en labels die je op de kaart kiest
+      F.dk.mu[k0]={basis:g.basis, naam:g.naam, type:g.type, hoofd:h.id, ids:vs.map(v=>v.id), tiles:g.tiles, tl:g.tl, td:g.td, sel, cur:(fotoVan(m,hm)?hm:g.tiles.map(t=>mvOf(m,t.main)).find(v=>fotoVan(m,v))||hm).id, zij:null, oc:null, lab:null};
       syncModelEx(k0); }); }
   // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
   m.p.forEach((p,k)=>{ if(p.idx.length<2||Object.values(F.dk.grp).some(ks=>ks.includes(k))) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
@@ -1855,7 +1858,8 @@ const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" 
 const itemKs=k=>(F.dk.grp&&F.dk.grp[k])||[k];
 const itemVs=k=>itemKs(k).flatMap(kk=>F.m.p[kk].idx.map(i=>F.m.v[i]));
 // uit de gekozen tegels van het model volgt per artikel houden of niet
-function syncModelEx(k0){ const d=F.dk, mu=d.mu[k0]; if(!mu) return; mu.ids.forEach(id=>{ d.ex[id]=!mu.sel[id]; }); }
+function syncModelEx(k0){ const d=F.dk, mu=d.mu[k0]; if(!mu) return; mu.tiles.forEach(t=>{ t.ids.forEach(id=>{ d.ex[id]=!mu.sel[t.main]; }); }); }
+const modelTegel=(mu,id)=>mu.tiles.find(t=>t.main===id)||{main:id,ids:[id],ook:[]};
 /* ---------------- modellen op basiscode ---------------- */
 // model = de leverancierscode vóór de slash (32-61); hoofdartikel = het laagste nummer na de slash (32-61/3);
 // elke code met dezelfde basis is een uitvoering en blijft een eigen artikel (eigen code, prijzen, foto's, AFAS). Geen extra kolommen nodig.
@@ -1889,7 +1893,7 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
     // ontbreekt een eigenschap: alleen bij ja/nee-eigenschappen (met armleuningen, stapelbaar, greep) is dat een verschil
     const leeg=MFEAT.every(k=>k==='mech'||!e.feat[k]);
     MFEAT.forEach(k=>{ const a=e.feat[k]||'', b=H.feat[k]||''; if(a===b) return; if(a) basis.push(a+(k==='rug'&&v.rugAfgeleid?' (uit code A)':'')); else if(!leeg&&(/^met /.test(b)||k==='stap'||k==='greep')) basis.push(zonder(b)); });
-    if(v.fin&&(v.fin||'')!==(h.fin||'')) basis.push(v.fin+(v.finAfgeleid?' (uit code '+v.code.slice(-1)+')':''));
+    // afwerking (beuken, walnoot, eiken …) is geen eigen uitvoering: die zit bij het artikel en staat niet in de titel
     const hs=new Set(h.sizes||[]), nieuw=(v.sizes||[]).filter(s=>!hs.has(s)), a=modelMaten(nieuw.length?nieuw:v.sizes), b=modelMaten(h.sizes);
     if(a&&a!==b) extra.push(a);
     MDIM.forEach(([n],i)=>{ if(e.dim[i]!=null&&e.dim[i]!==H.dim[i]) extra.push(n+' '+e.dim[i]+' cm'); });
@@ -1910,10 +1914,22 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
   return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
 // modellen van een serie (één per soort: stoel, fauteuil, bank …) over een lijst productsleutels, op basis van de taxonomie;
 // de uitvoeringen staan op oplopende netto inkoop, het hoofdartikel is de goedkoopste
+// Afwerkingen (beuken, walnoot, eiken …) zijn geen aparte uitvoering: artikelen die alleen in afwerking verschillen vormen één tegel.
+// Kies je die tegel, dan gaan alle afwerkingen mee. Per tegel: main (het goedkoopste artikel), ids (alle artikelen) en ook (de overige afwerkingen).
+// Samenvoegen alleen als het hetzelfde product is (zelfde p) of als de codes alleen in de houtletter verschillen (122-11/1 en 122-11/1R)
+// én de eigenschappen gelijk zijn; 66-13 en 66-14 blijven dus apart, ook als de prijslijst ze hetzelfde beschrijft.
+const uitvSleutel=v=>{ const f=v.feat||{}; return String(v.code).replace(/[RNF]+$/,'')+'|'+JSON.stringify([v.type||'', Object.keys(f).sort().map(k=>k+'='+f[k]), v.dim||[], v.sizes||[]]); };
+function modelTegels(m,vs){
+  // per product (zelfde p = afwerkingen van hetzelfde product) de sleutel van het artikel met de meeste gegevens
+  const keyP={}; vs.forEach(v=>{ const n=Object.keys(v.feat||{}).length+(v.dim||[]).filter(x=>x!=null).length; if(keyP[v.p]==null||n>keyP[v.p].n) keyP[v.p]={n,key:uitvSleutel(v)}; });
+  const tiles=[], byKey={};
+  vs.forEach(v=>{ const key=keyP[v.p].key; let t=byKey[key]; if(!t){ t={main:v.id, ids:[], ook:[]}; byKey[key]=t; tiles.push(t); } else t.ook.push({id:v.id, code:v.code, fin:v.fin||''}); t.ids.push(v.id); });
+  return tiles; }
 function modelGroepen(m,ks){ const per={}; ks.forEach(k=>{ const b=m.p[k].t||''; (per[b]=per[b]||[]).push(k); });
   const ink=v=>{ const r=modelPrijs(m,v); return r&&r[3]!=null?r[3]:Infinity; }, codeCmp=(a,b)=>String(a).localeCompare(String(b),'nl',{numeric:true});
-  return Object.entries(per).map(([b,ks2])=>{ const vs=ks2.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>(ink(x)-ink(y))||codeCmp(x.code,y.code)), ml=modelLabels(m,vs);
-    return {basis:b, ks:ks2, vs, hoofd:vs[0], naam:ml.naam, type:ml.type, tl:ml.lab, td:ml.dim}; }); }
+  return Object.entries(per).map(([b,ks2])=>{ const vs=ks2.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>(ink(x)-ink(y))||codeCmp(x.code,y.code));
+    const tiles=modelTegels(m,vs), ml=modelLabels(m,tiles.map(t=>mvOf(m,t.main)));
+    return {basis:b, ks:ks2, vs, hoofd:vs[0], tiles, naam:ml.naam, type:ml.type, tl:ml.lab, td:ml.dim}; }); }
 const alleModellen=m=>modelGroepen(m,groups(m).flatMap(g=>g.pk));
 const mvOf=(m,id)=>m.v.find(v=>v.id===id);
 const ZK={voor:'Voor',links:'Links',rechts:'Rechts',achter:'Achter'};
@@ -1925,38 +1941,51 @@ const modelPrijs=(m,v)=>pminRow(m,v.p,m.v.indexOf(v));
 const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(mu.tl||{})[v.id]||v.code;
 const modelDim=(mu,v)=>v.id===mu.hoofd?'':(mu.td||{})[v.id]||'';
 // een tegel die je aanzet krijgt de zichtbaarheid en labels van het model: wat je op de kaart koos, anders wat de al gekozen uitvoeringen gemeen hebben
-function modelZet(mu,id){ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]});
+function modelZet(mu,id){ modelTegel(mu,id).ids.forEach(i=>{ const x=F.vs[i]||(F.vs[i]={oc:null,lab:[0,0,0,0,0]});
   if(mu.oc){ x.oc=mu.oc; x.src='gekozen'; } if(mu.lab){ x.lab=mu.lab.slice(); x.src='gekozen'; }
-  if(!mu.oc&&!x.oc){ const os=mu.ids.filter(i=>i!==id&&mu.sel[i]).map(i=>F.vs[i]).filter(e=>e&&e.oc); if(os.length&&os.every(e=>sigOf(e.oc,e.lab)===sigOf(os[0].oc,os[0].lab))){ x.oc=os[0].oc; x.lab=(os[0].lab||[0,0,0,0,0]).slice(); x.src='gekozen'; } } }
+  if(!mu.oc&&!x.oc){ const os=mu.tiles.filter(t=>t.main!==id&&mu.sel[t.main]).map(t=>F.vs[t.main]).filter(e=>e&&e.oc); if(os.length&&os.every(e=>sigOf(e.oc,e.lab)===sigOf(os[0].oc,os[0].lab))){ x.oc=os[0].oc; x.lab=(os[0].lab||[0,0,0,0,0]).slice(); x.src='gekozen'; } } }); }
 const mpTxt2=x=>(x<-0.004?'− ':'+ ')+eur(Math.abs(x));
+// de foto van een tegel: het artikel uit die tegel met de beste foto (eigen foto gaat voor een foto van internet of van een ander artikel)
+const FOTO_RANK={exact:4,fin:3,base:2,bekl:2,web:1};
+function tegelFoto(m,t,cur){ const rk=v=>fotoVan(m,v)?(FOTO_RANK[v.imgq]||0):-1; let best=cur; (t?t.ids:[]).forEach(id=>{ const v=mvOf(m,id); if(v&&rk(v)>rk(best)) best=v; }); return best; }
+// tekst bij de foto: van het artikel zelf (met de waarschuwing), of van een andere afwerking uit dezelfde tegel
+function fotoVanTegel(m,cur,pv){ if(pv===cur) return {disc:modelDisc(m,cur), foot:(cur.imgc&&cur.imgc!==cur.code&&fotoVan(m,cur)?' · foto van '+esc(cur.imgc):'')};
+  const regels=cur.fin&&pv.fin&&cur.fin!==pv.fin?['dit artikel '+cur.fin+', foto '+pv.fin]:[];
+  return {disc:'<div class="phdisc"><b>Foto van '+esc(pv.code)+'</b>'+(regels.length?'<span>'+esc(regels.join(' · '))+'</span>':'')+'</div>', foot:' · foto van '+esc(pv.code)}; }
+// bij een tegel met meer afwerkingen: '(Beech) · ook 122-11/1R (Oak)'
+const ookTxt=(v,t)=>t.ook.length?(v.fin?' ('+esc(v.fin)+')':'')+' · ook '+t.ook.map(o=>esc(o.code)+(o.fin?' ('+esc(o.fin)+')':'')).join(', '):'';
 // waarschuwing op de foto van de modelkaart: altijd als de foto van een ander artikel is (ook bij alleen een andere afwerking)
+// Kort en concreet: wat is er anders aan het artikel op de foto? Maten (6 cm breder), afwerking (dit artikel Oak, foto Beech)
+// en eigenschappen die van beide bekend zijn. Wat de prijslijst niet vermeldt, noemen we niet.
+function fotoKort(m,v,x){ const out=maatVerschil(m,v,x);
+  if(v.fin&&x.fin&&v.fin!==x.fin) out.push('dit artikel '+v.fin+', foto '+x.fin);
+  (v.why||[]).forEach(w=>{ const r=w.match(/^(\S+) wijkt af: foto (.*?), dit artikel (.*?)\.?$/); if(!r||/niet vermeld/.test(r[3])||/cm$/.test(r[2])||/^(Houtsoort|Afwerking)$/.test(r[1])) return; out.push(r[1].toLowerCase()+': foto '+r[2]+', dit artikel '+r[3]); });
+  return out; }
 function modelDisc(m,v){ if(!fotoVan(m,v)) return '';
-  if(v.imgq==='web'){ const x=zelfdeFotoAls(m,v), u=!x&&v.url?m.v.find(y=>y!==v&&y.url===v.url&&fotoVan(m,y)&&y.img!=null):null;
-    const regels=x?['zelfde foto als '+x.code].concat(maatVerschil(m,v,x)):u?['zelfde productpagina als '+u.code+(u.fin&&v.fin&&u.fin!==v.fin?' ('+u.fin+'), de foto toont vermoedelijk die afwerking':'')]:[];
-    return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>Foto van internet · '+fmt(v.conf||0)+'% zeker dat dit '+esc(v.code)+' is</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
-  if(v.imgc&&v.imgc!==v.code){
-    const kop='Foto van '+v.imgc+(v.imgq==='fin'?' · zelfde product, andere afwerking':v.imgq==='base'?' · basisuitvoering':v.imgq==='bekl'?' · andere bekleding':' · ander artikel');
-    const regels=v.imgq==='fin'?[v.fin?'Dit artikel: '+v.fin+(v.finAfgeleid?' (afgeleid uit de code)':''):'afwerking wijkt af']:fotoVerschillen(v);
-    return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
+  const box=(kop,regels)=>'<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>';
+  if(v.imgq==='web'){ const x=zelfdeFotoAls(m,v)||(v.url?m.v.find(y=>y!==v&&y.url===v.url&&fotoVan(m,y)&&y.img!=null):null);
+    return box('Foto van internet · '+fmt(v.conf||0)+'% zeker', x?['waarschijnlijk '+x.code+(x.fin?' ('+x.fin+')':'')].concat(fotoKort(m,v,x)):[]); }
+  if(v.imgc&&v.imgc!==v.code){ const x=m.v.find(y=>y.code===v.imgc); return box('Foto van '+v.imgc, x?fotoKort(m,v,x):fotoVerschillen(v)); }
   // eigen foto die een ander artikel leent: de waarschuwing hoort bij dat andere artikel, niet hier
   if(v.imgq==='exact'){ const x=zelfdeFotoAls(m,v); if(x&&x.imgc&&x.imgc!==x.code) return ''; }
   return fotoDisc(m,v); }
 function modelCard(k0,top){
   const m=F.m, d=F.dk, mu=d.mu[k0], vs=mu.ids.map(id=>mvOf(m,id)), h=vs[0], cur=mvOf(m,mu.cur)||h, att=top?' ':' tabindex="-1" ';
   const rh=modelPrijs(m,h), mp=v=>{ const r=modelPrijs(m,v); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
-  const nSel=vs.filter(v=>mu.sel[v.id]).length;
+  const T=mu.tiles, nSel=T.filter(t=>mu.sel[t.main]).length;
   // foto per zijde, met tabs, pijltjes en bolletjes
-  const {zs,z}=modelZij(mu,cur), src=!fotoVan(m,cur)?null:z?img(cur.zijden[z].img):img(cur.img), pos=zs.indexOf(z);
+  const pv=tegelFoto(m,modelTegel(mu,cur.id),cur), ft=fotoVanTegel(m,cur,pv);
+  const {zs,z}=modelZij(mu,pv), src=!fotoVan(m,pv)?null:z?img(pv.zijden[z].img):img(pv.img), pos=zs.indexOf(z);
   const foto='<div class="mfoto"><div class="mtabs">'+zs.map(s=>'<button type="button"'+att+'class="'+(s===z?'on':'')+'" data-mz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join('')+'</div>'+frLabel(vs)
-    +'<div class="dimg mimgbox" data-mswipe="1">'+(!fotoVan(m,cur)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')+modelDisc(m,cur)+'</div>'
-    +'<div class="mfoot"><span><b>'+esc(cur.code)+'</b>'+(z?' · '+ZK[z]:'')+(cur.imgc&&cur.imgc!==cur.code&&fotoVan(m,cur)?' · foto van '+esc(cur.imgc):'')+'</span>'+(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
+    +'<div class="dimg mimgbox" data-mswipe="1">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')+ft.disc+'</div>'
+    +'<div class="mfoot"><span><b>'+esc(cur.code)+'</b>'+(z?' · '+ZK[z]:'')+ft.foot+'</span>'+(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
   // uitvoeringen als tegels: links een vinkje (houden), rechts label (alleen het verschil), de volledige code en de meerprijs op inkoop (tik = bekijken)
   const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
-  const tiles=vs.map(v=>{ const on=!!mu.sel[v.id], x=mp(v), hoofd=v.id===mu.hoofd, lab=modelLab(mu,v);
+  const tiles=T.map(t=>{ const v=mvOf(m,t.main), on=!!mu.sel[t.main], x=mp(v), hoofd=v.id===mu.hoofd, lab=modelLab(mu,v);
     return '<div class="mtile'+(on?' on':'')+(v.id===cur.id?' nu':'')+'">'
       +'<button type="button"'+att+'class="mck" data-mck="'+esc(v.id)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(lab+' '+v.code)+' houden"><i>'+WCK+'</i></button>'
-      +'<button type="button"'+att+'class="mtv" data-mt="'+esc(v.id)+'" aria-pressed="'+(v.id===cur.id)+'" title="Deze uitvoering bekijken"><b>'+esc(lab)+'</b>'+(modelDim(mu,v)?'<small class="mud">'+esc(modelDim(mu,v))+'</small>':'')+'<small>'+esc(v.code)+'</small>'
+      +'<button type="button"'+att+'class="mtv" data-mt="'+esc(v.id)+'" aria-pressed="'+(v.id===cur.id)+'" title="Deze uitvoering bekijken"><b>'+esc(lab)+'</b>'+(modelDim(mu,v)?'<small class="mud">'+esc(modelDim(mu,v))+'</small>':'')+'<small>'+esc(v.code)+ookTxt(v,t)+'</small>'
       +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</button></div>'; }).join('');
   // prijsblok van de getoonde uitvoering
   const r=modelPrijs(m,cur), care=r&&careOn()&&r[7]!=null, xc=mp(cur);
@@ -1976,7 +2005,7 @@ function modelCard(k0,top){
     +foto
     +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · serie '+esc(m.fam)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
     +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
-    +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+vs.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
+    +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+T.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
     +'<p class="mcap">Vink de uitvoeringen aan die je wilt houden. Tik op een tegel om die uitvoering op de foto te zien.</p>'+price+'</div>'+vis+'</div>';
 }
 function deckCard(k,top){
@@ -2190,11 +2219,11 @@ function renderDeck(){
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1], isM=!!d.grp[k], mu=d.mu[k], heeftM=Object.keys(d.grp).length>0;
-  const nSel=isM?mu.ids.filter(id=>mu.sel[id]).length:0;
+  const nSel=isM?mu.tiles.filter(t=>mu.sel[t.main]).length:0;
   B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke '+(heeftM?'modellen':'producten')+' '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+(heeftM?' modellen':'')+'</div></div>'
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?(isM?deckInfo(mvOf(m,mu.cur).p,mvOf(m,mu.cur),mu.naam):deckInfo(k)):'')+'</div>'
-    +'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.ids.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
+    +'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.tiles.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
     +(isM?'<p class="mhint">Niet gekozen uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span>'+(isM?'':'<span><kbd>↑</kbd> info</span>')+'<span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
