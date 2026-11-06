@@ -1081,7 +1081,8 @@ function supCat(code,n){ if(!PR||!PR.bc) return null; const cs=[...new Set(price
 const pk=v=>v.pk||v.code;   // prijzen per uitvoering (bij tafels die AFAS per maat heeft: per AFAS-artikel)
 // stofkeuze brandvertragend: de prijslijst noemt dit in het derde deel van de uitvoering ("Brandvertragend" / "Niet brandvertragend")
 const frOf=row=>{ const u=PR&&PR.u&&PR.u[row[1]]; const t=((u&&u[2])||'').trim().toLowerCase(); return t==='brandvertragend'?1:t==='niet brandvertragend'?0:null; };
-const rawRows=code=>(PR&&PR.r&&PR.r[code])||[];
+// prijsregels zonder prijs (bruto en verkoop 0 in de Excel) tellen niet mee, ook niet als goedkoopste
+const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
 let frUse=true;   // uit tijdens de Excel-export: die bevat altijd alle prijsregels
 // alleen als een artikel beide stoffen heeft, tonen we de regels van de gekozen stof (en de regels zonder stofvermelding)
