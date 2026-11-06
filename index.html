@@ -1449,7 +1449,8 @@ function afwerkingUitCode(m){
   m.v.forEach(y=>{ const x=String(y.code).match(/^(.+?\d)([A-Z]{1,3})$/); if(!x) return; const L=x[2].split(''); if(!L.every(l=>HOUTLETTER[l]||l==='A')) return;
     const z=byCode[x[1]]; if(!z) return;
     if(!heeftEig(y)&&heeftEig(z)){ y.feat=Object.assign({},z.feat||{}); if(!(y.dim||[]).some(d=>d!=null)) y.dim=(z.dim||[]).slice(); if(!y.sizes&&z.sizes) y.sizes=z.sizes.slice(); if(!y.type&&z.type) y.type=z.type; y.eigAfgeleid=z.code; }
-    const hout=L.find(l=>HOUTLETTER[l]); if(hout&&!y.fin){ y.fin=HOUTLETTER[hout]; y.finAfgeleid=true; }
+    // de letter is alleen een houtsoort als het artikel dezelfde uitvoering is als het zusterartikel (34-63/3R is relax, geen eiken)
+    const hout=(y.uitv&&z.uitv&&y.uitv!==z.uitv)?null:L.find(l=>HOUTLETTER[l]); if(hout&&!y.fin){ y.fin=HOUTLETTER[hout]; y.finAfgeleid=true; }
     const hy=(y.dim||[])[6], hz=(z.dim||[])[6];
     if(L.includes('A')&&hy!=null&&hz!=null&&hy>hz+3){ y.feat=y.feat||{}; if(!y.feat.rug||y.feat.rug===(z.feat||{}).rug){ y.feat.rug='hoge rug'; y.rugAfgeleid=true; } }
     const fix=e=>{ if(!e||e.img==null||e.imgc!==z.code||!y.finAfgeleid) return; e.imgq='fin'; e.conf=Math.min(e.conf||90,85);
@@ -1503,7 +1504,7 @@ function cardModelHTML(m){
   const zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv);
   const tabs=zs.length>1?'<div class="mtabs">'+zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join('')+'</div>':'';
   // onder de foto: model en uitvoering, de code (met de zijde van de foto) en de stand nu in AFAS met de labels
-  const tm=m.v[ST[sp].vi], tl=tm===gm.hoofd?'Hoofdartikel':(gm.tl[tm.id]||v.code), td=tm===gm.hoofd?'':(gm.td[tm.id]||'');
+  const tm=m.v[ST[sp].vi], tl=gm.tl[tm.id]||v.code, td=gm.td[tm.id]||'';
   const foto='<div class="mfoto smfoto">'+tabs+frLabel([v])
     +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
     +(ST.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
@@ -1512,7 +1513,7 @@ function cardModelHTML(m){
     +'<div class="scc"><b>'+esc(v.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</div>'
     +'<div class="scs"><span class="eye">Nu</span>'+standChips(ST[sp].s)+'</div></div></div>';
   // fotostrookje: alle uitvoeringen van de serie, per model bij elkaar, met een stip voor de stand in AFAS
-  const thumbs=G.map((g,gi)=>'<div class="vgrp" title="'+esc(g.naam)+'"><span class="vgl">Model '+(gi+1)+'</span><div class="vgt">'+ST.map((e,j)=>{ if(e.g!==g) return ''; const x=m.v[e.vi], a=tegelFoto(m,e.t,x), im=fotoVan(m,a)&&img(a.img), lbl=g.naam+' · '+(x===g.hoofd?'Hoofdartikel':g.tl[x.id]||x.code);
+  const thumbs=G.map((g,gi)=>'<div class="vgrp" title="'+esc(g.naam)+'"><span class="vgl">Model '+(gi+1)+'</span><div class="vgt">'+ST.map((e,j)=>{ if(e.g!==g) return ''; const x=m.v[e.vi], a=tegelFoto(m,e.t,x), im=fotoVan(m,a)&&img(a.img), lbl=g.naam+' · '+(g.tl[x.id]||x.code);
     return '<button type="button" class="vbtn'+(j===sp?' on':'')+(im?'':' leeg')+'" data-vi="'+e.vi+'" aria-pressed="'+(j===sp)+'" title="'+esc(lbl+' · '+x.code+' · '+STAND[e.s.k])+'">'+(im?'<img src="'+im+'" alt="">':'')+'<span>'+(j+1)+'</span><i class="sdot '+e.s.k+'" aria-hidden="true"></i></button>'; }).join('')+'</div></div>').join('');
   const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
   // per model een blok; alleen het model van de getoonde uitvoering staat open, met al zijn uitvoeringen en hun stand in AFAS
@@ -1522,8 +1523,8 @@ function cardModelHTML(m){
     const th=fotoVan(m,h)&&img(h.img)?'<img src="'+img(h.img)+'" alt="">':'<span class="ni"></span>';
     // wijkt een uitvoering in maat af, dan staat bij het hoofdartikel 'Standaard maten'
     const maat=g.tiles.some(t=>g.td[t.main]);
-    const its=!open?'':g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, d=hoofd?(maat?'Standaard maten':''):g.td[x.id], y=mp(x);
-      return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
+    const its=!open?'':g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, d=g.td[x.id]||(hoofd&&maat?'Standaard maten':''), y=mp(x);
+      return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
         +'<span class="muc">'+esc(x.code)+ookTxt(x,t)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span><span class="mus">'+standChips(tegelStand(m,t))+'</span></button>'; }).join('');
     const nt=g.tiles.length, na=g.vs.length-nt;
     return '<div class="mblok'+(open?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" aria-expanded="'+open+'" title="'+(open?'Toon het hoofdartikel op de foto':'Toon dit model en zijn uitvoeringen')+'">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+gon+' van '+nt+' online</span></span>'+(PRIJS()?'<span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span>':'')+'</button>'
@@ -1975,7 +1976,13 @@ function modelMaten(sizes){ if(!sizes||!sizes.length) return ''; const r=[],q=[]
   return out.join(' of '); }
 // modelnaam en tegellabels; het label toont alleen wat afwijkt van het hoofdartikel (vs[0]).
 // Zijn de eigenschappen gelijk, dan komen de afwijkende maten erbij; daarna de toevoeging uit de code.
+// Vaste methode (data-repo, scripts/uitvoeringen.js): staat de uitvoering in de data (v.uitv), dan is dat het label van de tegel,
+// ook voor het hoofdartikel; 'Hoofdartikel' staat dan op de regel eronder. De app leidt in dat geval zelf niets af.
+const uitvVast=vs=>vs.length>0&&vs.every(v=>v.uitv);
 function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
+  if(uitvVast(vs)){ const lab={}, dim={}; vs.forEach((v,i)=>{ lab[v.id]=v.uitv; dim[v.id]=i?'':'Hoofdartikel'; });
+    const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
+    return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
   const zonder=t=>/^met /.test(t)?'zonder '+t.slice(4):/^zonder /.test(t)?'met '+t.slice(7):'niet '+t;
   const rows=E.map(e=>{ const v=e.v, basis=[], extra=[]; if(e===H) return {v,label:'Hoofdartikel',basis,extra,hoofd:true};
     if((v.type||'')!==(h.type||'')) basis.push(v.type);
@@ -1999,7 +2006,7 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
   const dub=r=>rows.some(x=>x!==r&&x.label===r.label&&x.dim===r.dim);
   // zonder enige specificatie in de prijslijst zeggen we dat, in plaats van alleen de code te herhalen
   rows.filter(r=>!r.hoofd&&r.leeg&&!r.label).forEach(r=>{ r.label='Specificaties ontbreken'; });
-  rows.filter(r=>!r.hoofd&&(!r.label||dub(r))).forEach(r=>{ r.label=cap((r.label?r.label+' · ':'')+'uitvoering '+(codeDelen(r.v.code)[1]||r.v.code)); });
+  rows.filter(r=>!r.hoofd&&(!r.label||dub(r))).forEach(r=>{ r.label=cap((r.label?r.label+' · ':'')+'onderscheid onbekend'); });   // nooit een artikelcode als titel
   const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
   const lab={}, dim={}; rows.forEach(r=>{ lab[r.v.id]=r.label; dim[r.v.id]=r.hoofd?'':r.dim; });
   return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
@@ -2011,6 +2018,8 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
 // én de eigenschappen gelijk zijn; 66-13 en 66-14 blijven dus apart, ook als de prijslijst ze hetzelfde beschrijft.
 const uitvSleutel=v=>{ const f=v.feat||{}; return String(v.code).replace(/[RNF]+$/,'')+'|'+JSON.stringify([v.type||'', Object.keys(f).sort().map(k=>k+'='+f[k]), v.dim||[], v.sizes||[]]); };
 function modelTegels(m,vs){
+  // vaste methode: één tegel per uitvoering uit de data; artikelen met dezelfde uitvoering verschillen alleen in afwerking
+  if(uitvVast(vs)){ const tiles=[], by={}; vs.forEach(v=>{ let t=by[v.uitv]; if(!t){ t=by[v.uitv]={main:v.id, ids:[], ook:[]}; tiles.push(t); } else t.ook.push({id:v.id, code:v.code, fin:v.fin||''}); t.ids.push(v.id); }); return tiles; }
   // per product (zelfde p = afwerkingen van hetzelfde product) de sleutel van het artikel met de meeste gegevens
   const keyP={}; vs.forEach(v=>{ const n=Object.keys(v.feat||{}).length+(v.dim||[]).filter(x=>x!=null).length; if(keyP[v.p]==null||n>keyP[v.p].n) keyP[v.p]={n,key:uitvSleutel(v)}; });
   const tiles=[], byKey={};
@@ -2029,8 +2038,8 @@ function modelZij(mu,v){ const zs=sidesOf(v); return {zs, z:mu.zij&&zs.includes(
 // prijsregel van één uitvoering: de goedkoopste, zoals op de productkaart (verkoop r[5], Blom Care r[7], inkoop r[3])
 const modelPrijs=(m,v)=>pminRow(m,v.p,m.v.indexOf(v));
 // tegellabel: afgeleid uit de taxonomie (alleen wat afwijkt van het hoofdartikel: armleuningen, greep, afwerking, maten …)
-const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(mu.tl||{})[v.id]||v.code;
-const modelDim=(mu,v)=>v.id===mu.hoofd?'':(mu.td||{})[v.id]||'';
+const modelLab=(mu,v)=>(mu.tl||{})[v.id]||(v.id===mu.hoofd?'Hoofdartikel':v.code);
+const modelDim=(mu,v)=>(mu.td||{})[v.id]||'';
 // een tegel die je aanzet krijgt de zichtbaarheid en labels van het model: wat je op de kaart koos, anders wat de al gekozen uitvoeringen gemeen hebben
 function modelZet(mu,id){ modelTegel(mu,id).ids.forEach(i=>{ const x=F.vs[i]||(F.vs[i]={oc:null,lab:[0,0,0,0,0]});
   if(mu.oc){ x.oc=mu.oc; x.src='gekozen'; } if(mu.lab){ x.lab=mu.lab.slice(); x.src='gekozen'; }
