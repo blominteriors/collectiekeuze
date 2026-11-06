@@ -726,9 +726,8 @@ body.swv #supbar,body.swv #prog{display:none}
 .phfoot2 .num{font-size:12.5px;color:var(--ink)}
 .vstrip .vbtn{position:relative}
 .vstrip .vbtn .bd{display:none}
-.adot{display:inline-block;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;flex:none}
-.adot.in{background:var(--ink)}
-.vstrip .vbtn .adot{position:absolute;top:4px;right:4px}
+.adot{display:inline-flex;flex:none;line-height:0}
+.vstrip .vbtn .adot{position:absolute;top:2px;right:2px}
 .vstrip .vbtn.on{outline:2px solid var(--ink);outline-offset:-2px}
 .ptitle{display:grid;gap:1px;margin-top:10px}
 .ptitle>b{font-family:var(--display);font-weight:500;font-size:17px;line-height:1.2}
@@ -1253,8 +1252,8 @@ function cardHTML(m){
   const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
   const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
   const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='fin'?'Foto: zelfde product, frame/afwerking wijkt af':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
-  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot'+(n?' in':'')+'" aria-hidden="true"></i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
-  const fins=P.idx.length>1?'<div class="fins2" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span><div class="fb">'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'" title="'+esc(a.code)+(a.inA?' · in AFAS':' · niet in AFAS')+'"><b>'+esc(cap(a.fin)||a.code)+'</b>'+(mp?'<span class="mp">'+mp+'</span>':'')+'<i class="adot'+(a.inA?' in':'')+'" aria-hidden="true"></i></button>'}).join('')+'</div></div>':'';
+  const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot" aria-hidden="true">'+(n?OK(12):NO(12))+'</i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
+  const fins=P.idx.length>1?'<div class="fins2" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span><div class="fb">'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'" title="'+esc(a.code)+(a.inA?' · in AFAS':' · niet in AFAS')+'"><b>'+esc(cap(a.fin)||a.code)+'</b>'+(mp?'<span class="mp">'+mp+'</span>':'')+'<i class="adot" aria-hidden="true">'+(a.inA?OK(12):NO(12))+'</i></button>'}).join('')+'</div></div>':'';
   const bnaam=v.inA?(v.blom||'(geen Blom-naam in AFAS)'):(v.nv||'');
   const dr=drOf(m,v), afLab=labOf(v);
   const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
