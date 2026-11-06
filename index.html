@@ -1024,6 +1024,19 @@ function setDrV(m,v,keep,oc,lab){ const d=DR[m.id]||(DR[m.id]={v:{},vs:{}});
 let FRSEL=ls.get('blom-ck-frsel')==='1'?1:0, apOpen=false;   // 0 = niet brandvertragend, 1 = brandvertragend
 
 /* ---------------- data ---------------- */
+// correcties op de data van de leverancier, per artikelnummer (l = productnaam, imgq/why = foto, desc = omschrijving)
+// Cloche 120/B1 en 120/B3 hadden dezelfde foto (houten poten). Volgens piaval.it is 120/B3 de draaibare poef met houten stervoet.
+const CORRECTIES={piaval:{
+  '120/B1F':{l:'Poef · massief houten poten'},
+  '120/B2':{l:'Poef · metalen onderstel'},
+  '120/B3F':{l:'Poef · draaibaar, metalen frame bekleed met hout', imgq:'other', why:['Foto toont 120/B1 (poef met houten poten), niet de draaibare poef 120/B3.'], desc:'Draaibare poef uit de serie Cloche. Metalen frame bekleed met massief essenhout, gestoffeerde zitting. Brandvertragend uitgevoerd.'},
+  '120/B3N':{desc:'Draaibare poef uit de serie Cloche. Metalen frame bekleed met massief notenhout, gestoffeerde zitting. Brandvertragend uitgevoerd.'}
+}};
+function pasCorrectiesToe(sup){ const C=CORRECTIES[sup]; if(!C) return;
+  M.forEach(m=>m.v.forEach(v=>{ const c=C[v.code]; if(!c) return;
+    if(c.l) m.p[v.p].l=c.l;
+    if(c.imgq){ v.imgq=c.imgq; v.why=c.why||v.why; if(v.zijden) Object.values(v.zijden).forEach(z=>{ if(z){ z.imgq=c.imgq; } }); }
+    if(c.desc){ v.desc=c.desc; v.dsrc='piaval.it (productpagina), vertaald'; } })); }
 async function loadSup(id){
   const s=SUPS.find(x=>x.id===id)||SUPS[0];
   if(SUP&&SUP.id===s.id&&DATA) return;
@@ -1031,6 +1044,7 @@ async function loadSup(id){
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
   M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); zusterFoto(m);});
   // live: geen knop 'Bekijk als productkaart online collectie' op de swipekaart; geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
+  pasCorrectiesToe(SUP.id);
   // geen naamvoorstellen: alleen Blom-namen die in AFAS staan (test en live)
   M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
   loadedChunks={}; for(const k in IMG) delete IMG[k];
@@ -1218,6 +1232,8 @@ function groups(m){ const gk=prState+'|'+FRSEL+'|'+frUse; if(m._g&&m._gp===gk) r
   // producten zonder foto achteraan, daarna op prijs (of de volgorde van de prijslijst)
   const nf=k=>m.p[k].idx.every(i=>!fotoVan(m,m.v[i]))?1:0;
   o.forEach(g=>{ const pr={}; if(prState==='ok') g.pk.forEach(k=>pr[k]=pmin(m,k)); g.pk.sort((a,b)=>(nf(a)-nf(b))||(prState==='ok'?((pr[a]??Infinity)-(pr[b]??Infinity)):0)||a-b); g.idx=g.pk.flatMap(k=>m.p[k].idx); });
+  // soorten waarvan geen enkel product een foto heeft achteraan (bijv. eerst de barkruk als de stoelen geen foto hebben)
+  const gf=g=>g.pk.every(k=>nf(k))?1:0; o.sort((a,b)=>gf(a)-gf(b));
   m._gp=gk; return m._g=o; }
 function grpOf(m,i){ const k=m.v[i].p; return groups(m).find(g=>g.pk.includes(k)); }
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
@@ -1562,7 +1578,8 @@ function openForm(m){
   if(prev){ if(prev.v) F.v=Object.assign({},prev.v); if(prev.oc) F.oc=prev.oc; if(prev.lab) F.lab=prev.lab.slice(); F.g=JSON.parse(JSON.stringify(prev.g||[])); }
   // eerst per product swipen (Tinder), daarna online collectie en labels
   DECK_T=Date.now()+600;   // korte pauze: een dubbele tik op 'Serie houden' mag het eerste product niet meteen goedkeuren
-  F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).sort((a,b)=>(m.p[b].idx.some(i=>fotoVan(m,m.v[i]))?1:0)-(m.p[a].idx.some(i=>fotoVan(m,m.v[i]))?1:0)), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
+  // producten waarvan het collectioneren is uitgesteld (geen bruikbare foto) komen niet in het swipen; hun AFAS-stand blijft
+  F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).filter(k=>m.p[k].idx.some(i=>fotoVan(m,m.v[i]))), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
   // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
   // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), of leeg
   const prevRec=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
