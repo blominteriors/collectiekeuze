@@ -776,6 +776,39 @@ body.swv #supbar,body.swv #prog{display:none}
 /* hele berekening: alle bedragen op dezelfde rechterlijn */
 .prices .pr,.prices .ph{padding-right:6px}
 .pr span.pc{display:inline-block;margin-right:8px;font-size:9.5px;color:var(--g400)}
+
+/* serie-scherm, versie 2 van het ontwerp */
+.menubtn{font-size:0;gap:0;width:40px;height:40px;justify-content:center;padding:0}
+.menubtn svg{width:16px;height:14px}
+body.mini header .hrow,body.mini header .tabs{display:none}
+.minibar{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:8px 16px;background:#fff;color:var(--ink)}
+.minibar[hidden]{display:none}
+.mbi{width:36px;height:26px;border:1px solid var(--n500);display:flex;align-items:center;justify-content:center;overflow:hidden}.mbi:empty{display:none}
+.mbi img{max-width:100%;max-height:100%;object-fit:contain}
+.mbt{display:grid;min-width:0}.mbt #mbL{font-size:13.5px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mbt #mbL b{color:var(--ink);font-weight:600}
+.mbt small{font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minibar #mbR{font-size:12.5px;white-space:nowrap}
+.mbup{width:32px;height:32px;border:1px solid var(--n500);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.psr.psh{align-items:end}
+.psr.psh>span:first-child{display:grid;gap:1px}.psr.psh small{font-size:11px;color:var(--g400)}
+.psr.psh>span:not(:first-child){font-size:11.5px;color:var(--g400);white-space:normal;line-height:1.25}
+.psr.psg{border-bottom:1px solid var(--n500)}.psr.psg>span:first-child{font-size:12px;color:var(--g400)}
+.psr.psg b{display:inline-block;min-width:44px;padding:1px 8px;border:1px solid var(--n500);font-weight:400;font-size:11.5px;text-align:center}
+.status{margin-top:12px}
+.sth{padding:8px 10px;border-bottom:0}
+.stogs{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr) minmax(0,1fr);gap:4px;padding:0 10px}
+.photo{flex:none;height:clamp(190px,25vh,340px)}
+body.swv #what{display:none}
+.stog{height:34px;border:1px solid var(--n500);background:#fff;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;color:var(--ink);padding:0 4px;min-width:0}
+.stog span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stog.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.stog.chg{outline:2px dashed var(--ink);outline-offset:1px}
+.status .dlbs{padding:8px 10px 10px}
+.status .dlb{height:28px;padding:0 8px;font-size:12px}.status .dlb.on{padding:0 7px}
+.sdesc .eye,.steam .eye{display:block;margin-bottom:6px}
+.sdesc p{font-size:14.5px;line-height:1.5}
+.steam .team .leeg{background:var(--grijs);padding:12px 14px;font-size:13.5px;color:var(--g400);border:0}
+.links a{height:52px;font-weight:400}.links a b{font-family:var(--display);font-weight:500;font-size:17px}.links a span{font-size:12px;color:var(--g400)}.links a i{font-style:normal;margin-left:8px;color:var(--ink)}
 </style>
 
 <div class="app">
@@ -794,7 +827,7 @@ body.swv #supbar,body.swv #prog{display:none}
     </nav>
     <div class="supbar" id="supbar"><span><span class="eye">Leverancier</span><b id="hSup">—</b><span id="hDate" style="font-size:9.5px;font-weight:400;color:var(--g400);margin-left:8px;letter-spacing:.01em"></span></span><span class="num" id="count" style="font-size:11px"></span></div>
     <div class="prog" id="prog"><i></i></div>
-    <div class="minibar" id="minibar" hidden><span id="mbL"></span><span id="mbR"></span><i id="mbB"></i></div>
+    <div class="minibar" id="minibar" hidden><span class="mbi" id="mbI"></span><span class="mbt"><span id="mbL"></span><small id="mbS"></small></span><span id="mbR"></span><button type="button" class="mbup" id="mbUp" aria-label="Naar boven"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 9.5l5-5 5 5"/></svg></button><i id="mbB"></i></div>
     <div class="banner" id="banner" hidden></div>
   </header>
 
@@ -1237,8 +1270,8 @@ function cardHTML(m){
     <div class="ptitle"><b>${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}</b>${v.tguess?'<small class="tg">soort niet bevestigd</small>':''}<span>${bnaam?'<b>'+esc(bnaam)+'</b>'+(v.inA&&v.afas?' · '+esc(v.afas):'')+' · ':'<span class="mut">nog niet in AFAS</span> · '}${esc(SUP.short||SUP.name)} ${esc(v.code)}</span></div>
     ${fins}
     ${pricesSum(v)}
+    ${statusHTML(m,v,dr,afLab)}
   </div>
-  ${statusHTML(m,v,dr,afLab)}
   ${belowHTML(m,v,hasFull?full:'')}`;
 }
 // zijde-tabs bovenin de foto (Voor, Links, Rechts, Achter)
@@ -1246,14 +1279,16 @@ function sideTabs(v){ const zs=sidesOf(v); if(zs.length<2) return ''; const k=si
   return '<div class="ptabs" role="tablist">'+zs.map(z=>'<button type="button" role="tab" class="'+(z===k?'on':'')+'" data-czz="'+z+'" aria-selected="'+(z===k)+'">'+cap(z)+'</button>').join('')+'</div>'; }
 // status bij Blom (AFAS) of jouw keuze: in AFAS, online collectie, zichtbaar voor klanten en labels
 function statusHTML(m,v,dr,afLab){
-  const row=(act,lbl,val,ch)=>'<button type="button" class="srow'+(ch?' chg':'')+'" data-dact="'+act+'" aria-pressed="'+!!val+'"><span>'+lbl+'</span><em>'+(val?'Aan':'Uit')+'</em><i class="cbx'+(val?' on':'')+'" aria-hidden="true">'+(val?'<svg width="16" height="16" viewBox="0 0 18 18"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="#fff" stroke-width="2.2"/></svg>':'')+'</i></button>';
+  const CKW='<svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+  const tog=(act,lbl,val,ch)=>'<button type="button" class="stog'+(val?' on':'')+(ch?' chg':'')+'" data-dact="'+act+'" aria-pressed="'+!!val+'">'+(val?CKW:'')+'<span>'+lbl+'</span></button>';
   const chips=LABELS.map(([n,c],i)=>{const on=dr.lab[i]===1, ch=dr.lab[i]!==afLab[i]; return '<button type="button" class="dlb'+(on?' on':'')+(ch?' chg':'')+'" style="--lc:'+c+'" data-dlab="'+i+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'}).join('');
   const mine=dr.keepSet||dr.setSet;
   return '<div class="status"><div class="sth"><b>'+(mine?'Jouw keuze':'Status bij Blom')+' · '+esc(v.code)+'</b><span>'+(mine?'<button type="button" class="drreset" data-dact="reset">terug naar AFAS</button>':'AFAS, '+dstr())+'</span></div>'
-    +row('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Opnemen in AFAS'),dr.keep===1,dr.keepSet)
-    +row('online','Online collectie',dr.oc!=='niet',dr.setSet&&(dr.oc!=='niet')!==!!v.online)
-    +row('klant','Zichtbaar voor klanten',dr.oc==='klant',dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))
-    +'<div class="stlab"><span class="eye">Labels</span><div class="dlbs">'+chips+'</div></div></div>'; }
+    +'<div class="stogs">'
+    +tog('keep',dr.keepSet?(dr.keep?(v.inA?'Houden':'Opnemen'):'Niet houden'):(v.inA?'In AFAS':'Opnemen'),dr.keep===1,dr.keepSet)
+    +tog('online','Online collectie',dr.oc!=='niet',dr.setSet&&(dr.oc!=='niet')!==!!v.online)
+    +tog('klant','Voor klanten',dr.oc==='klant',dr.setSet&&(dr.oc==='klant')!==!!(v.online&&v.klant))
+    +'</div><div class="dlbs">'+chips+'</div></div>'; }
 // prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
 function pricesSum(v){
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="psum"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff">Opnieuw</button></div></div>';
@@ -1263,17 +1298,18 @@ function pricesSum(v){
   const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)&&!/OUTDOOR/.test(c));
     const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c));
     let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
-  let cols=[[comCat,'Eigen stof / COM'],[cheapCat,'Vanaf*']].filter(x=>x[0]!=null);
+  let cols=[[comCat,'Eigen stof / COM'],[cheapCat,'Vanaf<br>(goedkoopste stofgroep)']].filter(x=>x[0]!=null);
   if(!cols.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="psum"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cols=[[cs[0],'Prijs']]; }
   const P=cols.map(([c])=>calc(pk(v),c)), careOk=p=>careOn()&&p&&p.care!=null, hasCare=P.some(careOk);
-  const gt='minmax(0,1fr) '+P.map(()=>'minmax(0,1.1fr)').join(' ');
+  const gt='minmax(0,.75fr) '+P.map(()=>'minmax(0,1.2fr)').join(' ');
   const row=(lbl,f,cls)=>'<div class="psr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+gt+'"><span>'+lbl+'</span>'+P.map(p=>'<span>'+f(p)+'</span>').join('')+'</div>';
-  return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span class="eye">Prijzen</span>'+cols.map(([c,l])=>'<span title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(l)+'</span>').join('')+'</div>'
+  return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span><span class="eye">Prijzen</span><small>'+esc(v.code)+' · excl. btw</small></span>'+cols.map(([c,l])=>'<span>'+l+'</span>').join('')+'</div>'
+    +'<div class="psr psg" style="grid-template-columns:'+gt+'"><span>Stofgroep</span>'+cols.map(([c])=>'<span><b title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(c)+'</b></span>').join('')+'</div>'
     +row('Verkoop',p=>p.vk!=null?eur(p.vk):'—','vk')
     +(hasCare?row('Blom Care',p=>careOk(p)?eur(p.care):'—','vk care'):'')
     +row('Netto inkoop',p=>eur(p.net))
     +row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—')
-    +'<p class="pfn">'+(cols.some(x=>x[1]==='Vanaf*')?'* goedkoopste stofgroep · ':'')+'excl. btw'+(P.some(p=>p.err)?' · <span style="color:#C0392B">! fout in de Excel: zie Hele berekening</span>':'')+'</p></div>'; }
+    +(P.some(p=>p.err)?'<p class="pfn" style="color:#C0392B">! Fout in de Excel bij deze prijs: zie Hele berekening.</p>':'')+'</div>'; }
 function pricesHTML(v){
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="prices"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px">Opnieuw proberen</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="prices"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
@@ -1347,14 +1383,14 @@ function belowHTML(m,v,full){
       +(PR.bcNote&&rows.some(p=>[6,7,8].includes(bc(p.cat)))?'<div><span>Let op</span>'+esc(PR.bcNote)+'</div>':'')
       +'</div></p></details>'; }
   const ps=people(); const team=ps.length?ps.map(p=>{const r=p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>r.v[x.id]).map(x=>x.code):[];
-    return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div><span class="note">Nog niemand heeft deze serie beoordeeld.</span></div>';
+    return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div class="leeg">Nog niemand heeft deze serie beoordeeld.</div>';
   return `<div class="below">
-    ${v.desc?'<section><h2>Omschrijving</h2><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section><h2>Omschrijving</h2><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
+    ${v.desc?'<section class="sdesc"><span class="eye">Omschrijving</span><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section class="sdesc"><span class="eye">Omschrijving</span><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
     ${full?'<details class="box" id="hbBox"'+(prOpen?' open':'')+'><summary>Hele berekening <span>bruto · condities · transport</span></summary>'+full+'</details>':''}
-    <details class="box"><summary>Specificaties <span>${esc(v.code)}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
+    <details class="box"><summary>Specificaties <span>${esc(v.code)} · stand ${dstr()}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
     ${ptab}
-    <details class="box" id="tmBox"><summary>Keuzes van het team <span>${(()=>{ const n=people().filter(p=>p.c[m.id]&&p.c[m.id].s).length; return n?n+(n===1?' keuze':' keuzes'):'nog niemand'; })()}</span></summary><div class="team">${team}</div></details>
-    ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener">Productpagina '+esc(SUP.name)+' <span aria-hidden="true">↗</span></a></section>':''}
+    <section class="steam"><span class="eye">Keuzes van het team</span><div class="team">${team}</div></section>
+    ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener"><b>Productpagina '+esc(SUP.short||SUP.name)+'</b><span>'+esc((v.url.match(/^https?:\/\/(?:www\.)?([^\/]+)/)||[])[1]||'')+' <i aria-hidden="true">↗</i></span></a></section>':''}
   </div>`;
 }
 function setVi(m,i){
@@ -2045,10 +2081,14 @@ $('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; };
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
 /* ---------------- vaste balk op het serie-scherm (na doorscrollen) ---------------- */
 function updMini(){ const mb=$('minibar'); if(!mb) return; const st=document.querySelector('#sSwipe .stitle');
-  const on=view==='swipe'&&!!cur&&!!st&&$('main').scrollTop>st.offsetTop+st.offsetHeight; mb.hidden=!on; if(!on) return;
+  const on=view==='swipe'&&!!cur&&!!st&&$('main').scrollTop>st.offsetTop+st.offsetHeight; mb.hidden=!on; document.body.classList.toggle('mini',on); if(!on) return;
   const m=cur, v=m.v[curVi], g=grpOf(m,curVi), c0=counts(D,M), done=c0.w+c0.n, pc=Math.floor(done/(M.length||1)*100);
-  $('mbL').innerHTML='<b>'+esc(m.fam)+'</b> · '+esc(g.t||'Artikel')+' '+(g.pk.indexOf(v.p)+1)+'/'+g.pk.length+(v.fin?' · '+esc(cap(v.fin)):'');
-  $('mbR').innerHTML='Serie '+Math.min(done+1,M.length)+' van '+M.length+' · <b>'+pc+'%</b>'; $('mbB').style.width=pc+'%'; }
+  const nm=v.inA&&v.blom?v.blom:(v.nv||shortTitle(m,v.p)), im=fotoVan(m,v)?(sideImg(v)||img(v.img)):null;
+  $('mbI').innerHTML=im?'<img src="'+im+'" alt="">':'';
+  $('mbL').innerHTML='<b>'+esc(nm)+'</b>'+(nm!==m.fam?' · '+esc(m.fam):'')+(v.fin?' · '+esc(cap(v.fin)):'');
+  $('mbS').textContent=(g.t||'Artikel')+' '+(g.pk.indexOf(v.p)+1)+'/'+g.pk.length+' · '+v.code;
+  $('mbR').innerHTML=Math.min(done+1,M.length)+'/'+M.length+' · <b>'+pc+'%</b>'; $('mbB').style.width=Math.max(pc,2)+'%'; }
+$('mbUp').onclick=()=>$('main').scrollTo({top:0,behavior:'smooth'});
 $('main').addEventListener('scroll',updMini,{passive:true});
 /* ---------------- afronden (beoordelaar) ---------------- */
 // na de laatste serie: eerst alle keuzes opslaan, dan de leverancier afronden (daarna kan een beoordelaar niets meer wijzigen)
