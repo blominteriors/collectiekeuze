@@ -325,7 +325,7 @@
     }
   }
 
-  /* Rol ophalen: alleen wie in de gebruikerslijst staat, heeft toegang (beheerder of beoordelaar).
+  /* Rol ophalen: alleen wie in de gebruikerslijst staat, heeft toegang (beheerder, beoordelaar of beoordelaar zonder prijzen).
      Bestaat de functie nog niet (database nog niet bijgewerkt), dan werkt de app zoals voorheen. */
   async function haalRol() {
     const { data, error } = await sb.rpc('mijn_rol');
@@ -358,7 +358,11 @@
   };
   window.blomBrandvertragend = async (supId, supNaam) => {
     const V = VERSIE || 'v1', fr = {}, nfr = {}, oms = {};
-    const prijs = await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));
+    // de beoordelaar zonder prijzen mag de tabel prijzen niet lezen: die krijgt alleen artikelnummer en uitvoering via een functie
+    const zonder = window.BLOM_ROL && window.BLOM_ROL.rol === 'beoordelaar_zonder_prijzen';
+    const prijs = zonder
+      ? await alles(() => sb.rpc('brandvertragend_regels', { p_versie: V, p_leverancier: supId })).catch(() => [])
+      : await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));
     prijs.forEach(r => { if (/niet\s+brandvertr/i.test(r.uitvoering)) nfr[r.nummer_leverancier] = 1; else fr[r.nummer_leverancier] = 1; });
     const art = await alles(() => sb.from('artikelen').select('nummer_leverancier,omschrijving').eq('versie', V).eq('leverancier', supNaam).ilike('omschrijving', '%brandvertr%'));
     art.forEach(r => { if (!/niet\s+brandvertr/i.test(r.omschrijving)) oms[r.nummer_leverancier] = 1; });

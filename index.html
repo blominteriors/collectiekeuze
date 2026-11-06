@@ -685,6 +685,8 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 body.beoordelaar [data-view="res"],body.beoordelaar [data-go="res"],body.beoordelaar #sRes,body.beoordelaar .opzb{display:none!important}
 body.beoordelaar .tabs{grid-template-columns:1fr}
 body.beoordelaar .supcard .row2{grid-template-columns:1fr}
+/* beoordelaar zonder prijzen: tekst over prijzen in de uitleg valt weg */
+body.zonderprijzen .metprijs{display:none!important}
 .empty.klaar{text-align:center;justify-items:center}.empty.klaar .kbig{margin:10px auto 4px}.empty.klaar h2{font-size:30px}
 /* gebruikersbeheer */
 .gbox{max-width:520px!important;max-height:calc(100vh - 32px);overflow-y:auto}
@@ -1028,13 +1030,13 @@ body.swv #what{display:none}
 <div class="modal" id="usersModal" hidden>
   <div class="box gbox">
     <div class="ghead"><h2>Gebruikers</h2><button type="button" class="gx" id="usersClose" aria-label="Sluiten">×</button></div>
-    <p class="note">Alleen wie hier staat, kan inloggen. De eerste keer logt iemand in met een inloglink op zijn eigen e-mailadres en kiest dan een wachtwoord.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten.</p>
+    <p class="note">Alleen wie hier staat, kan inloggen. De eerste keer logt iemand in met een inloglink op zijn eigen e-mailadres en kiest dan een wachtwoord.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten. <b>Beoordelaar zonder prijzen</b>: als beoordelaar, maar ziet geen prijzen.</p>
     <div class="glist" id="gList"><p class="note">Laden…</p></div>
     <form id="gForm" class="gform" autocomplete="off">
       <b>Gebruiker toevoegen</b>
       <input id="gEmail" type="email" placeholder="naam@blominterieurs.nl" required>
       <input id="gNaam" type="text" placeholder="Naam (optioneel)">
-      <div class="grol"><label><input type="radio" name="gRol" value="beoordelaar" checked> Beoordelaar</label><label><input type="radio" name="gRol" value="beheerder"> Beheerder</label></div>
+      <div class="grol"><label><input type="radio" name="gRol" value="beoordelaar" checked> Beoordelaar</label><label><input type="radio" name="gRol" value="beoordelaar_zonder_prijzen"> Beoordelaar zonder prijzen</label><label><input type="radio" name="gRol" value="beheerder"> Beheerder</label></div>
       <button class="cta" type="submit">Toevoegen</button>
       <p class="note gmsg" id="gMsg"></p>
     </form>
@@ -1046,9 +1048,9 @@ body.swv #what{display:none}
     <h2>Hoe werkt het?</h2>
     <ol>
       <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
-      <li>Per serie zie je de foto's, de prijzen (verkoop, Blom Care, netto inkoop, marge) en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties en de hele berekening.</li>
+      <li>Per serie zie je de foto's<span class="metprijs">, de prijzen (verkoop, Blom Care, netto inkoop, marge)</span> en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties<span class="metprijs"> en de hele berekening</span>.</li>
       <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
-      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart per soort binnen de serie (stoel, fauteuil, bank …) met alle uitvoeringen als tegels; het hoofdartikel is de goedkoopste uitvoering. De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
+      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart per soort binnen de serie (stoel, fauteuil, bank …) met alle uitvoeringen als tegels<span class="metprijs">; het hoofdartikel is de goedkoopste uitvoering</span>. De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien.<span class="metprijs"> Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel.</span> Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
       <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
       <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
     </ol>
@@ -1067,6 +1069,8 @@ const fmt=n=>Number(n).toLocaleString('nl-NL');
 // rol van de ingelogde gebruiker: beheerder (resultaten, export, onbeperkt aanpassen) of beoordelaar (elke leverancier één keer)
 const ROL=()=>(window.BLOM_ROL&&window.BLOM_ROL.rol)||'beheerder';
 const BEH=()=>ROL()==='beheerder';
+// beoordelaar zonder prijzen: werkt als beoordelaar, maar de app laadt en toont geen prijzen
+const PRIJS=()=>ROL()!=='beoordelaar_zonder_prijzen';
 const eur=n=>'€ '+Number(n).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=n=>(n*100).toLocaleString('nl-NL',{maximumFractionDigits:1})+'%';
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1152,6 +1156,7 @@ const dstr=()=>SUP&&SUP.date?new Date(SUP.date).toLocaleDateString('nl-NL',{day:
 
 /* ---------------- prices (beschermd document, alleen leesbaar voor ingelogde collega's) ---------------- */
 async function loadPrices(){
+  if(!PRIJS()){ PR=null; prState='uit'; prErr=''; return; }   // deze rol haalt de prijslijst niet op
   if(!db||!SUP){ prState=db===null&&canShare===false?'locked':'wait'; return; }
   const sup=SUP.id;
   prErr='';
@@ -1237,7 +1242,7 @@ async function flush(){
 function record(mid,r){ D[mid]=r; saveLocal(); pending[mid]=r; flush(); }
 function setShare(ok){
   canShare=ok; const b=$('banner');
-  if(!ok){ b.innerHTML='<b style="font-weight:500">Je keuzes worden nu alleen op dit apparaat bewaard</b> en prijzen zijn niet zichtbaar. Herlaad de pagina. Lukt het dan nog niet, log uit en weer in, of kies je eigen naam.'; b.hidden=false; }
+  if(!ok){ b.innerHTML='<b style="font-weight:500">Je keuzes worden nu alleen op dit apparaat bewaard</b>'+(PRIJS()?' en prijzen zijn niet zichtbaar':'')+'. Herlaad de pagina. Lukt het dan nog niet, log uit en weer in, of kies je eigen naam.'; b.hidden=false; }
   else b.hidden=true;
 }
 async function initDb(){
@@ -1463,8 +1468,8 @@ function cardModelHTML(m){
       return '<div class="mu'+(x===v?' nu':'')+'"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d&&!hoofd?'<small class="mud">'+esc(d)+'</small>':'')
         +'<span class="muc">'+esc(x.code)+ookTxt(x,t)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span></div>'; }).join('');
     const nt=g.tiles.length, na=g.vs.length-nt;
-    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+hin+' in AFAS</span></span><span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span></button>'
-      +'<div class="mgrid">'+its+'</div><p class="mcap">Meerprijs op inkoop ten opzichte van het hoofdartikel. Welke uitvoeringen je houdt, kies je na "Serie houden".</p></div>'; }).join('');
+    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+hin+' in AFAS</span></span>'+(PRIJS()?'<span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span>':'')+'</button>'
+      +'<div class="mgrid">'+its+'</div><p class="mcap">'+(PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':'')+'Welke uitvoeringen je houdt, kies je na "Serie houden".</p></div>'; }).join('');
   let price;
   if(prState!=='ok') price=pricesSum(v);
   else { const r=modelPrijs(m,v), care=r&&careOn()&&r[7]!=null;
@@ -1535,6 +1540,7 @@ function statusHTML(m,v,dr,afLab){
     +'</div>'; }
 // prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
 function pricesSum(v){
+  if(!PRIJS()) return '';
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="psum"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff">Opnieuw</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="psum"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
   if(prState!=='ok') return '<div class="psum"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
@@ -1555,6 +1561,7 @@ function pricesSum(v){
     +row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—')
     +(P.some(p=>p.err)?'<p class="pfn" style="color:#C0392B">! Fout in de Excel bij deze prijs: zie Hele berekening.</p>':'')+'</div>'; }
 function pricesHTML(v){
+  if(!PRIJS()) return '';
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="prices"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff;font-size:11px">Opnieuw proberen</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="prices"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
   if(prState!=='ok') return '<div class="prices"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
@@ -1607,7 +1614,7 @@ function belowHTML(m,v,full,opt){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
   const bron=v.desc?esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', tekst van artikel '+esc(v.descOf)+' (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt'):'';
-  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
   let ptab='';
   if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
     const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
@@ -2014,7 +2021,9 @@ function modelCard(k0,top){
       +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</button></div>'; }).join('');
   // prijsblok van de getoonde uitvoering
   const r=modelPrijs(m,cur), care=r&&careOn()&&r[7]!=null, xc=mp(cur);
-  const price=r?'<div class="mlh"><span class="eye">Getoonde uitvoering · '+esc(cur.code)+' · '+(cur.inA?'in AFAS'+(cur.blom?' ('+esc(cur.blom)+')':''):'nog niet in AFAS')+'</span>'+(top?'<button type="button" class="minfo" data-minfo="1">Specificaties</button>':'')+'</div>'
+  const kop='<div class="mlh"><span class="eye">Getoonde uitvoering · '+esc(cur.code)+' · '+(cur.inA?'in AFAS'+(cur.blom?' ('+esc(cur.blom)+')':''):'nog niet in AFAS')+'</span>'+(top?'<button type="button" class="minfo" data-minfo="1">Specificaties</button>':'')+'</div>';
+  // zonder prijzen blijft de regel met de knop Specificaties staan
+  const price=!PRIJS()?kop:r?kop
       +'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
       +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm mpc"><span>Meerprijs inkoop</span><b>'+(cur.id===mu.hoofd?'Basisprijs':xc!=null?mpTxt2(xc):'–')+'</b></div></div>'
       +'<p class="mcap mrow"><span>Meerprijs = inkoop uitvoering min inkoop '+esc(h.code)+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</span>'
@@ -2029,7 +2038,7 @@ function modelCard(k0,top){
     +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp" hidden></span>':'')
     +foto
     +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · serie '+esc(m.fam)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
-    +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+T.length+' uitvoeringen'+(vs.length>T.length?' · '+vs.length+' artikelen':'')+' · meerprijzen op inkoop</div>'
+    +'<div class="dline">Hoofdartikel '+esc(h.code)+(PRIJS()?' (goedkoopste)':'')+' · '+T.length+' uitvoeringen'+(vs.length>T.length?' · '+vs.length+' artikelen':'')+(PRIJS()?' · meerprijzen op inkoop':'')+'</div>'
     +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+T.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
     +'<p class="mcap">Vink de uitvoeringen aan die je wilt houden. Tik op een tegel om die uitvoering op de foto te zien.</p>'+price+'</div>'+vis+'</div>';
 }
@@ -2134,7 +2143,7 @@ async function openOpzet(){ const o=opzetItems(); await ensureImgs([...new Set(o
 }
 
 // prijzen van de gekozen uitvoering op de productkaart (intern): laagste verkoopprijs, met de bijbehorende Care- en inkoopprijs
-function pkPrijs(v){ if(prState!=='ok') return '<div><b>Prijzen</b><span>'+(prState==='none'?'geen prijzen gevonden':'laden…')+'</span></div>';
+function pkPrijs(v){ if(!PRIJS()) return ''; if(prState!=='ok') return '<div><b>Prijzen</b><span>'+(prState==='none'?'geen prijzen gevonden':'laden…')+'</span></div>';
   const rs=priceRows(pk(v)), nc=rs.filter(r=>!EIGEN(r[0])); let r=null; (nc.length?nc:rs).forEach(x=>{ if(x[5]!=null&&(r==null||x[5]<r[5])) r=x; });
   if(!r) return '<div><b>Prijzen</b><span>geen prijs voor deze uitvoering</span></div>';
   const vn='<small style="display:block;font-size:11px;color:#666">vanaf'+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+', excl. btw</small>';
@@ -2211,7 +2220,7 @@ function renderPk(){
 function specKV(m,v){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
-  return [['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.inA&&v.afas?['AFAS-nummer',esc(v.afas)]:null, ['Artikelnummer '+esc(SUP.short||SUP.name),esc(v.code)], v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean); }
+  return [['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.inA&&v.afas?['AFAS-nummer',esc(v.afas)]:null, ['Artikelnummer '+esc(SUP.short||SUP.name),esc(v.code)], v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean); }
 // ⓘ in 'Welke producten houd je?': alleen de specificaties van het product (de aangezette afwerking)
 function deckInfo(k,v0,titel){
   const m=F.m, p=m.p[k], v=v0||m.v[p.idx.find(i=>!F.dk.ex[m.v[i].id])??p.idx[0]];
@@ -2572,7 +2581,7 @@ function afronden(){ if(BEH()||!SUP||!me||!window.blomRpc||canShare===false) ret
   if(writing||Object.keys(pending).length){ setTimeout(afronden,600); return; }
   AFGEROND[id]=1; window.blomRpc('keuze_afronden',{p_id:docId(),p_versie:(window.BLOM_CONFIG&&BLOM_CONFIG.versie)||'v1'}).then(r=>{ if(r&&r.error) AFGEROND[id]=0; }); }
 /* ---------------- gebruikersbeheer (beheerder) ---------------- */
-const ROLN={beheerder:'Beheerder',beoordelaar:'Beoordelaar'};
+const ROLN={beheerder:'Beheerder',beoordelaar:'Beoordelaar',beoordelaar_zonder_prijzen:'Beoordelaar zonder prijzen'};
 const gMsg=(t,fout)=>{ const e=$('gMsg'); e.textContent=t||''; e.classList.toggle('fout',!!fout); };
 const gFout=e=>{ const m=(e&&(e.message||e.details))||'onbekende fout'; return /not_granted|permission/i.test(m)?'Alleen een beheerder kan gebruikers beheren.':m; };
 async function laadGebruikers(){
@@ -2650,7 +2659,7 @@ function wisLokaleKeuzesPersoon(){
 }
 window.__blomBoot=async function boot(){
   wisLokaleKeuzes(); wisLokaleKeuzesPersoon();
-  document.body.classList.toggle('beoordelaar',!BEH()); $('mUsers').hidden=!BEH();
+  document.body.classList.toggle('beoordelaar',!BEH()); document.body.classList.toggle('zonderprijzen',!PRIJS()); $('mUsers').hidden=!BEH();
   me=meVanAccount();
   if(!me){ const n=ls.get('blom-ck-naam')||ls.get('blom-swipe-naam'); if(n) me={key:keyOf(n),name:n}; }
   try{ const s=await dfetch('data/suppliers.json').then(r=>r.json()); SUPS=s.suppliers; LATER=s.later||[]; }catch(e){ $('supList').innerHTML='<p class="note">De leverancierslijst kon niet worden geladen. Herlaad de pagina.</p>'; return; }
