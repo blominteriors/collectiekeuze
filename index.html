@@ -898,6 +898,27 @@ body.swv #what{display:none}
 .mtile.on .mmp{background:#ffd968}
 .mtile.nu{outline:2px solid var(--ink);outline-offset:2px}
 .mh{margin:12px 0 6px}
+.mud{font-size:11px;color:var(--g400);font-variant-numeric:tabular-nums;line-height:1.3}
+.mtile small.mud{opacity:1;color:#cfcfcf}.mtile:not(.on) small.mud{color:var(--g400)}
+/* seriekaart (stap 1) met modellen: foto als in stap 2, serie, modelblokken en prijsblok */
+.smfoto{border:1px solid var(--n500);margin:8px 16px 0}
+.smfoto .mimgbox{height:clamp(200px,32vh,340px);cursor:zoom-in}
+.sdesc2{margin:14px 16px 0;display:grid;gap:2px}.sdesc2 .dname{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1}.sdesc2 p{font-size:14.5px;line-height:1.5;margin:4px 0 0}
+.smods{margin:0 16px}.smods .mlh{margin:16px 0 6px}
+.mblok{border:1px solid var(--n500);margin-top:8px;background:#fff}
+.mbh{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:0;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.mbh img,.mbh .ni{width:44px;height:44px;object-fit:contain;flex:none;display:block}.mbh .ni{border:1px solid var(--n300)}
+.mbh .mbt{flex:1;min-width:0;display:grid;gap:2px}.mbh .mbt b{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.2}.mbh .mbt span{font-size:11.5px;color:var(--g400)}
+.mbh .mbv{font-size:12px;color:var(--g400);white-space:nowrap}.mbh .mbv b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.mblok.on{box-shadow:inset 3px 0 0 var(--ink)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--n500)}
+.mgrid .mu{padding:8px 12px;border-bottom:1px solid var(--n300);border-right:1px solid var(--n300);display:grid;gap:3px;min-width:0;align-content:start}
+.mgrid .mu:nth-child(2n){border-right:0}
+.mgrid .mu b{font-family:var(--display);font-weight:500;font-size:13.5px;line-height:1.2;overflow-wrap:anywhere}
+.mgrid .muc{font-size:11px;color:var(--g400);display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.mgrid .muc .mbp{font-style:normal}
+.mblok .mcap{padding:8px 12px 10px;margin:0;border-top:1px solid var(--n300)}
+.sprijs{margin:14px 16px 0}.sprijs .eye{display:block;margin-bottom:6px}.sprijs .dpr{margin-top:0}
 .mcap{margin:5px 0 0;font-size:10.5px;line-height:1.35;color:var(--g400)}
 .mcap.mrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .mcap .mmg{flex:none;font-variant-numeric:tabular-nums;color:var(--ink)}
@@ -1329,7 +1350,7 @@ function renderCard(soft){
   }
   $('bNo').disabled=$('bYes').disabled=false;
   const m=q[0];
-  if(cur!==m||curOrd!==prState){ const fresh=cur!==m; cur=m; curOrd=prState; curVi=m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
+  if(cur!==m||curOrd!==prState){ const fresh=cur!==m; cur=m; curOrd=prState; curVi=modelAan()?m.v.indexOf(alleModellen(m)[0].hoofd):m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
   const has=anyIn(m);
   $('noTxt').textContent=has?'Serie niet houden':'Serie niet opnemen'; $('yesTxt').textContent=has?'Serie houden':'Serie opnemen';
   $('what').innerHTML='Je beoordeelt de <b>hele serie '+esc(m.fam)+'</b><span class="kh"> · <kbd>Enter</kbd> '+(has?'houden':'opnemen')+' · <kbd>Del</kbd> niet · <kbd>⌫</kbd> vorige · <kbd>← →</kbd> artikel</span>';
@@ -1417,7 +1438,51 @@ function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
   else { const x=zelfdeFotoAls(m,v); if(x){ kop='Zelfde foto als '+x.code; regels=maatVerschil(m,v,x); } }
   if(!kop) return '';
   return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
+/* ---------------- seriekaart (stap 1) voor leveranciers met modellen: zelfde opbouw als stap 2 ---------------- */
+// foto van het getoonde artikel met zijdetabs, pijltjes en bolletjes; daaronder de serie, per model een blok met alle
+// uitvoeringen (niet klikbaar) en het prijsblok van het hoofdartikel. Zichtbaarheid en labels kies je pas in stap 2.
+function cardModelHTML(m){
+  const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=alleModellen(m), gm=G.find(g=>g.vs.includes(v))||G[0], isH=G.some(g=>g.hoofd===v);
+  const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
+  const zs=sidesOf(v), z=sideKey(v), pos=zs.indexOf(z), src=sideImg(v);
+  const tabs='<div class="mtabs">'+(zs.length>1?zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join(''):'')+'</div>';
+  const foto='<div class="mfoto smfoto">'+tabs+frLabel([v])
+    +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,v)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(zs.length>1?'<button type="button" class="mar l" data-czn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-czn="1" aria-label="Volgende zijde">›</button>':'')+modelDisc(m,v)+'</div>'
+    +'<div class="mfoot"><span><b>'+esc(v.code)+'</b>'+(isH?' · hoofdartikel':'')+(z?' · '+ZK[z]:'')+(v.imgc&&v.imgc!==v.code&&fotoVan(m,v)?' · foto van '+esc(v.imgc):'')+'</span>'
+    +(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
+  const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
+  const blocks=G.map(g=>{ const h=g.hoofd, rh=modelPrijs(m,h), hin=g.vs.filter(x=>x.inA).length, hi=m.v.indexOf(h);
+    let vanaf=null; if(prState==='ok') g.vs.forEach(x=>{ const r=modelPrijs(m,x); if(r&&r[5]!=null&&(vanaf==null||r[5]<vanaf)) vanaf=r[5]; });
+    const mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
+    const th=fotoVan(m,h)&&img(h.img)?'<img src="'+img(h.img)+'" alt="">':'<span class="ni"></span>';
+    const its=g.vs.map(x=>{ const hoofd=x===h, d=g.td[x.id], y=mp(x);
+      return '<div class="mu'+(x===v?' nu':'')+'"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d&&!hoofd?'<small class="mud">'+esc(d)+'</small>':'')
+        +'<span class="muc">'+esc(x.code)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span></div>'; }).join('');
+    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+g.vs.length+(g.vs.length===1?' uitvoering':' uitvoeringen')+' · '+hin+' in AFAS</span></span><span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span></button>'
+      +'<div class="mgrid">'+its+'</div><p class="mcap">Meerprijs op inkoop ten opzichte van het hoofdartikel. Welke uitvoeringen je houdt, kies je na "Serie houden".</p></div>'; }).join('');
+  let price;
+  if(prState!=='ok') price=pricesSum(v);
+  else { const r=modelPrijs(m,v), care=r&&careOn()&&r[7]!=null;
+    price=r?'<div class="sprijs"><span class="eye">Prijs '+(isH?'hoofdartikel':'uitvoering')+' · '+esc(v.code)+' · '+(v.inA?'in AFAS'+(v.blom?' ('+esc(v.blom)+')':''):'nog niet in AFAS')+'</span>'
+      +'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
+      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div>'
+      +'<p class="mcap">Vanafprijs'+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw · overige stofgroepen onder Alle prijzen</p></div>'
+      :'<div class="psum"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; }
+  const full=pricesHTML(v), hasFull=/id="prices"/.test(full), nu=G.reduce((a,g)=>a+g.vs.length,0);
+  return `<div class="fold sfold">
+    <div class="stitle"><span class="disp sn">${esc(m.fam)}</span><span class="ss">${esc(SUP.short||SUP.name)} · ${m.p.length} ${m.p.length===1?'product':'producten'} in ${G.length} ${G.length===1?'model':'modellen'} · ${nin} in AFAS</span><span class="sprog">${Math.min(done+1,M.length)}/${M.length} · <b>${pctd}%</b></span></div>
+    <div class="sbar"><i style="width:${pctd}%"></i></div>
+    ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
+    ${foto}
+    <div class="sdesc2"><span class="eye">Serie · ${esc(SUP.short||SUP.name)}</span><div class="dname">${esc(m.fam)}</div>${desc}</div>
+    <div class="smods"><div class="mlh"><span class="eye">Modellen in deze serie</span><span>${G.length} ${G.length===1?'model':'modellen'} · ${nu} uitvoeringen</span></div>${blocks}</div>
+    ${price}
+  </div>
+  ${belowHTML(m,v,hasFull?full:'',{zonderOmschrijving:true})}`;
+}
 function cardHTML(m){
+  if(modelAan()) return cardModelHTML(m);
   const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=groups(m), g=grpOf(m,curVi), k=v.p, P=m.p[k], pos=g.pk.indexOf(k), gin=g.pk.filter(x=>pIn(m,x)).length;
   const shown=x=>x===k?curVi:m.p[x].idx[0];
   const FP=finPrices(m,k);
@@ -1533,10 +1598,12 @@ function pricesHTML(v){
     <div class="pnote px">${more?'Andere frames of stofuitvoeringen hebben een eigen prijs: zie Alle prijzen hieronder. ':''}${B.some(x=>x[0]===0)?'Eigen stof / COM'+(comOk()?'':' (stofgroep '+esc(comCat)+', koppeling nog te bevestigen)')+': '+(PR.comNote?esc(PR.comNote.replace(/^COM:\s*/,''))+'. ':'verkoopprijs inclusief € '+PR.com+' per meter stof. '):''}${PR.o!=null?(hasCare?'Interieurs: marge ×':'Marge ×')+fmt(PR.o)+'. ':''}${hasCare?'Blom Care: uit de prijslijst, Care-marge ×'+fmt(PR.oc)+(PR.oc===PR.o?' (gelijk aan de verkoopprijs)':'')+'. ':''}Stand ${dstr()} (momentopname).</div>
   </div>`;
 }
-function belowHTML(m,v,full){
+function belowHTML(m,v,full,opt){
+  opt=opt||{};
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
-  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  const bron=v.desc?esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', tekst van artikel '+esc(v.descOf)+' (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt'):'';
+  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
   let ptab='';
   if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
     const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
@@ -1560,7 +1627,7 @@ function belowHTML(m,v,full){
   const ps=people(); const team=ps.length?ps.map(p=>{const r=p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>r.v[x.id]).map(x=>x.code):[];
     return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div class="leeg">Nog niemand heeft deze serie beoordeeld.</div>';
   return `<div class="below">
-    ${v.desc?'<section class="sdesc"><span class="eye">Omschrijving</span><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section class="sdesc"><span class="eye">Omschrijving</span><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
+    ${opt.zonderOmschrijving?'':v.desc?'<section class="sdesc"><span class="eye">Omschrijving</span><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section class="sdesc"><span class="eye">Omschrijving</span><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
     ${full?'<details class="box" id="hbBox"'+(prOpen?' open':'')+'><summary>Hele berekening <span>bruto · condities · transport</span></summary>'+full+'</details>':''}
     <details class="box"><summary>Specificaties <span>${esc(v.code)} · stand ${dstr()}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
     ${ptab}
@@ -1575,7 +1642,8 @@ function setVi(m,i){
 }
 // alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
 function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
-  if(ph){ ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px'; }
+  if(!ph) return;   // seriekaart met modellen: eigen fotohoogte, niets oprekken
+  ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px';
   fo.style.minHeight=mh+'px'; }
 window.addEventListener('resize',()=>{ const fo=view==='swipe'&&$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo); });
 function bindCard(m){
@@ -1595,6 +1663,10 @@ function bindCard(m){
   const vs=$('vstrip'); const on=vs&&vs.querySelector('.vbtn.on'); if(on) vs.scrollLeft=Math.max(0,on.getBoundingClientRect().left-vs.getBoundingClientRect().left+vs.scrollLeft-vs.clientWidth/2+on.clientWidth/2);
   $('sSwipe').querySelectorAll('[data-vi]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.vi));
   $('sSwipe').querySelectorAll('[data-czz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.czz; setVi(m,curVi); });
+  // seriekaart met modellen: pijltjes bladeren door de zijden, een modelblok toont zijn hoofdartikel, tik op de foto = groot
+  $('sSwipe').querySelectorAll('[data-czn]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const v=m.v[curVi], zs=sidesOf(v), z=sideKey(v); if(zs.length<2) return; SIDE=zs[(zs.indexOf(z)+(+b.dataset.czn)+zs.length)%zs.length]; setVi(m,curVi); });
+  $('sSwipe').querySelectorAll('[data-mh]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.mh));
+  const sf=$('sfoto'); if(sf) sf.onclick=e=>{ if(e.target.closest('button')) return; openZoom(m); };
   $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
   $('sSwipe').querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>setVi(m,groups(m)[+b.dataset.type].idx[0]));
   $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
@@ -1714,15 +1786,13 @@ function openForm(m){
   // modellen: alle artikelen van dezelfde soort (stoel, fauteuil, bank …) binnen de serie vormen één kaart, op basis van de taxonomie;
   // het hoofdartikel is de goedkoopste uitvoering (netto inkoop), de tegels staan op oplopende inkoopprijs
   F.dk.grp={}; F.dk.mu={};
-  if(modelAan()){ const per={}; F.dk.order.forEach(k=>{ const b=m.p[k].t||''; (per[b]=per[b]||[]).push(k); });
-    const ink=v=>{ const r=modelPrijs(m,v); return r&&r[3]!=null?r[3]:Infinity; }, codeCmp=(a,b)=>String(a).localeCompare(String(b),'nl',{numeric:true});
-    Object.entries(per).forEach(([b,ks])=>{ const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>(ink(x)-ink(y))||codeCmp(x.code,y.code)); if(vs.length<2) return;
+  if(modelAan()){ modelGroepen(m,F.dk.order).forEach(g=>{ const vs=g.vs, ks=g.ks; if(vs.length<2) return;
       const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
       // bestaande keuzes per artikel (eerdere beoordeling of concept) terug in de tegels; bij een nieuw model staan alle uitvoeringen uit
       const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null), sel={}; vs.forEach(v=>{ sel[v.id]=eerder?prev.v[v.id]===1:!!(dr&&dr.v&&dr.v[v.id]===1); });
-      const ml=modelLabels(m,vs), h=vs[0];
-      // tl = tegellabels per artikel; oc/lab = de zichtbaarheid en labels die je op de kaart kiest
-      F.dk.mu[k0]={basis:b, naam:ml.naam, type:ml.type, hoofd:h.id, ids:vs.map(v=>v.id), tl:ml.lab, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null, oc:null, lab:null};
+      const h=vs[0];
+      // tl/td = tegeltitel en maatregel per artikel; oc/lab = de zichtbaarheid en labels die je op de kaart kiest
+      F.dk.mu[k0]={basis:g.basis, naam:g.naam, type:g.type, hoofd:h.id, ids:vs.map(v=>v.id), tl:g.tl, td:g.td, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null, oc:null, lab:null};
       syncModelEx(k0); }); }
   // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
   m.p.forEach((p,k)=>{ if(p.idx.length<2||Object.values(F.dk.grp).some(ks=>ks.includes(k))) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
@@ -1823,15 +1893,28 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
     const hs=new Set(h.sizes||[]), nieuw=(v.sizes||[]).filter(s=>!hs.has(s)), a=modelMaten(nieuw.length?nieuw:v.sizes), b=modelMaten(h.sizes);
     if(a&&a!==b) extra.push(a);
     MDIM.forEach(([n],i)=>{ if(e.dim[i]!=null&&e.dim[i]!==H.dim[i]) extra.push(n+' '+e.dim[i]+' cm'); });
-    return {v,label:cap(basis.join(' · ')),basis,extra,leeg:leeg&&!v.fin}; });
-  const dub=r=>rows.some(x=>x!==r&&x.label===r.label);
-  // zonder enige specificatie in de prijslijst zeggen we dat (met de maten die wel bekend zijn), in plaats van alleen de code te herhalen
-  rows.filter(r=>!r.hoofd&&r.leeg&&!r.label).forEach(r=>{ r.label='Specificaties ontbreken'+(r.extra.length?' · '+r.extra.join(' · '):''); });
-  rows.filter(r=>!r.hoofd&&(!r.label||dub(r))&&r.extra.length).forEach(r=>{ r.label=cap([...r.basis,...r.extra].join(' · ')); });
+    // alleen maten anders: de maten in woorden als titel (breder, hogere rug …), vanaf 3 cm verschil
+    // e.dim volgt MDIM: 0 = breedte, 1 = hoogte, 2 = zithoogte, 3 = diepte
+    const woorden=[]; if(!basis.length){ const dd=i=>e.dim[i]!=null&&H.dim[i]!=null?e.dim[i]-H.dim[i]:0;
+      if(dd(0)>=3) woorden.push('breder'); else if(dd(0)<=-3) woorden.push('smaller');
+      if(dd(2)>=3) woorden.push('hogere zitting'); else if(dd(2)<=-3) woorden.push('lagere zitting');
+      const dh=dd(1)-dd(2); if(dh>=3) woorden.push('hogere rug'); else if(dh<=-3) woorden.push('lagere rug');
+      if(dd(3)>=3) woorden.push('dieper'); else if(dd(3)<=-3) woorden.push('minder diep'); }
+    return {v,label:cap([basis.join(' · '),woorden.join(', ')].filter(Boolean).join(' · ')),basis,extra,dim:extra.join(' · '),leeg:leeg&&!v.fin}; });
+  const dub=r=>rows.some(x=>x!==r&&x.label===r.label&&x.dim===r.dim);
+  // zonder enige specificatie in de prijslijst zeggen we dat, in plaats van alleen de code te herhalen
+  rows.filter(r=>!r.hoofd&&r.leeg&&!r.label).forEach(r=>{ r.label='Specificaties ontbreken'; });
   rows.filter(r=>!r.hoofd&&(!r.label||dub(r))).forEach(r=>{ r.label=cap((r.label?r.label+' · ':'')+'uitvoering '+(codeDelen(r.v.code)[1]||r.v.code)); });
   const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
-  const lab={}; rows.forEach(r=>{ lab[r.v.id]=r.label; });
-  return {lab, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
+  const lab={}, dim={}; rows.forEach(r=>{ lab[r.v.id]=r.label; dim[r.v.id]=r.hoofd?'':r.dim; });
+  return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
+// modellen van een serie (één per soort: stoel, fauteuil, bank …) over een lijst productsleutels, op basis van de taxonomie;
+// de uitvoeringen staan op oplopende netto inkoop, het hoofdartikel is de goedkoopste
+function modelGroepen(m,ks){ const per={}; ks.forEach(k=>{ const b=m.p[k].t||''; (per[b]=per[b]||[]).push(k); });
+  const ink=v=>{ const r=modelPrijs(m,v); return r&&r[3]!=null?r[3]:Infinity; }, codeCmp=(a,b)=>String(a).localeCompare(String(b),'nl',{numeric:true});
+  return Object.entries(per).map(([b,ks2])=>{ const vs=ks2.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>(ink(x)-ink(y))||codeCmp(x.code,y.code)), ml=modelLabels(m,vs);
+    return {basis:b, ks:ks2, vs, hoofd:vs[0], naam:ml.naam, type:ml.type, tl:ml.lab, td:ml.dim}; }); }
+const alleModellen=m=>modelGroepen(m,groups(m).flatMap(g=>g.pk));
 const mvOf=(m,id)=>m.v.find(v=>v.id===id);
 const ZK={voor:'Voor',links:'Links',rechts:'Rechts',achter:'Achter'};
 // zijde van de foto: de gekozen zijde blijft staan bij een andere uitvoering; heeft die de zijde niet, dan de eerstvolgende
@@ -1840,6 +1923,7 @@ function modelZij(mu,v){ const zs=sidesOf(v); return {zs, z:mu.zij&&zs.includes(
 const modelPrijs=(m,v)=>pminRow(m,v.p,m.v.indexOf(v));
 // tegellabel: afgeleid uit de taxonomie (alleen wat afwijkt van het hoofdartikel: armleuningen, greep, afwerking, maten …)
 const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(mu.tl||{})[v.id]||v.code;
+const modelDim=(mu,v)=>v.id===mu.hoofd?'':(mu.td||{})[v.id]||'';
 // een tegel die je aanzet krijgt de zichtbaarheid en labels van het model: wat je op de kaart koos, anders wat de al gekozen uitvoeringen gemeen hebben
 function modelZet(mu,id){ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]});
   if(mu.oc){ x.oc=mu.oc; x.src='gekozen'; } if(mu.lab){ x.lab=mu.lab.slice(); x.src='gekozen'; }
@@ -1854,6 +1938,8 @@ function modelDisc(m,v){ if(!fotoVan(m,v)) return '';
     const kop='Foto van '+v.imgc+(v.imgq==='fin'?' · zelfde product, andere afwerking':v.imgq==='base'?' · basisuitvoering':v.imgq==='bekl'?' · andere bekleding':' · ander artikel');
     const regels=v.imgq==='fin'?[v.fin?'Dit artikel: '+v.fin+(v.finAfgeleid?' (afgeleid uit de code)':''):'afwerking wijkt af']:fotoVerschillen(v);
     return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
+  // eigen foto die een ander artikel leent: de waarschuwing hoort bij dat andere artikel, niet hier
+  if(v.imgq==='exact'){ const x=zelfdeFotoAls(m,v); if(x&&x.imgc&&x.imgc!==x.code) return ''; }
   return fotoDisc(m,v); }
 function modelCard(k0,top){
   const m=F.m, d=F.dk, mu=d.mu[k0], vs=mu.ids.map(id=>mvOf(m,id)), h=vs[0], cur=mvOf(m,mu.cur)||h, att=top?' ':' tabindex="-1" ';
@@ -1870,7 +1956,7 @@ function modelCard(k0,top){
   const tiles=vs.map(v=>{ const on=!!mu.sel[v.id], x=mp(v), hoofd=v.id===mu.hoofd, lab=modelLab(mu,v);
     return '<div class="mtile'+(on?' on':'')+(v.id===cur.id?' nu':'')+'">'
       +'<button type="button"'+att+'class="mck" data-mck="'+esc(v.id)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(lab+' '+v.code)+' houden"><i>'+WCK+'</i></button>'
-      +'<button type="button"'+att+'class="mtv" data-mt="'+esc(v.id)+'" aria-pressed="'+(v.id===cur.id)+'" title="Deze uitvoering bekijken"><b>'+esc(lab)+'</b><small>'+esc(v.code)+'</small>'
+      +'<button type="button"'+att+'class="mtv" data-mt="'+esc(v.id)+'" aria-pressed="'+(v.id===cur.id)+'" title="Deze uitvoering bekijken"><b>'+esc(lab)+'</b>'+(modelDim(mu,v)?'<small class="mud">'+esc(modelDim(mu,v))+'</small>':'')+'<small>'+esc(v.code)+'</small>'
       +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</button></div>'; }).join('');
   // prijsblok van de getoonde uitvoering
   const r=modelPrijs(m,cur), care=r&&careOn()&&r[7]!=null, xc=mp(cur);
