@@ -904,16 +904,43 @@ body.swv #what{display:none}
 .mud{font-size:11px;color:var(--g400);font-variant-numeric:tabular-nums;line-height:1.3}
 .mtile small.mud{opacity:1;color:#cfcfcf}.mtile:not(.on) small.mud{color:var(--g400)}
 /* seriekaart (stap 1) met modellen: foto als in stap 2, serie, modelblokken en prijsblok */
-.smfoto{border:1px solid var(--n500);margin:8px 16px 0}
-.smfoto .mimgbox{height:clamp(200px,32vh,340px);cursor:zoom-in}
-.smfoto .phfoot2{padding:4px 12px 6px}
-.sfold .vstrip .vbtn.nm{margin-left:8px}
-.sfold .sptitle{margin-top:12px;padding-top:10px;border-top:1px solid var(--n300)}
+.smfoto{border:1px solid var(--ink);margin:10px 16px 0}
+.smfoto .mimgbox{height:clamp(200px,32vh,340px);cursor:zoom-in;border-bottom:1px solid var(--n300)}
+.smfoto .mar{width:42px;height:42px;font-size:20px}
+/* onder de foto: welke uitvoering je ziet, de code en zijde, en hoe hij nu in AFAS staat */
+.scap{padding:9px 12px 11px;display:grid;gap:3px}
+.sct{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sct b{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.sct .num{font-size:12.5px;color:var(--g400);white-space:nowrap;font-variant-numeric:tabular-nums}
+.scc{font-size:12.5px;color:var(--g400)}.scc b{color:var(--ink);font-weight:600}
+.scs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px}
+.scs .eye{margin-right:2px}
+.sst{display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border:1px solid var(--ink);font-size:12px;font-weight:600;white-space:nowrap;color:var(--ink);background:#fff}
+.sst.klant{background:var(--ink);color:#fff}
+.sst.niet{border-color:var(--n500);color:var(--g400)}
+.sst.geen{border:1px dashed var(--g300);color:var(--g400)}
+.slb{display:inline-flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;color:var(--ink)}
+.slb i{width:8px;height:8px;border-radius:50%;background:var(--lc);flex:none}
+.scs .slb{height:22px;padding:0 8px;border:1px solid var(--n500)}
+/* fotostrookje per model, met een stip voor de stand in AFAS (zwart = online voor klanten, grijs = intern, licht = niet online, wit = niet in AFAS) */
+.sfold .vstrip{gap:0;padding:8px 0 2px}
+.vgrp{flex:none;display:grid;gap:3px;padding:0 7px;border-left:1px solid var(--n300)}
+.vgrp:first-child{padding-left:0;border-left:0}
+.vgl{font-size:10.5px;line-height:1.2;color:var(--g400);white-space:nowrap}
+.vgt{display:flex;gap:5px}
+.sfold .vstrip .vbtn{width:46px;height:46px;padding:0;display:block;background:#F4F4F2}
+.sfold .vstrip .vbtn img{width:100%;height:100%;object-fit:contain;display:block}
+.sfold .vstrip .vbtn span{position:absolute;left:0;top:0;max-width:none;padding:2px 3px;background:rgba(255,255,255,.85);font-size:9px;line-height:1;color:var(--g400)}
+.sfold .vstrip .vbtn.leeg span{position:static;display:grid;place-items:center;width:100%;height:100%;padding:0;background:none;font-size:12px}
+.sdot{position:absolute;right:3px;bottom:3px;width:10px;height:10px;box-sizing:border-box;border-radius:50%;border:1px solid #fff;background:#fff}
+.sdot.klant{background:var(--ink)}.sdot.intern{background:#8A8A8A}.sdot.niet{background:#CFCFCF}.sdot.geen{border-color:var(--n500)}
 .sfold .mgrid button.mu{width:100%;border:0;border-bottom:1px solid var(--n300);border-right:1px solid var(--n300);border-radius:0;background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;justify-items:start}
 .sfold .mgrid button.mu:nth-child(2n){border-right:0}
-.sfold .mgrid button.mu.nu{background:var(--grijs);box-shadow:inset 3px 0 0 var(--ink)}
-.sfold .psum{margin-top:14px}
+.sfold .mgrid button.mu.nu{background:var(--grijs);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.mus{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:2px}
+.mus .sst{height:20px;padding:0 6px;font-size:11.5px}
 .smods .mtik{margin:0 0 2px}
+.smods .snote{margin:8px 0 0}
 .dvvoor{letter-spacing:0;text-transform:none;font-weight:400;color:var(--g400)}
 .sdesc2{margin:14px 16px 0;display:grid;gap:2px}.sdesc2 .dname{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1}.sdesc2 p{font-size:14.5px;line-height:1.5;margin:4px 0 0}
 .smods{margin:0 16px}.smods .mlh{margin:16px 0 6px}
@@ -922,7 +949,7 @@ body.swv #what{display:none}
 .mbh img,.mbh .ni{width:44px;height:44px;object-fit:contain;flex:none;display:block}.mbh .ni{border:1px solid var(--n300)}
 .mbh .mbt{flex:1;min-width:0;display:grid;gap:2px}.mbh .mbt b{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.2}.mbh .mbt span{font-size:11.5px;color:var(--g400)}
 .mbh .mbv{font-size:12px;color:var(--g400);white-space:nowrap}.mbh .mbv b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
-.mblok.on{box-shadow:inset 3px 0 0 var(--ink)}
+.mblok.on{border-left:3px solid var(--ink)}
 .mgrid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--n500)}
 .mgrid .mu{padding:8px 12px;border-bottom:1px solid var(--n300);border-right:1px solid var(--n300);display:grid;gap:3px;min-width:0;align-content:start}
 .mgrid .mu:nth-child(2n){border-right:0}
@@ -1099,7 +1126,7 @@ const CX='<svg width="10" height="10" viewBox="0 0 18 18" aria-hidden="true"><pa
 
 let SUPS=[], LATER=[], SUP=null, DATA=null, M=[], byId={};
 let me=null, D={}, TEAM={}, PR=null, prState='wait', prErr='';
-let forced=null, hist=[], view='home', cur=null, curVi=0, curOrd=null, prOpen=false;
+let forced=null, hist=[], view='home', cur=null, curVi=0, curOrd=null, prOpen=false, psOpen=false;
 const IMG={}; let loadedChunks={};
 let db=null, col=null, unsub=null, canShare=null;
 const cache={};
@@ -1454,9 +1481,14 @@ function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
   if(!kop) return '';
   return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+(regels.length?'<span>'+esc(regels.slice(0,2).join(' · '))+'</span>':'')+'</div>'; }
 /* ---------------- seriekaart (stap 1) voor leveranciers met modellen: zelfde opbouw als stap 2 ---------------- */
-// combinatie van de modelkaart en de klassieke seriekaart: foto van de gekozen uitvoering met zijdetabs, ‹ › en een fotostrookje
-// om door alle uitvoeringen te bladeren; daaronder de serie, per model een blok met alle uitvoeringen (tik = die uitvoering tonen),
-// de prijstabel en de zichtbaarheid en labels van de gekozen uitvoering. Wat je hier kiest, staat in stap 2 al ingevuld.
+// foto van de gekozen uitvoering met ‹ › en daaronder wat je ziet en hoe het nu in AFAS staat; een fotostrookje per model
+// om door alle uitvoeringen te bladeren; daaronder de serie en per model een blok (het getoonde model staat open, met al zijn
+// uitvoeringen: tik = die uitvoering tonen). Prijzen en specificaties van de getoonde uitvoering staan ingeklapt onderaan.
+// Hier kies je alleen of de serie blijft; welke uitvoeringen, zichtbaarheid en labels kies je in stap 2.
+// stand van een uitvoering (tegel) in AFAS: 'klant' (online voor klanten), 'intern', 'niet' (in AFAS, niet online) of 'geen' (niet in AFAS)
+const STAND={klant:'Online · klanten',intern:'Intern',niet:'Niet online',geen:'Niet in AFAS'};
+const tegelStand=(m,t)=>{ const sv=t.ids.map(id=>mvOf(m,id)).find(x=>x&&x.inA); return sv?{k:afasOc(sv),lab:labOf(sv)}:{k:'geen',lab:[]}; };
+const standChips=s=>'<span class="sst '+s.k+'">'+STAND[s.k]+'</span>'+LABELS.map(([n,c],i)=>s.lab[i]===1?'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>':'').join('');
 // alle uitvoeringen (tegels) van de serie op een rij, in de volgorde van de modelblokken
 const serieTegels=m=>alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main)})));
 // de artikelen van de tegel waar dit artikel in zit (alle afwerkingen van dezelfde uitvoering)
@@ -1464,54 +1496,53 @@ const tegelArtikelen=(m,v)=>{ const e=serieTegels(m).find(x=>x.t.ids.includes(v.
 // het artikel waarvan de zichtbaarheid en labels getoond worden: het getoonde artikel, of een afwerking uit dezelfde tegel die al in AFAS staat
 const statusArtikel=(m,v)=>v.inA?v:(tegelArtikelen(m,v).find(x=>x.inA)||v);
 function cardModelHTML(m){
-  const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=alleModellen(m), gm=G.find(g=>g.vs.includes(v))||G[0];
+  const v=m.v[curVi], G=alleModellen(m), gm=G.find(g=>g.vs.includes(v))||G[0];
   const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
-  const ST=G.flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main)}))), sp=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))), ct=ST[sp].t, tIn=t=>t.ids.some(id=>(mvOf(m,id)||{}).inA), sin=ST.filter(e=>tIn(e.t)).length;
+  const ST=G.flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main),s:tegelStand(m,t)}))), sp=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))), ct=ST[sp].t, son=ST.filter(e=>e.s.k==='klant').length;
   const pv=tegelFoto(m,ct,v), ft=fotoVanTegel(m,v,pv);
   const zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv);
-  const tabs='<div class="mtabs">'+(zs.length>1?zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join(''):'')+'</div>';
+  const tabs=zs.length>1?'<div class="mtabs">'+zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join('')+'</div>':'';
+  // onder de foto: model en uitvoering, de code (met de zijde van de foto) en de stand nu in AFAS met de labels
+  const tm=m.v[ST[sp].vi], tl=tm===gm.hoofd?'Hoofdartikel':(gm.tl[tm.id]||v.code), td=tm===gm.hoofd?'':(gm.td[tm.id]||'');
   const foto='<div class="mfoto smfoto">'+tabs+frLabel([v])
     +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(ST.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
     +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')+ft.disc+'</div>'
-    +'<div class="phfoot2"><span class="q"><b>'+sin+'</b> van '+ST.length+' in AFAS</span>'
-    +(ST.length>1?'<div class="phnav"><button type="button" data-snav="-1" aria-label="Vorige uitvoering">‹</button><span class="num"><b>'+(sp+1)+'</b> / '+ST.length+'</span><button type="button" data-snav="1" aria-label="Volgende uitvoering">›</button></div>':'')+'</div></div>';
-  // fotostrookje: alle uitvoeringen van de serie, met vinkje of kruisje voor AFAS; een nieuw model begint met wat extra ruimte
-  const thumbs=ST.map((e,j)=>{ const x=m.v[e.vi], a=tegelFoto(m,e.t,x), n=tIn(e.t), lbl=e.g.naam+' · '+(x===e.g.hoofd?'Hoofdartikel':e.g.tl[x.id]||x.code);
-    return '<button type="button" class="vbtn'+(j===sp?' on':'')+(j&&ST[j-1].g!==e.g?' nm':'')+'" data-vi="'+e.vi+'" aria-pressed="'+(j===sp)+'" title="'+esc(lbl+' · '+x.code)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot" aria-hidden="true">'+(n?OK(12):NO(12))+'</i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'; }).join('');
-  // regel van de gekozen uitvoering: model en uitvoering, de naam bij Blom of 'nog niet in AFAS', en de code van de leverancier
-  const tm=m.v[ST[sp].vi], bnaam=v.inA?(v.blom||'(geen Blom-naam in AFAS)'):(v.nv||''), tl=tm===gm.hoofd?'Hoofdartikel':(gm.tl[tm.id]||v.code), td=tm===gm.hoofd?'':(gm.td[tm.id]||'');
-  const ptitle='<div class="ptitle sptitle"><b>'+esc(gm.naam)+' · '+esc(tl)+'</b><span>'+(bnaam?'<b>'+esc(bnaam)+'</b>'+(v.inA&&v.afas?' · '+esc(v.afas):'')+' · ':'<span class="mut">nog niet in AFAS</span> · ')+esc(SUP.short||SUP.name)+' '+esc(v.code)+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</span></div>';
+    +'<div class="scap"><div class="sct"><b>'+esc(gm.naam)+' · '+esc(tl)+'</b>'+(ST.length>1?'<span class="num">'+(sp+1)+'/'+ST.length+'</span>':'')+'</div>'
+    +'<div class="scc"><b>'+esc(v.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</div>'
+    +'<div class="scs"><span class="eye">Nu</span>'+standChips(ST[sp].s)+'</div></div></div>';
+  // fotostrookje: alle uitvoeringen van de serie, per model bij elkaar, met een stip voor de stand in AFAS
+  const thumbs=G.map((g,gi)=>'<div class="vgrp" title="'+esc(g.naam)+'"><span class="vgl">Model '+(gi+1)+'</span><div class="vgt">'+ST.map((e,j)=>{ if(e.g!==g) return ''; const x=m.v[e.vi], a=tegelFoto(m,e.t,x), im=fotoVan(m,a)&&img(a.img), lbl=g.naam+' · '+(x===g.hoofd?'Hoofdartikel':g.tl[x.id]||x.code);
+    return '<button type="button" class="vbtn'+(j===sp?' on':'')+(im?'':' leeg')+'" data-vi="'+e.vi+'" aria-pressed="'+(j===sp)+'" title="'+esc(lbl+' · '+x.code+' · '+STAND[e.s.k])+'">'+(im?'<img src="'+im+'" alt="">':'')+'<span>'+(j+1)+'</span><i class="sdot '+e.s.k+'" aria-hidden="true"></i></button>'; }).join('')+'</div></div>').join('');
   const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
-  const blocks=G.map(g=>{ const h=g.hoofd, rh=modelPrijs(m,h), hin=g.vs.filter(x=>x.inA).length, hi=m.v.indexOf(h);
+  // per model een blok; alleen het model van de getoonde uitvoering staat open, met al zijn uitvoeringen en hun stand in AFAS
+  const blocks=G.map(g=>{ const h=g.hoofd, rh=modelPrijs(m,h), hi=m.v.indexOf(h), open=g===gm, gon=ST.filter(e=>e.g===g&&e.s.k==='klant').length;
     let vanaf=null; if(prState==='ok') g.vs.forEach(x=>{ const r=modelPrijs(m,x); if(r&&r[5]!=null&&(vanaf==null||r[5]<vanaf)) vanaf=r[5]; });
     const mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
     const th=fotoVan(m,h)&&img(h.img)?'<img src="'+img(h.img)+'" alt="">':'<span class="ni"></span>';
-    const its=g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, d=g.td[x.id], y=mp(x);
-      return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d&&!hoofd?'<small class="mud">'+esc(d)+'</small>':'')
-        +'<span class="muc">'+esc(x.code)+ookTxt(x,t)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span></button>'; }).join('');
+    // wijkt een uitvoering in maat af, dan staat bij het hoofdartikel 'Standaard maten'
+    const maat=g.tiles.some(t=>g.td[t.main]);
+    const its=!open?'':g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, d=hoofd?(maat?'Standaard maten':''):g.td[x.id], y=mp(x);
+      return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(hoofd?'Hoofdartikel':g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
+        +'<span class="muc">'+esc(x.code)+ookTxt(x,t)+(hoofd?(rh?'<i class="mbp">Basisprijs</i>':''):y!=null?'<em class="mmp">'+mpTxt2(y)+'</em>':'')+'</span><span class="mus">'+standChips(tegelStand(m,t))+'</span></button>'; }).join('');
     const nt=g.tiles.length, na=g.vs.length-nt;
-    return '<div class="mblok'+(G.length>1&&g===gm?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" title="Toon het hoofdartikel op de foto">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+hin+' in AFAS</span></span>'+(PRIJS()?'<span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span>':'')+'</button>'
-      +'<div class="mgrid">'+its+'</div><p class="mcap">'+(PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':'')+'Welke uitvoeringen je houdt, kies je na "Serie houden".</p></div>'; }).join('');
-  // prijstabel (eigen stof / COM en vanaf) en zichtbaarheid met labels van de gekozen uitvoering, zoals op de klassieke seriekaart
-  const price=pricesSum(v), nfin=ct.ids.length;
-  // staat een andere afwerking van deze uitvoering al in AFAS, dan toont het blok die stand (en noemt wat wel en niet in AFAS staat)
-  const sv=statusArtikel(m,v), tv=tegelArtikelen(m,v), inT=tv.filter(x=>x.inA), uitT=tv.filter(x=>!x.inA), cf=x=>esc(x.code)+(x.fin?' ('+esc(cap(x.fin))+')':'');
-  const status=statusHTML(m,sv,drOf(m,sv),labOf(sv),esc(sv.code)+(nfin>1?' en '+(nfin-1)+(nfin===2?' andere afwerking':' andere afwerkingen'):''),
-    inT.length&&uitT.length?'In AFAS: '+inT.map(cf).join(', ')+'. Nog niet in AFAS: '+uitT.map(cf).join(', ')+'. Je keuze geldt voor allemaal.':'');
+    return '<div class="mblok'+(open?' on':'')+'"><button type="button" class="mbh" data-mh="'+hi+'" aria-expanded="'+open+'" title="'+(open?'Toon het hoofdartikel op de foto':'Toon dit model en zijn uitvoeringen')+'">'+th+'<span class="mbt"><b>'+esc(g.naam)+'</b><span>Hoofdartikel '+esc(h.code)+' · '+nt+(nt===1?' uitvoering':' uitvoeringen')+(na?' · '+g.vs.length+' artikelen':'')+' · '+gon+' van '+nt+' online</span></span>'+(PRIJS()?'<span class="mbv">vanaf <b>'+(vanaf!=null?eur(vanaf):'–')+'</b></span>':'')+'</button>'
+      +(open?'<div class="mgrid">'+its+'</div>':'')+'</div>'; }).join('');
+  // prijstabel (eigen stof / COM en vanaf) van de getoonde uitvoering: ingeklapt onder de modellen
+  const price=pricesSum(v), vc=prState==='ok'?vanafCat(v):null;
+  const prijsBox=price?'<details class="box" id="psBox"'+(psOpen?' open':'')+'><summary>Prijzen getoonde uitvoering <span>'+esc(v.code)+(vc?' · stofgroep '+esc(catNaam(vc)):'')+'</span></summary>'+price+'</details>':'';
   const full=pricesHTML(v), hasFull=/id="prices"/.test(full), nu=G.reduce((a,g)=>a+g.vs.length,0);
   return `<div class="fold sfold">
-    <div class="stitle"><span class="disp sn">${esc(m.fam)}</span><span class="ss">${esc(SUP.short||SUP.name)} · ${m.p.length} ${m.p.length===1?'product':'producten'} in ${G.length} ${G.length===1?'model':'modellen'} · ${nin} in AFAS</span><span class="sprog">${Math.min(done+1,M.length)}/${M.length} · <b>${pctd}%</b></span></div>
+    <div class="stitle"><span class="disp sn">${esc(m.fam)}</span><span class="ss">${esc(SUP.short||SUP.name)} · ${m.p.length} ${m.p.length===1?'product':'producten'} in ${G.length} ${G.length===1?'model':'modellen'} · ${son} online</span><span class="sprog">${Math.min(done+1,M.length)}/${M.length} · <b>${pctd}%</b></span></div>
     <div class="sbar"><i style="width:${pctd}%"></i></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${foto}
     ${ST.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle uitvoeringen van deze serie">'+thumbs+'</div>':''}
     <div class="sdesc2"><span class="eye">Serie · ${esc(SUP.short||SUP.name)}</span><div class="dname">${esc(m.fam)}</div>${desc}</div>
-    ${ptitle}
-    <div class="smods"><div class="mlh"><span class="eye">Modellen in deze serie</span><span>${G.length} ${G.length===1?'model':'modellen'} · ${nu} uitvoeringen</span></div>${ST.length>1?'<p class="mcap mtik">Tik op een uitvoering voor de foto'+(PRIJS()?', de prijzen':'')+' en de zichtbaarheid.</p>':''}${blocks}</div>
-    ${price}
-    ${status}
+    <div class="smods"><div class="mlh"><span class="eye">Modellen in deze serie</span><span>${G.length} ${G.length===1?'model':'modellen'} · ${ST.length} ${ST.length===1?'uitvoering':'uitvoeringen'}${nu>ST.length?' · '+nu+' artikelen':''}</span></div>${ST.length>1?'<p class="mcap mtik">Tik op een uitvoering om hem op de foto te zien.</p>':''}${blocks}
+      <p class="mcap snote">${PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':''}Welke uitvoeringen je houdt, kies je na ${anyIn(m)?'Serie houden':'Serie opnemen'}.</p></div>
   </div>
-  ${belowHTML(m,v,hasFull?full:'',{zonderOmschrijving:true})}`;
+  ${belowHTML(m,v,hasFull?full:'',{zonderOmschrijving:true,prijsBox})}`;
 }
 function cardHTML(m){
   if(modelAan()) return cardModelHTML(m);
@@ -1562,16 +1593,16 @@ function statusHTML(m,v,dr,afLab,voor,noot){
     +(noot?'<p class="dvnote">'+noot+'</p>':'')
     +(mine?'<p class="dvnote svmine">Jouw keuze wijkt af van AFAS · <button type="button" class="drreset" data-dact="reset">terug naar AFAS</button></p>':'')
     +'</div>'; }
+// de stofgroep van de vanaf-prijs: de goedkoopste verkoopprijs zonder COM en eigen stof (outdoor alleen als er niets anders is)
+function vanafCat(v){ const comCat=supCat(pk(v),0), alle=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)), binnen=alle.filter(c=>!/OUTDOOR/.test(c));
+  let best=null,bv=Infinity; (binnen.length?binnen:alle).forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; }
 // prijzen boven de vouw: verkoop, Blom Care, netto inkoop en marge voor eigen stof / COM en de vanaf-prijs
 function pricesSum(v){
   if(!PRIJS()) return '';
   if(prState==='locked'&&prErr&&canShare!==false) return '<div class="psum"><div class="locked">Prijzen konden niet worden geladen ('+esc(prErr)+'). <button type="button" id="prRetry" style="margin-left:6px;height:26px;padding:0 8px;border:1px solid var(--ink);background:#fff">Opnieuw</button></div></div>';
   if(prState==='locked'||(prState!=='ok'&&canShare===false)) return '<div class="psum"><div class="locked">Prijzen zijn alleen zichtbaar voor ingelogde collega\'s.</div></div>';
   if(prState!=='ok') return '<div class="psum"><div class="locked">'+(prState==='none'?(prErr?'Prijzen onvolledig: '+esc(prErr)+'.':'Geen prijzen gevonden voor deze leverancier.'):'Prijzen laden…')+'</div></div>';
-  const comCat=supCat(pk(v),0);
-  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)&&!/OUTDOOR/.test(c));
-    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c));
-    let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
+  const comCat=supCat(pk(v),0), cheapCat=vanafCat(v);
   let cols=[[comCat,'Eigen stof / COM'],[cheapCat,'Vanaf<br>(goedkoopste stofgroep)']].filter(x=>x[0]!=null);
   if(!cols.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="psum"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cols=[[cs[0],'Prijs']]; }
   const P=cols.map(([c])=>calc(pk(v),c)), careOk=p=>careOn()&&p&&p.care!=null, hasCare=P.some(careOk);
@@ -1592,9 +1623,7 @@ function pricesHTML(v){
   // kolom 1: eigen stof / COM; kolom 2: vanaf-prijs zoals in de Excel (goedkoopste prijsregel zonder COM, elke stofgroep telt mee)
   const comCat=supCat(pk(v),0);
   // gestoffeerd = stofgroepen die naar Blom 1 t/m 5 vertaald zijn (Blom 6 t/m 8 is leder, hogere nummers zijn bijzondere uitvoeringen)
-  const cheapCat=(()=>{ const all=[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c)&&!/OUTDOOR/.test(c));
-    const cs=all.length?all:[...new Set(priceRows(pk(v)).map(r=>r[0]))].filter(c=>c&&c!==comCat&&!EIGEN(c));
-    let best=null,bv=Infinity; cs.forEach(c=>{ const p=calc(pk(v),c); if(p&&p.vk!=null&&p.vk<bv){ bv=p.vk; best=c; } }); return best; })();
+  const cheapCat=vanafCat(v);
   const B=[[0,comCat],[1,cheapCat]].filter(x=>x[1]!=null);
   let cats=B.map(x=>x[1]);
   let heads=B.map(([n,c])=>n===0
@@ -1638,7 +1667,7 @@ function belowHTML(m,v,full,opt){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
   const bron=v.desc?esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', tekst van artikel '+esc(v.descOf)+' (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt'):'';
-  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, (opt.zonderOmschrijving&&v.inA&&v.blom)?['Naam bij Blom',esc(v.blom)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
   let ptab='';
   if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
     const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
@@ -1661,10 +1690,14 @@ function belowHTML(m,v,full,opt){
       +'</div></p></details>'; }
   const ps=people(); const team=ps.length?ps.map(p=>{const r=p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>r.v[x.id]).map(x=>x.code):[];
     return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div class="leeg">Nog niemand heeft deze serie beoordeeld.</div>';
+  // seriekaart met modellen: eerst de prijzen van de getoonde uitvoering, dan de specificaties, daarna de hele berekening
+  const spec='<details class="box"><summary>Specificaties <span>'+esc(v.code)+' · stand '+dstr()+'</span></summary><div class="kv">'+kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')+'</div></details>';
   return `<div class="below">
     ${opt.zonderOmschrijving?'':v.desc?'<section class="sdesc"><span class="eye">Omschrijving</span><p>'+esc(v.desc)+'</p><p class="note" style="margin-top:6px">Bron: '+esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', <b style="font-weight:500;color:var(--ink)">tekst van artikel '+esc(v.descOf)+'</b> (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt')+'.</p></section>':'<section class="sdesc"><span class="eye">Omschrijving</span><p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' (waarschijnlijk een fout op de site van Piaval) en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p></section>'}
+    ${opt.prijsBox||''}
+    ${opt.prijsBox?spec:''}
     ${full?'<details class="box" id="hbBox"'+(prOpen?' open':'')+'><summary>Hele berekening <span>bruto · condities · transport</span></summary>'+full+'</details>':''}
-    <details class="box"><summary>Specificaties <span>${esc(v.code)} · stand ${dstr()}</span></summary><div class="kv">${kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')}</div></details>
+    ${opt.prijsBox?'':spec}
     ${ptab}
     <section class="steam"><span class="eye">Keuzes van het team</span><div class="team">${team}</div></section>
     ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener"><b>Productpagina '+esc(SUP.short||SUP.name)+'</b><span>'+esc((v.url.match(/^https?:\/\/(?:www\.)?([^\/]+)/)||[])[1]||'')+' <i aria-hidden="true">↗</i></span></a></section>':''}
@@ -1726,6 +1759,7 @@ function bindCard(m){
   const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
   const ap=$('apBox'); if(ap) ap.addEventListener('toggle',()=>{ apOpen=ap.open; });
   const hb=$('hbBox'); if(hb) hb.addEventListener('toggle',()=>{ prOpen=hb.open; });
+  const pb=$('psBox'); if(pb) pb.addEventListener('toggle',()=>{ psOpen=pb.open; });
   updMini();
   $('sSwipe').querySelectorAll('[data-frsel]').forEach(b=>b.onclick=()=>{ FRSEL=+b.dataset.frsel; ls.set('blom-ck-frsel',String(FRSEL)); apOpen=true; setVi(m,curVi); });
 }
