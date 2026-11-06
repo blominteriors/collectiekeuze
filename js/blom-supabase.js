@@ -336,6 +336,26 @@
     return data;
   }
   window.blomRpc = (fn, args) => sb.rpc(fn, args || {});
+  /* Brandvertragend per artikelnummer, letterlijk uit Supabase:
+     prijzen.uitvoering ('Brandvertragend' / 'Niet brandvertragend') en artikelen.omschrijving ('Brandvertragend uitgevoerd'). */
+  async function alles(maak) {
+    const rijen = [];
+    for (let van = 0; ; van += 1000) {
+      const { data, error } = await maak().range(van, van + 999);
+      if (error) throw error;
+      rijen.push(...data);
+      if (data.length < 1000) break;
+    }
+    return rijen;
+  }
+  window.blomBrandvertragend = async (supId, supNaam) => {
+    const V = VERSIE || 'v1', fr = {}, nfr = {}, oms = {};
+    const prijs = await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));
+    prijs.forEach(r => { if (/niet\s+brandvertr/i.test(r.uitvoering)) nfr[r.nummer_leverancier] = 1; else fr[r.nummer_leverancier] = 1; });
+    const art = await alles(() => sb.from('artikelen').select('nummer_leverancier,omschrijving').eq('versie', V).eq('leverancier', supNaam).ilike('omschrijving', '%brandvertr%'));
+    art.forEach(r => { if (!/niet\s+brandvertr/i.test(r.omschrijving)) oms[r.nummer_leverancier] = 1; });
+    return { fr, nfr, oms };
+  };
 
   async function ga(user) {
     if (gestart) return;

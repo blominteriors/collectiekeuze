@@ -1059,6 +1059,8 @@ async function loadSup(id){
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
   D=loadLocal(); TEAM={}; subscribe(); loadPrices();
+  BRAND=null; if(window.blomBrandvertragend){ const sid=SUP.id; window.blomBrandvertragend(SUP.id,SUP.name).then(b=>{ if(!SUP||SUP.id!==sid) return; BRAND=b;
+    if(view==='swipe'&&cur){ if(F&&F.view==='deck'&&!$('form').hidden){ try{ renderDeck(); }catch(_){} } else renderCard(true); } }).catch(()=>{}); }
   try{ DR=JSON.parse(ls.get('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
 }
 function chunk(n){ if(loadedChunks[n]) return loadedChunks[n]; const sup=SUP.id, lc=loadedChunks;
@@ -1109,7 +1111,12 @@ const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
 // brandvertragend: uit de prijslijst (kolom 'Brandvertragend' / 'Niet brandvertragend' per prijsregel)
 const FLAM='<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 1c.4 2.2-.8 3.4-1.9 4.6C5.6 6.8 4.5 8 4.5 10a3.5 3.5 0 007 0c0-1.3-.6-2.3-1.2-3 .1 1.2-.4 2-1.2 2.3.5-1.9-.1-5.3-.5-8.3z" fill="#E4572E"/></svg>';
-function frLabel(vs){ const fr=vs.flatMap(v=>rawRows(pk(v)).map(frOf)); if(!fr.length||!fr.some(x=>x===1)) return '';
+let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uitvoering en artikelen.omschrijving)
+function frLabel(vs){
+  if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
+    if(!ja) return ''; const bron=cs.some(c=>BRAND.fr[c])?'prijslijst (uitvoering)':'omschrijving van het artikel';
+    return '<span class="frb" title="Volgens de '+bron+'">'+FLAM+(nee?'Ook brandvertragend':'Brandvertragend')+'</span>'; }
+  const fr=vs.flatMap(v=>rawRows(pk(v)).map(frOf)); if(!fr.length||!fr.some(x=>x===1)) return '';
   return '<span class="frb" title="Volgens de prijslijst">'+FLAM+(fr.every(x=>x===1)?'Brandvertragend':'Ook brandvertragend')+'</span>'; }
 let frUse=true;   // uit tijdens de Excel-export: die bevat altijd alle prijsregels
 // alleen als een artikel beide stoffen heeft, tonen we de regels van de gekozen stof (en de regels zonder stofvermelding)
