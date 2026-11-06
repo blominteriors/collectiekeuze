@@ -852,6 +852,10 @@ body.swv #what{display:none}
 .phdisc{display:grid;gap:1px;max-width:78%}
 .phdisc b{font-weight:600;color:var(--ink)}
 .phdisc span{font-size:10.5px;color:#9A6A00}
+
+/* brandvertragend */
+.frb{position:absolute;top:8px;right:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;padding:2px 7px;background:#fff;border:1px solid var(--n500);font-size:10.5px;font-weight:500;color:var(--ink)}
+.photo .frb{top:10px;right:10px}
 </style>
 
 <div class="app">
@@ -1102,6 +1106,10 @@ const frOf=row=>{ const u=PR&&PR.u&&PR.u[row[1]]; const t=((u&&u[2])||'').trim()
 // prijsregels zonder prijs (bruto en verkoop 0 in de Excel) tellen niet mee, ook niet als goedkoopste
 const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
+// brandvertragend: uit de prijslijst (kolom 'Brandvertragend' / 'Niet brandvertragend' per prijsregel)
+const FLAM='<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 1c.4 2.2-.8 3.4-1.9 4.6C5.6 6.8 4.5 8 4.5 10a3.5 3.5 0 007 0c0-1.3-.6-2.3-1.2-3 .1 1.2-.4 2-1.2 2.3.5-1.9-.1-5.3-.5-8.3z" fill="#E4572E"/></svg>';
+function frLabel(vs){ const fr=vs.flatMap(v=>rawRows(pk(v)).map(frOf)); if(!fr.length||!fr.some(x=>x===1)) return '';
+  return '<span class="frb" title="Volgens de prijslijst">'+FLAM+(fr.every(x=>x===1)?'Brandvertragend':'Ook brandvertragend')+'</span>'; }
 let frUse=true;   // uit tijdens de Excel-export: die bevat altijd alle prijsregels
 // alleen als een artikel beide stoffen heeft, tonen we de regels van de gekozen stof (en de regels zonder stofvermelding)
 function priceRows(code){ const rs=rawRows(code); if(!frUse||!frBoth(code)) return rs; return rs.filter(r=>frOf(r)!==(FRSEL?0:1)); }
@@ -1344,7 +1352,7 @@ function cardHTML(m){
     <div class="sbar"><i style="width:${pctd}%"></i></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${typeChips}
-    <div class="photo">${sideTabs(v)}<div class="strip" id="strip">${slides}</div>${lab}
+    <div class="photo">${sideTabs(v)}<div class="strip" id="strip">${slides}</div>${lab}${frLabel([v])}
       <div class="phfoot2"><span class="q"><b>${gin}</b> van ${g.pk.length} in AFAS</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b>${pos+1}</b> / ${g.pk.length}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div></div>
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
     <div class="ptitle"><b>${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}</b>${v.tguess?'<small class="tg">soort niet bevestigd</small>':''}<span>${bnaam?'<b>'+esc(bnaam)+'</b>'+(v.inA&&v.afas?' · '+esc(v.afas):'')+' · ':'<span class="mut">nog niet in AFAS</span> · '}${esc(SUP.short||SUP.name)} ${esc(v.code)}</span></div>
@@ -1695,7 +1703,7 @@ function deckCard(k,top){
       return x?esc(x.blom):nv?'<span title="'+esc(nv.w||'')+'">'+esc(nv.n)+'</span> <span class="vst dnv">Voorstel</span>':esc(shortTitle(m,k)); })();
   return '<div class="dcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(has?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
-    +'<div class="dimg">'+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">'+(top?'<button type="button" class="dzoom" data-dzoom="'+k+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':''):'<span class="wait">foto laden…</span>')+'</div>'
+    +'<div class="dimg">'+frLabel(p.idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]).concat(p.idx.every(i=>d.ex[m.v[i].id])?p.idx.map(i=>m.v[i]):[]))+(!fotoVan(m,a)?NOFOTO_K:img(a.img)?'<img src="'+img(a.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'" draggable="false">'+(top?'<button type="button" class="dzoom" data-dzoom="'+k+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':''):'<span class="wait">foto laden…</span>')+'</div>'
     +'<div class="dmeta">'
     +'<div class="dtype">'+esc(p.t||'Artikel')+'</div><div class="dname">'+naam+'</div>'
     +'<div class="dline2"><span class="dline">'+esc(SUP.short||SUP.name)+' · '+[...new Set(p.idx.map(i=>m.v[i].code))].map(esc).join(' · ')+'</span>'
