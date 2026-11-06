@@ -840,6 +840,14 @@ body.swv #what{display:none}
 .dvis.sv .dlbs{display:flex;flex-wrap:wrap;gap:5px}
 .dvis.sv .dlb{height:30px;padding:0 9px;font-size:12.5px}.dvis.sv .dlb.on{padding:0 8px}
 .svmine{margin-top:8px!important}
+
+/* iets compacter boven de vouw */
+.stitle{margin-top:8px}.sbar{margin:5px 0 8px}
+.fins2{margin-top:8px}.ptitle{margin-top:8px}
+.psum{margin-top:8px}.psr{padding:4px 0}
+.dvis.sv{margin-top:10px;padding:8px 12px 10px}
+.dvis.sv .dlb{height:28px}
+.fold{padding-bottom:6px}
 </style>
 
 <div class="app">
@@ -1433,8 +1441,13 @@ function setVi(m,i){
   const sec=$('sSwipe'), keep=$('main').scrollTop;
   sec.innerHTML=cardHTML(m); bindCard(m); $('main').scrollTop=keep;
 }
+// alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
+function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
+  if(ph){ ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px'; }
+  fo.style.minHeight=mh+'px'; }
+window.addEventListener('resize',()=>{ const fo=view==='swipe'&&$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo); });
 function bindCard(m){
-  const fo=$('sSwipe').querySelector('.fold'); if(fo) fo.style.minHeight=$('main').clientHeight+'px';
+  const fo=$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo);
   const sp=$('strip'), g=grpOf(m,curVi), pos=g.pk.indexOf(m.v[curVi].p);
   clearTimeout(stripT);
   if(sp){
