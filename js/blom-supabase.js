@@ -348,7 +348,8 @@
     }
     return rijen;
   }
-  /* Model en uitvoering per artikelnummer (Excel-kolommen Model en Uitvoering, tabel artikelen) */
+  /* Model en uitvoering per artikelnummer (tabel artikelen): model = basiscode (de code vóór de slash), uitvoering = tegellabel.
+     De app deelt zelf in op basiscode; het tegellabel uit deze tabel gaat voor op het label dat de app afleidt. */
   window.blomModellen = async (supNaam) => {
     const V = VERSIE || 'v1', uit = {};
     const rijen = await alles(() => sb.from('artikelen').select('nummer_leverancier,model,uitvoering').eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));

@@ -857,33 +857,45 @@ body.swv #what{display:none}
 .frb{position:absolute;top:8px;right:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;padding:2px 7px;background:#fff;border:1px solid var(--n500);font-size:10.5px;font-weight:500;color:var(--ink)}
 .photo .frb{top:10px;right:10px}
 
-/* modelkaart: één kaart per model, uitvoeringen kiezen */
+/* modelkaart: één kaart per model (basiscode), uitvoeringen als tegels, foto per zijde */
 .dcard.mcard{display:block;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
-.mimgbox{height:min(34vh,280px);position:relative}
-.mcnt{position:absolute;top:10px;left:12px;z-index:3;font-size:12px;color:var(--g400)}
-.mnav{position:absolute;right:10px;bottom:10px;z-index:3;display:flex;gap:6px}
-.mnav button{width:36px;height:36px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:var(--ink)}
+.dcard.mcard.top .dtype,.dcard.mcard.top .dname{padding-right:0}
+.mcard .dtype{display:block}
+.mfoto{position:relative;border-bottom:1px solid var(--n500)}
+.mtabs{display:flex;gap:14px;min-height:34px;padding:9px 12px 0;border-bottom:1px solid var(--n300)}
+.mtabs button{border:0;background:none;padding:2px 2px 7px;font-size:12.5px;color:var(--g400);border-bottom:2px solid transparent;margin-bottom:-1px}
+.mtabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+.mfoto .frb{top:6px;right:8px}
+.mimgbox{height:min(26vh,220px);position:relative;border-bottom:0;touch-action:pan-y;cursor:ew-resize}
+.mar{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:36px;height:36px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:var(--ink);cursor:pointer}
+.mar.l{left:8px}.mar.r{right:8px}
+.mfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 12px 8px;font-size:12px;color:var(--g400);font-variant-numeric:tabular-nums}
+.mfoot b{color:var(--ink);font-weight:600}
+.mdots{display:inline-flex;align-items:center;gap:5px}
+.mdots i{width:6px;height:6px;border-radius:50%;background:var(--n500)}.mdots i.on{background:var(--ink)}
+.mdots em{font-style:normal;margin-left:4px}
 .mcard .dmeta{display:block;padding:10px 12px}
 .mcard .dname{font-size:24px}
+.mcard .dline{white-space:normal}
 .mlh{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 6px}.mlh span:last-child{font-size:12px;color:var(--g400)}
-.mlist{display:grid;gap:6px}
-.mrow{display:grid;grid-template-columns:44px 1fr;border:1px solid var(--n500);background:#fff}
-.mrow.cur{border:2px solid var(--ink);background:var(--grijs)}
-.mck{width:24px;height:24px;margin:auto;border:1.5px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;padding:0;color:#fff}
-.mck.on{background:var(--ink)}
-.mbody{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:8px 10px 8px 6px;border:0;border-left:1px solid var(--n500);background:none;text-align:left;color:var(--ink);min-width:0}
-.mimg{width:36px;height:36px;display:flex;align-items:center;justify-content:center}.mimg img{max-width:100%;max-height:100%;object-fit:contain}
-.mtxt{display:grid;min-width:0;overflow:hidden}.mtxt b{font-family:var(--display);font-weight:500;font-size:14px;line-height:1.2;white-space:normal;overflow-wrap:anywhere}
-.mbody{white-space:normal}.mpr{padding-left:4px}
-.mtxt small{font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#E5A800;margin-right:4px;vertical-align:1px}.mdot.in{background:#2E9E5B}
-.mpr{font-family:var(--display);font-weight:500;font-size:14px;white-space:nowrap}
+.mtiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mtile{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:66px;padding:8px 10px;border:1px solid var(--n500);background:#fff;color:var(--ink);text-align:left;min-width:0}
+.mtile>span{display:grid;gap:3px;min-width:0;justify-items:start}
+.mtile b{font-family:var(--display);font-weight:500;font-size:13.5px;line-height:1.2;overflow-wrap:anywhere}
+.mtile small{font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
+.mtile .mbp{font-size:11px;opacity:.75}
+.mtile svg{flex:none}
+.mmp{display:inline-block;font-style:normal;font-size:11.5px;font-weight:600;line-height:1.35;background:#fdf0c2;color:#4d3a00;padding:0 6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mtile.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.mtile.on .mmp{background:#ffd968}
+.mtile.nu{outline:2px solid var(--ink);outline-offset:2px}
 .mh{margin:12px 0 6px}
-.msw{display:flex;flex-wrap:wrap;gap:6px}
-.mst{display:inline-flex;align-items:center;border:1px solid var(--n500);background:#fff}
-.mst .mck{width:20px;height:20px;margin:0 6px}
-.mst .mstn{border:0;background:none;padding:6px 10px 6px 2px;font-size:12.5px;color:var(--ink)}
-.mst.cur{border:2px solid var(--ink)}.mst.grijs{opacity:.45}
+.mcap{margin:5px 0 0;font-size:10.5px;line-height:1.35;color:var(--g400)}
+.mcard .dpr .mpc{background:#fdf0c2}.mcard .dpr .mpc span,.mcard .dpr .mpc b{color:#4d3a00}
+.dbtns.m3{grid-template-columns:50px 1fr 1.4fr}
+.dbtns.m3 .dyl{white-space:nowrap;font-size:clamp(12.5px,3.6vw,15.5px)}
+.minfo{border:0;background:none;padding:0;font-size:12px;color:var(--ink);text-decoration:underline;white-space:nowrap}
+.mlh .eye{min-width:0}
 .mhint{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--g400)}
 .mcard .dvis{border-top:1px solid var(--n500)}
 </style>
@@ -1004,7 +1016,7 @@ body.swv #what{display:none}
       <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
       <li>Per serie zie je de foto's, de prijzen (verkoop, Blom Care, netto inkoop, marge) en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties en de hele berekening.</li>
       <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
-      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Bij een model vink je de uitvoeringen en afwerkingen aan die je wilt houden; uitgevinkte tellen als niet gehouden.</li>
+      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart met alle uitvoeringen als tegels (bij Piaval: de code vóór de slash, bijvoorbeeld 32-61). Tik op een tegel om die uitvoering te bekijken; tik nog een keer om hem uit of aan te zetten. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
       <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
       <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
     </ol>
@@ -1143,7 +1155,7 @@ const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
 // brandvertragend: uit de prijslijst (kolom 'Brandvertragend' / 'Niet brandvertragend' per prijsregel)
 const FLAM='<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 1c.4 2.2-.8 3.4-1.9 4.6C5.6 6.8 4.5 8 4.5 10a3.5 3.5 0 007 0c0-1.3-.6-2.3-1.2-3 .1 1.2-.4 2-1.2 2.3.5-1.9-.1-5.3-.5-8.3z" fill="#E4572E"/></svg>';
-let MODEL=null;   // uit Supabase: {artikelnummer: {model, uit}} (Excel-kolommen Model en Uitvoering)
+let MODEL=null;   // uit Supabase: {artikelnummer: {model, uit}}: model = basiscode, uit = tegellabel (gaat voor op het afgeleide label)
 let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uitvoering en artikelen.omschrijving)
 function frLabel(vs){
   if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
@@ -1671,16 +1683,15 @@ function openForm(m){
   // concept-keuzes van het beginscherm gaan voor
   const dr=DR[m.id]; if(dr){ m.v.forEach(v=>{ const s2=dr.vs&&dr.vs[v.id]; if(s2) F.vs[v.id]={oc:s2.oc,lab:s2.lab.slice(),src:'gekozen',n:nIn}; const k2=dr.v&&dr.v[v.id]; if(k2===0) F.dk.ex[v.id]=true; }); }
   F.vs0=JSON.parse(JSON.stringify(F.vs));
-  // modellen: producten met dezelfde Model-waarde (Excel) worden één kaart; het eerste product staat in de volgorde
+  // modellen: alle artikelen met dezelfde basiscode (de leverancierscode vóór de slash) vormen één kaart; het eerste product staat in de volgorde
   F.dk.grp={}; F.dk.mu={};
-  if(MODEL){ const per={}; F.dk.order.forEach(k=>{ const v=m.p[k].idx.map(i=>m.v[i]).find(x=>MODEL[x.code]); if(!v) return; const nm=MODEL[v.code].model; (per[nm]=per[nm]||[]).push(k); });
-    Object.entries(per).forEach(([nm,ks])=>{ if(ks.length<2) return; const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
-      const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])), fins=[...new Set(vs.map(finKey).filter(Boolean))];
-      // bestaande keuzes per artikel (eerdere beoordeling) terug in de vinkjes; anders staat alles aan
-      const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null);
-      const sel={}; ks.forEach(k=>{ sel[k]=eerder?m.p[k].idx.some(i=>prev.v[m.v[i].id]===1):true; });
-      const fs={}; fins.forEach(f=>{ fs[f]=eerder?vs.some(v=>finKey(v)===f&&prev.v[v.id]===1):true; });
-      F.dk.mu[k0]={naam:nm, sel, fs, cur:ks.find(k=>m.p[k].idx.some(i=>fotoVan(m,m.v[i])))??k0, cf:null};
+  if(modelAan()){ const per={}; F.dk.order.forEach(k=>{ const b=codeDelen(m.v[m.p[k].idx[0]].code)[0]; (per[b]=per[b]||[]).push(k); });
+    Object.entries(per).forEach(([b,ks])=>{ const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>sufCmp(codeDelen(x.code)[1],codeDelen(y.code)[1])); if(vs.length<2) return;
+      const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
+      // bestaande keuzes per artikel (eerdere beoordeling) terug in de tegels; bij een nieuw model staan alle uitvoeringen aan
+      const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null), sel={}; vs.forEach(v=>{ sel[v.id]=eerder?prev.v[v.id]===1:!F.dk.ex[v.id]; });
+      const ml=modelLabels(m,vs), h=vs[0];
+      F.dk.mu[k0]={basis:b, naam:ml.naam, type:ml.type, hoofd:h.id, ids:vs.map(v=>v.id), lab:ml.lab, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null};
       syncModelEx(k0); }); }
   // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
   m.p.forEach((p,k)=>{ if(p.idx.length<2||Object.values(F.dk.grp).some(ks=>ks.includes(k))) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
@@ -1742,43 +1753,95 @@ const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" 
 // een kaart in het deck is één product of één model (meerdere producten)
 const itemKs=k=>(F.dk.grp&&F.dk.grp[k])||[k];
 const itemVs=k=>itemKs(k).flatMap(kk=>F.m.p[kk].idx.map(i=>F.m.v[i]));
-// uit de vinkjes van het model (uitvoeringen en afwerkingen) volgt per artikel houden of niet
-function syncModelEx(k0){ const d=F.dk, m=F.m, mu=d.mu[k0]; if(!mu) return;
-  d.grp[k0].forEach(k=>m.p[k].idx.forEach(i=>{ const v=m.v[i], f=finKey(v); d.ex[v.id]=!(mu.sel[k]&&(!f||mu.fs[f]!==false)); })); }
-const uitLabel=(m,k)=>{ const v=m.p[k].idx.map(i=>m.v[i]).find(x=>MODEL&&MODEL[x.code]&&MODEL[x.code].uit); return v?MODEL[v.code].uit:plabel(m,k); };
+// uit de gekozen tegels van het model volgt per artikel houden of niet
+function syncModelEx(k0){ const d=F.dk, mu=d.mu[k0]; if(!mu) return; mu.ids.forEach(id=>{ d.ex[id]=!mu.sel[id]; }); }
+/* ---------------- modellen op basiscode ---------------- */
+// model = de leverancierscode vóór de slash (32-61); hoofdartikel = het laagste nummer na de slash (32-61/3);
+// elke code met dezelfde basis is een uitvoering en blijft een eigen artikel (eigen code, prijzen, foto's, AFAS). Geen extra kolommen nodig.
+const MODEL_SUPS={piaval:1};   // leveranciers waarvan de codes zo zijn opgebouwd
+const modelAan=()=>!!(SUP&&MODEL_SUPS[SUP.id]);
+// basis en toevoeging; zonder slash hoort een lettertoevoeging achter een nummer (124N, 72B) bij dezelfde basis
+const codeDelen=c=>{ c=String(c); const i=c.indexOf('/'); if(i>=0) return [c.slice(0,i),c.slice(i+1)]; const x=c.match(/^(\d+)([A-Z]+)$/); return x?[x[1],x[2]]:[c,'']; };
+const sufKey=s=>{ const n=s.match(/\d+/), l=s.replace(/\d+/g,''); return [n?+n[0]:-1,l.length,l]; };
+const sufCmp=(a,b)=>{ const x=sufKey(a), y=sufKey(b); return x[0]-y[0]||x[1]-y[1]||(x[2]<y[2]?-1:x[2]>y[2]?1:0); };
+const MFEAT=['zits','arm','rug','bekl','vorm','onder','zh','stap','greep','mech','spec'], MDIM=[['b',0],['h',6],['zithoogte',4],['d',2]];
+// eigenschappen en maten van een artikel (de taxonomische string, per onderdeel); een afwerkingsvariant neemt ze over van zijn product
+function modelEig(m,v){ const grp=((m.p[v.p]||{}).idx||[]).map(i=>m.v[i]);
+  const feat={}; MFEAT.forEach(k=>{ const x=(v.feat||{})[k]||grp.map(y=>(y.feat||{})[k]).find(Boolean); if(x) feat[k]=x; }); if(!feat.mech) feat.mech='vaste stand';
+  const dim=MDIM.map(([,i])=>{ const o=(v.dim||[])[i]; if(o!=null) return o; const g=grp.map(y=>(y.dim||[])[i]).find(x=>x!=null); return g==null?null:g; });
+  return {v,feat,dim}; }
+// maten van tafels kort: 'Ø 60–80 of vierkant 60–70'
+function modelMaten(sizes){ if(!sizes||!sizes.length) return ''; const r=[],q=[],re=[],raw=[];
+  [...new Set(sizes)].forEach(s=>{ const t=String(s).replace(/\s/g,''); let x=t.match(/^Ø([\d.]+)(mm)?$/i); if(x){ r.push(+x[1].replace(/\./g,'')/10); return; }
+    x=t.match(/^(\d+)[xX](\d+)$/); if(x){ const a=+x[1]/10, b=+x[2]/10; if(a===b) q.push(a); else re.push([a,b]); return; } raw.push(String(s)); });
+  const rng=xs=>{ const a=Math.min(...xs), b=Math.max(...xs); return a===b?String(a):a+'–'+b; }, out=[];
+  if(r.length) out.push('Ø '+rng(r)); if(q.length) out.push('vierkant '+rng(q));
+  if(re.length) out.push('rechthoek '+(re.length<=2?re.map(x=>x[0]+' × '+x[1]).join(', '):rng(re.map(x=>x[0]))+' × '+rng(re.map(x=>x[1]))));
+  if(raw.length) out.push(raw.slice(0,2).join(', ')+(raw.length>2?' …':''));
+  return out.join(' of '); }
+// modelnaam en tegellabels; het label toont alleen wat afwijkt van het hoofdartikel (vs[0]).
+// Zijn de eigenschappen gelijk, dan komen de afwijkende maten erbij; daarna de toevoeging uit de code.
+function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
+  const zonder=t=>/^met /.test(t)?'zonder '+t.slice(4):/^zonder /.test(t)?'met '+t.slice(7):'niet '+t;
+  const rows=E.map(e=>{ const v=e.v, basis=[], extra=[]; if(e===H) return {v,label:'Hoofdartikel',basis,extra,hoofd:true};
+    if((v.type||'')!==(h.type||'')) basis.push(v.type);
+    // ontbreekt een eigenschap: alleen bij ja/nee-eigenschappen (met armleuningen, stapelbaar, greep) is dat een verschil
+    const leeg=MFEAT.every(k=>k==='mech'||!e.feat[k]);
+    MFEAT.forEach(k=>{ const a=e.feat[k]||'', b=H.feat[k]||''; if(a===b) return; if(a) basis.push(a); else if(!leeg&&(/^met /.test(b)||k==='stap'||k==='greep')) basis.push(zonder(b)); });
+    if(v.fin&&(v.fin||'')!==(h.fin||'')) basis.push(v.fin);
+    const hs=new Set(h.sizes||[]), nieuw=(v.sizes||[]).filter(s=>!hs.has(s)), a=modelMaten(nieuw.length?nieuw:v.sizes), b=modelMaten(h.sizes);
+    if(a&&a!==b) extra.push(a);
+    MDIM.forEach(([n],i)=>{ if(e.dim[i]!=null&&e.dim[i]!==H.dim[i]) extra.push(n+' '+e.dim[i]+' cm'); });
+    return {v,label:cap(basis.join(' · ')),basis,extra}; });
+  const dub=r=>rows.some(x=>x!==r&&x.label===r.label);
+  rows.filter(r=>!r.hoofd&&(!r.label||dub(r))&&r.extra.length).forEach(r=>{ r.label=cap([...r.basis,...r.extra].join(' · ')); });
+  rows.filter(r=>!r.hoofd&&(!r.label||dub(r))).forEach(r=>{ r.label=cap((r.label?r.label+' · ':'')+'uitvoering '+(codeDelen(r.v.code)[1]||r.v.code)); });
+  const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
+  const lab={}; rows.forEach(r=>{ lab[r.v.id]=r.label; });
+  return {lab, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
+const mvOf=(m,id)=>m.v.find(v=>v.id===id);
+const ZK={voor:'Voor',links:'Links',rechts:'Rechts',achter:'Achter'};
+// zijde van de foto: de gekozen zijde blijft staan bij een andere uitvoering; heeft die de zijde niet, dan de eerstvolgende
+function modelZij(mu,v){ const zs=sidesOf(v); return {zs, z:mu.zij&&zs.includes(mu.zij)?mu.zij:(v.zijde&&zs.includes(v.zijde)?v.zijde:zs[0]||null)}; }
+// prijsregel van één uitvoering: de goedkoopste, zoals op de productkaart (verkoop r[5], Blom Care r[7], inkoop r[3])
+const modelPrijs=(m,v)=>pminRow(m,v.p,m.v.indexOf(v));
+// tegellabel: uit Supabase (kolom uitvoering) als die bij deze indeling hoort, anders afgeleid uit de eigenschappen
+const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(MODEL&&MODEL[v.code]&&MODEL[v.code].model===mu.basis&&MODEL[v.code].uit&&MODEL[v.code].uit!=='Hoofdartikel'?MODEL[v.code].uit:mu.lab[v.id]);
+const mpTxt2=x=>(x<-0.004?'− ':'+ ')+eur(Math.abs(x));
 function modelCard(k0,top){
-  const m=F.m, d=F.dk, mu=d.mu[k0], ks=d.grp[k0], cur=mu.cur, has=anyIn(m);
-  const vsOf=k=>m.p[k].idx.map(i=>m.v[i]);
-  const fins=[...new Set(itemVs(k0).map(finKey).filter(Boolean))];
-  const curV=(()=>{ const vs=vsOf(cur); return vs.find(v=>mu.cf&&finKey(v)===mu.cf)||vs.find(v=>!d.ex[v.id])||vs[0]; })();
-  const rowPrice=k=>{ const aan=vsOf(k).filter(v=>!fins.length||mu.fs[finKey(v)]!==false); const r=pminRow(m,k,(aan[0]&&m.p[k].idx.find(i=>m.v[i]===aan[0]))??m.p[k].idx[0]); return r&&r[5]!=null?r[5]:null; };
-  const vanaf=Math.min(...ks.map(k=>{ const r=pminRow(m,k); return r&&r[5]!=null?r[5]:Infinity; }));
-  const nSel=ks.filter(k=>mu.sel[k]).length, pos=ks.indexOf(cur);
-  const CKW='<svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
-  const rows=ks.map(k=>{ const vs=vsOf(k), a=vs.find(v=>fotoVan(m,v)&&img(v.img))||vs[0], inA=vs.some(v=>v.inA), pr=rowPrice(k);
-    return '<div class="mrow'+(k===cur?' cur':'')+'"><button type="button" class="mck'+(mu.sel[k]?' on':'')+'" data-msel="'+k+'" aria-pressed="'+!!mu.sel[k]+'" aria-label="'+esc(uitLabel(m,k))+' houden">'+(mu.sel[k]?CKW:'')+'</button>'
-      +'<button type="button" class="mbody" data-mcur="'+k+'"><span class="mimg">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'')+'</span><span class="mtxt"><b>'+esc(uitLabel(m,k))+'</b><small>'+esc([...new Set(vs.map(v=>v.code))].join(' · '))+' · <i class="mdot'+(inA?' in':'')+'"></i>'+(inA?'In AFAS':'Nog niet in AFAS')+'</small></span><span class="mpr">'+(pr!=null?eur(pr):'')+'</span></button></div>'; }).join('');
-  const sw=fins.length>1?'<div class="eye mh">Afwerkingen</div><div class="msw">'+fins.map(f=>{ const v=itemVs(k0).find(x=>finKey(x)===f), heeft=vsOf(cur).some(x=>finKey(x)===f), on=mu.fs[f]!==false;
-      return '<span class="mst'+(heeft?'':' grijs')+(mu.cf===f||(!mu.cf&&finKey(curV)===f)?' cur':'')+'"><button type="button" class="mck'+(on?' on':'')+'" data-mfs="'+esc(f)+'" aria-pressed="'+on+'">'+(on?CKW:'')+'</button><button type="button" class="mstn" data-mcf="'+esc(f)+'"'+(heeft?'':' title="Deze uitvoering bestaat niet in '+esc(cap(v.fin))+'"')+'>'+esc(cap(v.fin)||f)+'</button></span>'; }).join('')+'</div>':'';
-  const ci=m.p[cur].idx.find(i=>m.v[i]===curV), r=pminRow(m,cur,ci), care=r&&careOn()&&r[7]!=null;
-  const price=r?'<div class="eye mh">Gekozen uitvoering · '+esc(curV.code)+'</div><div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
-      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div><p class="dcap">Vanafprijs'+(curV.fin?' · '+esc(cap(curV.fin)):'')+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</p>':'';
-  // zichtbaarheid en labels: één keer per model, voor alle aangevinkte uitvoeringen
-  const aan=itemVs(k0).filter(v=>!d.ex[v.id]), ocs=aan.map(v=>effV(v.id).oc), ocAll=aan.length&&ocs.every(o=>o===ocs[0])?ocs[0]:null;
+  const m=F.m, d=F.dk, mu=d.mu[k0], vs=mu.ids.map(id=>mvOf(m,id)), h=vs[0], cur=mvOf(m,mu.cur)||h, att=top?' ':' tabindex="-1" ';
+  const rh=modelPrijs(m,h), mp=v=>{ const r=modelPrijs(m,v); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
+  const nSel=vs.filter(v=>mu.sel[v.id]).length;
+  // foto per zijde, met tabs, pijltjes en bolletjes
+  const {zs,z}=modelZij(mu,cur), src=!fotoVan(m,cur)?null:z?img(cur.zijden[z].img):img(cur.img), pos=zs.indexOf(z);
+  const foto='<div class="mfoto"><div class="mtabs">'+zs.map(s=>'<button type="button"'+att+'class="'+(s===z?'on':'')+'" data-mz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join('')+'</div>'+frLabel(vs)
+    +'<div class="dimg mimgbox" data-mswipe="1">'+(!fotoVan(m,cur)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')+'</div>'
+    +'<div class="mfoot"><span><b>'+esc(cur.code)+'</b>'+(z?' · '+ZK[z]:'')+'</span>'+(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
+  // uitvoeringen als tegels: label (alleen het verschil), de volledige code en de meerprijs op inkoop
+  const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  const tiles=vs.map(v=>{ const on=!!mu.sel[v.id], x=mp(v), hoofd=v.id===mu.hoofd;
+    return '<button type="button"'+att+'class="mtile'+(on?' on':'')+(v.id===cur.id?' nu':'')+'" data-mt="'+esc(v.id)+'" aria-pressed="'+on+'"><span><b>'+esc(modelLab(mu,v))+'</b><small>'+esc(v.code)+'</small>'
+      +(hoofd?(rh?'<span class="mbp">Basisprijs</span>':''):x!=null?'<em class="mmp">'+mpTxt2(x)+'</em>':'')+'</span>'+(on?WCK:'')+'</button>'; }).join('');
+  // prijsblok van de getoonde uitvoering
+  const r=modelPrijs(m,cur), care=r&&careOn()&&r[7]!=null, xc=mp(cur);
+  const price=r?'<div class="mlh"><span class="eye">Getoonde uitvoering · '+esc(cur.code)+' · '+(cur.inA?'in AFAS'+(cur.blom?' ('+esc(cur.blom)+')':''):'nog niet in AFAS')+'</span>'+(top?'<button type="button" class="minfo" data-minfo="1">Specificaties</button>':'')+'</div>'
+      +'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
+      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm mpc"><span>Meerprijs inkoop</span><b>'+(cur.id===mu.hoofd?'Basisprijs':xc!=null?mpTxt2(xc):'–')+'</b></div></div>'
+      +'<p class="mcap">Meerprijs = inkoop uitvoering min inkoop '+esc(h.code)+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</p>':'';
+  // zichtbaarheid en labels: één keer per model, voor alle gekozen uitvoeringen
+  const aan=vs.filter(v=>!d.ex[v.id]), ocs=aan.map(v=>effV(v.id).oc), ocAll=aan.length&&ocs.every(o=>o===ocs[0])?ocs[0]:null;
   const labAll=j=>aan.length&&aan.every(v=>(effV(v.id).lab||[])[j]===1), labSome=j=>aan.some(v=>(effV(v.id).lab||[])[j]===1);
-  const att=top?' ':' tabindex="-1" ';
-  const vis='<div class="dvis'+(d.need===k0&&!ocAll?' need':'')+'"><div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Geldt voor alle aangevinkte uitvoeringen</span></div>'
-    +'<div class="dseg">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'">'+l+'</button>').join('')+'</div>'
-    +'<div class="dvlh"><span class="eye">Labels</span></div><div class="dlbs">'+LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('')+'</div></div>';
+  const vis='<div class="dvis'+(d.need===k0&&!ocAll?' need':'')+'"><div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Geldt voor alle gekozen uitvoeringen</span></div>'
+    +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('')+'</div>'
+    +'<div class="dvlh"><span class="eye">Labels</span></div><div class="dlbs">'+LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'" aria-pressed="'+!!on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('')+'</div></div>';
   return '<div class="dcard mcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
-    +(top?'<span class="dst yes" id="sYes">HOUDEN</span><span class="dst no" id="sNo">NIET</span>':'')
-    +'<div class="dimg mimgbox"><span class="mcnt">Uitvoering '+(pos+1)+' van '+ks.length+'</span>'+frLabel(itemVs(k0))
-    +(!fotoVan(m,curV)?NOFOTO_K:img(curV.img)?'<img src="'+img(curV.img)+'" alt="'+esc(mu.naam)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(top?'<span class="mnav"><button type="button" data-mnav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" data-mnav="1" aria-label="Volgende uitvoering">›</button></span>':'')+'</div>'
-    +'<div class="dmeta"><div class="dtype">'+esc(m.p[cur].t||'Artikel')+' · Model</div><div class="dname">'+esc(mu.naam)+'</div>'
-    +'<div class="dline">'+esc(SUP.short||SUP.name)+' · '+ks.length+' uitvoeringen'+(isFinite(vanaf)?' · vanaf '+eur(vanaf):'')+'</div>'
-    +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+ks.length+' aangevinkt</span></div><div class="mlist">'+rows+'</div>'
-    +'<p class="dcap">Vink uit wat je niet wilt. Tik op een regel om foto en prijs te bekijken.</p>'+sw+price+'</div>'+vis+'</div>';
+    +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
+    +foto
+    +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · '+esc(mu.basis)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
+    +'<div class="dline">Hoofdartikel '+esc(h.code)+' · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
+    +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+vs.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
+    +'<p class="mcap">Tik op een tegel om hem te bekijken. Tik nog een keer om hem uit of aan te zetten.</p>'+price+'</div>'+vis+'</div>';
 }
 function deckCard(k,top){
   if(F.dk.grp&&F.dk.grp[k]) return modelCard(k,top);
@@ -1960,10 +2023,10 @@ function specKV(m,v){
   const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
   return [['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.inA&&v.afas?['AFAS-nummer',esc(v.afas)]:null, ['Artikelnummer '+esc(SUP.short||SUP.name),esc(v.code)], v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean); }
 // ⓘ in 'Welke producten houd je?': alleen de specificaties van het product (de aangezette afwerking)
-function deckInfo(k){
-  const m=F.m, p=m.p[k], v=m.v[p.idx.find(i=>!F.dk.ex[m.v[i].id])??p.idx[0]];
-  return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
-    +perAfw(m,k)
+function deckInfo(k,v0,titel){
+  const m=F.m, p=m.p[k], v=v0||m.v[p.idx.find(i=>!F.dk.ex[m.v[i].id])??p.idx[0]];
+  return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(v0?titel+' · '+v0.code:shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
+    +(v0?'':perAfw(m,k))
     +'<div class="isec"><h3>Specificaties</h3><div class="ikv">'+specKV(m,v).map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')+'</div></div>'
     +'</div>'; }
 // bij twee of meer aangezette afwerkingen: per afwerking de online collectie en de labels kiezen
@@ -1979,7 +2042,7 @@ const LEER=3;   // na zoveel dezelfde keuzes wordt het een voorstel voor de rest
 const finKey=v=>(v.fin||'').toLowerCase().replace(/\s+/g,' ').trim();
 function finRun(f){ const l=F.dk.fl[f]||[]; let n=0; for(let i=l.length-1;i>=0&&l[i];i--) n++; return n; }
 function autoEx(){ const m=F.m, d=F.dk;
-  d.order.slice(d.i).forEach(k=>{ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.length<2) return;
+  d.order.slice(d.i).forEach(k=>{ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.length<2||d.grp[k]) return;
     vs.forEach(v=>{ if(d.ax[v.id]){ d.ex[v.id]=false; delete d.ax[v.id]; } });
     const off=vs.filter(v=>!d.man[v.id]&&finKey(v)&&finRun(finKey(v))>=LEER&&!d.ex[v.id]);
     if(!off.length||vs.every(v=>d.ex[v.id]||off.includes(v))) return;   // minstens één afwerking blijft aan
@@ -1991,31 +2054,39 @@ function renderDeck(){
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1], isM=!!d.grp[k], mu=d.mu[k], heeftM=Object.keys(d.grp).length>0;
-  const fins=isM?[...new Set(itemVs(k).map(finKey).filter(Boolean))]:[], nSel=isM?d.grp[k].filter(x=>mu.sel[x]).length:0, nFin=isM?fins.filter(f=>mu.fs[f]!==false).length:0;
+  const nSel=isM?mu.ids.filter(id=>mu.sel[id]).length:0;
   B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke '+(heeftM?'modellen':'producten')+' '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+(heeftM?' modellen':'')+'</div></div>'
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
-    +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(isM?mu.cur:k):'')+'</div>'
-    +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+d.grp[k].length+(fins.length>1?'<small>in '+nFin+(nFin===1?' afwerking':' afwerkingen')+'</small>':''):(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
-    +(isM?'<p class="mhint">Uitgevinkte uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
+    +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?(isM?deckInfo(mvOf(m,mu.cur).p,mvOf(m,mu.cur),mu.naam):deckInfo(k)):'')+'</div>'
+    +'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.ids.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
+    +(isM?'<p class="mhint">Niet gekozen uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
   $('dList').onclick=toList;
-  $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
+  $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); if($('dInf')) $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
   B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openZoomDeck(F.m,+b.dataset.dzoom); });
   // online collectie en labels op de kaart: voor alle aangezette afwerkingen van dit product
   const aanIds=()=>itemVs(k).map(v=>v.id).filter(id=>!d.ex[id]);
+  // de kaart opnieuw tekenen zonder dat een gescrolde modelkaart terugspringt
+  const rer=()=>{ const c0=$('dcard'), t=c0?c0.scrollTop:0; renderDeck(); const c1=$('dcard'); if(c1&&t) c1.scrollTop=t; };
   if(isM){ const dc0=$('dcard');
-    dc0.querySelectorAll('[data-msel]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const x=+b.dataset.msel; mu.sel[x]=!mu.sel[x]; syncModelEx(k); renderDeck(); });
-    dc0.querySelectorAll('[data-mcur]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.cur=+b.dataset.mcur; renderDeck(); });
-    dc0.querySelectorAll('[data-mnav]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const ks=d.grp[k], i=ks.indexOf(mu.cur); mu.cur=ks[(i+ +b.dataset.mnav+ks.length)%ks.length]; renderDeck(); });
-    dc0.querySelectorAll('[data-mfs]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const f=b.dataset.mfs; mu.fs[f]=mu.fs[f]===false; syncModelEx(k); renderDeck(); });
-    dc0.querySelectorAll('[data-mcf]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.cf=b.dataset.mcf; renderDeck(); }); }
+    // tegel: toont de uitvoering; de getoonde tegel of een niet gekozen tegel zet je aan of uit
+    dc0.querySelectorAll('[data-mt]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.mt; if(!mu.sel[id]){ mu.sel[id]=true; mu.cur=id; } else if(mu.cur===id) mu.sel[id]=false; else mu.cur=id; syncModelEx(k); rer(); });
+    // zijde van de foto: tabs, pijltjes en vegen over de foto (de kaart zelf veeg je buiten de foto)
+    const stap=n=>{ const {zs,z}=modelZij(mu,mvOf(m,mu.cur)); if(zs.length<2) return; mu.zij=zs[(zs.indexOf(z)+n+zs.length)%zs.length]; rer(); };
+    dc0.querySelectorAll('[data-mz]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.zij=b.dataset.mz; rer(); });
+    dc0.querySelectorAll('[data-mzn]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); stap(+b.dataset.mzn); });
+    dc0.querySelectorAll('[data-minfo]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); deckGo('up'); });
+    const fb=dc0.querySelector('[data-mswipe]'); if(fb){ let sx=null, sy=0;
+      fb.addEventListener('pointerdown',e=>{ if(e.button!==0||e.target.closest('button')) return; e.stopPropagation(); sx=e.clientX; sy=e.clientY; try{ fb.setPointerCapture(e.pointerId) }catch(_){} });
+      fb.addEventListener('pointerup',e=>{ if(sx==null) return; const dx=e.clientX-sx, dy=e.clientY-sy; sx=null; if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5) stap(dx<0?1:-1); });
+      fb.addEventListener('pointercancel',()=>{ sx=null; }); } }
   const dc=$('dcard');
-  if(dc){ dc.querySelectorAll('[data-doc]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const o=b.dataset.doc; aanIds().forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); x.oc=o; x.src='gekozen'; }); d.ct[k]=Date.now(); d.need=null; renderDeck(); });
+  if(dc){ dc.querySelectorAll('[data-doc]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const o=b.dataset.doc; aanIds().forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); x.oc=o; x.src='gekozen'; }); d.ct[k]=Date.now(); d.need=null; rer(); });
     dc.querySelectorAll('[data-dweg]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); deckGo('no'); });
     dc.querySelectorAll('[data-dlb]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const j=+b.dataset.dlb, ids=aanIds(), allOn=ids.every(id=>F.vs[id]&&(F.vs[id].lab||[])[j]===1);
-      ids.forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); if(!x.lab) x.lab=[0,0,0,0,0]; x.lab[j]=allOn?0:1; x.src='gekozen'; }); d.ct[k]=Date.now(); renderDeck(); }); }
+      ids.forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); if(!x.lab) x.lab=[0,0,0,0,0]; x.lab[j]=allOn?0:1; x.src='gekozen'; }); d.ct[k]=Date.now(); rer(); }); }
   B.querySelectorAll('[data-ex]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const id=b.dataset.ex; d.ex[id]=!d.ex[id]; d.man[id]=true; delete d.ax[id]; const all=m.p[k].idx.every(i=>d.ex[m.v[i].id]); if(all){ d.ex[id]=false; toast('Minstens één afwerking aan, of veeg naar links'); } renderDeck(); });
   if(d.info) bindInfo(k);
   bindDeckSwipe();
@@ -2051,7 +2122,7 @@ function deckGo(dir,fromDrag){
   if(!fromDrag&&dir!=='up'&&Date.now()<DECK_T) return;
   const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
   if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
-  if(dir==='yes'&&itemVs(k).every(v=>d.ex[v.id])){ buzz(20); toast(d.grp[k]?'Vink minstens één uitvoering aan, of kies Model niet':'Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
+  if(dir==='yes'&&itemVs(k).every(v=>d.ex[v.id])){ buzz(20); toast(d.grp[k]?'Kies minstens één uitvoering, of kies Model niet':'Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
   if(dir==='yes'){ const open=itemVs(k).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
     if(open.length){ d.need=k; renderDeck(); buzz(20); toast('Kies eerst op de kaart of het product online komt'); return; } }
   if(d.info) d.info=false; d.need=null;
@@ -2106,7 +2177,7 @@ function renderDeckDone(){
   const ks=d.order, yes=ks.filter(k=>itemVs(k).some(v=>F.v[v.id]===1));
   B.innerHTML='<div class="deck ddone"><div class="dbig">'+(yes.length?OK(34):NO(34))+'</div><h2>'+(yes.length?'Klaar!':'Niets gekozen')+'</h2>'
     +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+(Object.keys(d.grp||{}).length?' modellen ':' producten ')+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
-    +'<div class="dgrid">'+ks.map(k=>{const vs=itemVs(k), a=vs.find(v=>fotoVan(m,v)&&img(v.img))||vs[0], on=vs.some(v=>F.v[v.id]===1), naam=d.grp[k]?d.mu[k].naam+' ('+d.grp[k].filter(x=>m.p[x].idx.some(i=>F.v[m.v[i].id]===1)).length+'/'+d.grp[k].length+')':shortTitle(m,k); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(naam)+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(vs.find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
+    +'<div class="dgrid">'+ks.map(k=>{const vs=itemVs(k), a=vs.find(v=>fotoVan(m,v)&&img(v.img))||vs[0], on=vs.some(v=>F.v[v.id]===1), naam=d.grp[k]?d.mu[k].naam+' ('+vs.filter(v=>F.v[v.id]===1).length+'/'+vs.length+')':shortTitle(m,k); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(naam)+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(vs.find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
     +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (met deze serie)</button>'
     +'<div class="dbtns2"><button type="button" class="ghost" id="dAgain">Opnieuw swipen</button><button type="button" class="ghost" id="dList2">Overzicht</button><button type="button" class="cta" id="dNext"'+(yes.length?'':' disabled')+'>Opslaan en volgende serie →</button></div>'
     +'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>⌫</kbd> laatste terug</span></div></div>';
