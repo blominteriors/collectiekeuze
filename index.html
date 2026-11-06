@@ -995,7 +995,8 @@ async function loadSup(id){
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
   M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); zusterFoto(m);});
   // live: geen knop 'Bekijk als productkaart online collectie' op de swipekaart; geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
-  if(window.BLOM_CONFIG&&BLOM_CONFIG.omgeving==='live') M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
+  // geen naamvoorstellen: alleen Blom-namen die in AFAS staan (test en live)
+  M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
   loadedChunks={}; for(const k in IMG) delete IMG[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
@@ -1517,14 +1518,18 @@ function openForm(m){
   // geen voorstellen: uitvoeringen die nog niet in AFAS staan beginnen leeg (online collectie en labels kies je zelf)
   const leeg=v=>afasOc(v)==='niet'&&!labOf(v).some(x=>x===1), rich=m.v.filter(v=>v.inA&&!leeg(v)), nIn=rich.length;
   F.vs={}; m.v.forEach(v=>{ const g=F.g.find(g=>g.ids.includes(v.id)); let oc=g?g.oc:F.oc, lab=g?g.lab:F.lab, src=null;
-    if(prevRec) src='eerder';
+    if(prevRec&&prevRec.v&&prevRec.v[v.id]===1){ const e0=effOf(prevRec,v.id); oc=e0.oc; lab=e0.lab; src='eerder'; }
+    else if(prevRec&&v.inA){ oc=afasOc(v); lab=labOf(v); src='afas'; }
+    else if(prevRec){ oc=null; lab=null; }
     else if(v.inA&&!leeg(v)){ oc=afasOc(v); lab=labOf(v); src='afas'; }
     else if(v.inA){ oc=afasOc(v); lab=labOf(v); src='afas'; }
     else { oc=null; lab=null; }
     F.vs[v.id]={oc:oc||null, lab:(lab&&lab.length?lab:[0,0,0,0,0]).map(x=>x==null?0:x), src, n:nIn, leeg:src==='afas'&&leeg(v)}; });
   // concept-keuzes van het beginscherm gaan voor
   const dr=DR[m.id]; if(dr){ m.v.forEach(v=>{ const s2=dr.vs&&dr.vs[v.id]; if(s2) F.vs[v.id]={oc:s2.oc,lab:s2.lab.slice(),src:'gekozen',n:nIn}; const k2=dr.v&&dr.v[v.id]; if(k2===0) F.dk.ex[v.id]=true; }); }
-  F.vs0=JSON.parse(JSON.stringify(F.vs));   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
+  F.vs0=JSON.parse(JSON.stringify(F.vs));
+  // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
+  m.p.forEach(p=>{ if(p.idx.length<2) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
   $('form').hidden=false; $('formBody').scrollTop=0; renderForm();
 }
 
@@ -1754,26 +1759,16 @@ function renderPk(){
     renderPk(); });
 
 }
-function deckInfo(k){
-  const m=F.m, p=m.p[k], v=m.v[p.idx[0]], fp=finPrices(m,k);
+function specKV(m,v){
   const dl=['Breedte','Zitbreedte','Diepte','Zitdiepte','Zithoogte','Armleuninghoogte','Hoogte'];
-  const dims=(v.dim||[]).map((x,i)=>x!=null?'<div><span>'+dl[i]+'</span><span>'+fmt(x)+' cm</span></div>':'').join('');
-  const OC3=[['niet','Niet online'],['intern','Online, intern'],['klant','Online, klanten']];
-  const rows=p.idx.map(i=>{const a=m.v[i], e=effV(a.id), mp=mpTxt(fp,a.id), ex=!!F.dk.ex[a.id];
-    // rechtsboven per uitvoering: inkoopprijs (bij meerdere afwerkingen met meerprijs), ook bij één uitvoering
-    const r=pminRow(m,k,i), ink=fp&&fp.p[a.id]!=null?fp.p[a.id]:r?r[3]:null;
-    return '<div class="irow"><div class="irh"><b>'+esc(a.code)+(a.fin?' · '+esc(cap(a.fin)):'')+'</b>'+(ink!=null?'<span class="ipr">Inkoop '+eur(ink)+(fp&&mp&&mp!=='basis'?' <em>'+mp+'</em>':fp&&mp==='basis'?' <em class="b">basis</em>':'')+'</span>':'')+'</div>'
-      +'<span class="inow">Nu: '+(a.inA?OK(12)+' in AFAS'+(a.blom?' als '+esc(a.blom):''):NO(12)+' niet in AFAS'+(a.nv?' · <span class="vst">Voorstel</span> naam <b>'+esc(a.nv)+'</b>'+(a.nvc?' (controleren)':''):''))+' · '+(a.online?OK(12):NO(12))+' online · '+(a.klant?OK(12):NO(12))+' klanten'+(a.inA?' · labels: '+(LABELS.filter((_,j)=>labOf(a)[j]===1).map(x=>x[0]).join(', ')||'geen'):'')+'</span>'
-      +'<div class="ioc" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o&&!ex)+'" class="'+(e.oc===o&&!ex?'on'+(o==='niet'?' neg':''):'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'<button type="button" role="radio" aria-checked="'+ex+'" class="'+(ex?'on neg':'')+'" data-vex="'+esc(a.id)+'">Niet in AFAS</button></div>'
-      +(ex?'':'<div class="ilb">'+LABELS.map(([n,c],j)=>{const on=e.lab&&e.lab[j]; return '<button type="button" class="glab'+(on===1?' on':on===0?' off':'')+'" data-vlab="'+esc(a.id)+'|'+j+'"><span class="sw" style="background:'+c+'"></span>'+n+'<b>'+(on===1?CK:on===0?CX:'?')+'</b></button>'}).join('')+'</div>')
-      +(ex?'<div class="ist">Deze uitvoering wordt niet opgenomen (niet in AFAS)</div>':e.oc?'<div class="ist">'+({afas:'Huidige AFAS-waarde',eerder:'Je eerdere keuze',voorstel:'<span class="vst">Voorstel</span> zoals '+(e.n===1?'het artikel':'de '+e.n+' artikelen')+' van deze serie in AFAS: controleer dit',vk:'<span class="vst">Voorstel</span> op basis van je eerdere keuzes in deze serie ('+e.n+'x)'+(e.strong&&a.inA&&e.was?' · nu in AFAS: '+({niet:'niet online',intern:'online, intern',klant:'online, klanten'})[e.was]:'')+': controleer dit',gekozen:'Door jou gekozen'}[e.src]||'')+'</div>':'<div class="ist need">Kies de online collectie voor deze uitvoering</div>')+'</div>'}).join('');
+  const dims=(v.dim||[]).map((x,i)=>x!=null?[dl[i],fmt(x)+' cm']:null).filter(Boolean);
+  return [['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.inA&&v.afas?['AFAS-nummer',esc(v.afas)]:null, ['Artikelnummer '+esc(SUP.short||SUP.name),esc(v.code)], v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean); }
+// ⓘ in 'Welke producten houd je?': alleen de specificaties van het product (de aangezette afwerking)
+function deckInfo(k){
+  const m=F.m, p=m.p[k], v=m.v[p.idx.find(i=>!F.dk.ex[m.v[i].id])??p.idx[0]];
   return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
-    +(F.dk.need===k?'<div class="ineed">Kies per uitvoering de online collectie en de labels, en kies dan <b>'+(anyIn(m)?'Houden':'Opnemen')+'</b>.</div>':'')
-    +'<div class="isec"><h3>Per uitvoering: online en labels</h3>'+(fp?'<p class="imp">Meerprijs ten opzichte van '+esc(cap(fp.base.fin)||fp.base.code)+' ('+esc(fp.lbl)+').</p>':'')+rows+'</div>'
-    +(dims?'<div class="isec"><h3>Maten</h3><div class="ikv">'+dims+'</div></div>':'')
-    +(v.desc?'<div class="isec"><h3>Omschrijving</h3><p>'+esc(v.desc)+'</p>'+((v.opts&&v.opts.length)?'<p class="iopt"><b>Opties en meerprijzen:</b> '+v.opts.map(esc).join(' · ')+'</p>':'')+'</div>':'')
-    +'</div>';   // Niet en Opnemen staan in de knoppenbalk onder het info-paneel; geen tweede set hier
-}
+    +'<div class="isec"><h3>Specificaties</h3><div class="ikv">'+specKV(m,v).map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')+'</div></div>'
+    +'</div>'; }
 let TQ=[];   // meldingen over voorstellen, samen getoond
 const LEER=3;   // na zoveel dezelfde keuzes wordt het een voorstel voor de rest van de serie
 // afwerkingen: zet je dezelfde afwerking (bijv. walnoot) 3x achter elkaar uit, dan staat die bij de volgende producten standaard uit
@@ -1788,7 +1783,7 @@ function autoEx(){ const m=F.m, d=F.dk;
   const cur=d.order[d.i]; if(cur!=null) m.p[cur].idx.map(i=>m.v[i]).filter(v=>d.ax[v.id]).forEach(v=>{ const f=finKey(v); if(!d.note['f'+f]){ d.note['f'+f]=1; TQ.push(cap(v.fin)+' staat uit op basis van je eerdere keuzes ('+finRun(f)+'x niet gekozen). Tik erop om hem toch aan te zetten.'); } });
 }
 function renderDeck(){
-  if(F.dk.i<F.dk.order.length) autoEx(); if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
+  if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
   const k=d.order[d.i], k2=d.order[d.i+1];
@@ -1844,6 +1839,7 @@ function deckGo(dir,fromDrag){
   if(!fromDrag&&dir!=='up'&&Date.now()<DECK_T) return;
   const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
   if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
+  if(dir==='yes'&&m.p[k].idx.every(i=>d.ex[m.v[i].id])){ buzz(20); toast('Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
   if(dir==='yes'){ const open=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
     if(open.length){ d.need=k; renderDeck(); buzz(20); toast('Kies eerst op de kaart of het product online komt'); return; } }
   if(d.info) d.info=false; d.need=null;
