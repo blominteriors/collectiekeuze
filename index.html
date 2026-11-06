@@ -1305,7 +1305,7 @@ function pricesSum(v){
   return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span><span class="eye">Prijzen</span><small>'+esc(v.code)+' · excl. btw</small></span>'+cols.map(([c,l])=>'<span>'+l+'</span>').join('')+'</div>'
     +'<div class="psr psg" style="grid-template-columns:'+gt+'"><span>Stofgroep</span>'+cols.map(([c])=>'<span><b title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(c)+'</b></span>').join('')+'</div>'
     +row('Verkoop',p=>p.vk!=null?eur(p.vk):'—','vk')
-    +(hasCare?row('Blom Care',p=>careOk(p)?eur(p.care):'—','vk care'):'')
+    +(hasCare?row('Blom Care verkoop',p=>careOk(p)?eur(p.care):'—','vk care'):'')
     +row('Netto inkoop',p=>eur(p.net))
     +row('Marge',p=>p.vk!=null&&p.ver?pct((p.vk-p.ver)/p.vk):'—')
     +(P.some(p=>p.err)?'<p class="pfn" style="color:#C0392B">! Fout in de Excel bij deze prijs: zie Hele berekening.</p>':'')+'</div>'; }
