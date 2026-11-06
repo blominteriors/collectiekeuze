@@ -898,6 +898,8 @@ body.swv #what{display:none}
 .mtile.nu{outline:2px solid var(--ink);outline-offset:2px}
 .mh{margin:12px 0 6px}
 .mcap{margin:5px 0 0;font-size:10.5px;line-height:1.35;color:var(--g400)}
+.mcap.mrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mcap .mmg{flex:none;font-variant-numeric:tabular-nums;color:var(--ink)}
 .mcard .dpr .mpc{background:#fdf0c2}.mcard .dpr .mpc span,.mcard .dpr .mpc b{color:#4d3a00}
 .dbtns.m3{grid-template-columns:50px 1fr 1.4fr}
 .dbtns.m3 .dyl{white-space:nowrap;font-size:clamp(12.5px,3.6vw,15.5px)}
@@ -1023,7 +1025,7 @@ body.swv #what{display:none}
       <li>Ga naar <b>Beoordelen</b> en kies een leverancier. Je beoordeelt de collectie per serie, bijvoorbeeld Mamy of Swing.</li>
       <li>Per serie zie je de foto's, de prijzen (verkoop, Blom Care, netto inkoop, marge) en bij <b>Zichtbaarheid</b> wat er nu in AFAS staat. Kies bovenaan de soort; tik op een fotootje of gebruik ‹ › voor de andere producten. <b>ⓘ</b> en de uitklapblokken geven de specificaties en de hele berekening.</li>
       <li>Kies onderin <b>Serie houden</b> (of opnemen) of <b>Serie niet houden</b>.</li>
-      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart met alle uitvoeringen als tegels (bij Piaval: de code vóór de slash, bijvoorbeeld 32-61). De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
+      <li>Bij houden loop je de producten of modellen langs: veeg naar rechts om te houden, naar links voor niet. Kies op de kaart de <b>zichtbaarheid</b> (niet online, intern of klanten) en de <b>labels</b>. Een model is één kaart per soort binnen de serie (stoel, fauteuil, bank …) met alle uitvoeringen als tegels; het hoofdartikel is de goedkoopste uitvoering. De uitvoeringen staan eerst uit: vink de uitvoeringen aan die je wilt houden. Tik op de tegel zelf om die uitvoering op de foto te zien. Op de tegel staat de meerprijs op inkoop ten opzichte van het hoofdartikel. Niet gekozen uitvoeringen tellen als niet gehouden. Veeg over de foto of gebruik de tabs voor de andere zijden.</li>
       <li>Met <b>Vorige</b> (↶) zet je je laatste keuze terug. Als alle series van een leverancier klaar zijn, zie je dat op het beginscherm.</li>
       <li>Beheerders zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
     </ol>
@@ -1690,15 +1692,18 @@ function openForm(m){
   // concept-keuzes van het beginscherm gaan voor
   const dr=DR[m.id]; if(dr){ m.v.forEach(v=>{ const s2=dr.vs&&dr.vs[v.id]; if(s2) F.vs[v.id]={oc:s2.oc,lab:s2.lab.slice(),src:'gekozen',n:nIn}; const k2=dr.v&&dr.v[v.id]; if(k2===0) F.dk.ex[v.id]=true; }); }
   F.vs0=JSON.parse(JSON.stringify(F.vs));
-  // modellen: alle artikelen met dezelfde basiscode (de leverancierscode vóór de slash) vormen één kaart; het eerste product staat in de volgorde
+  // modellen: alle artikelen van dezelfde soort (stoel, fauteuil, bank …) binnen de serie vormen één kaart, op basis van de taxonomie;
+  // het hoofdartikel is de goedkoopste uitvoering (netto inkoop), de tegels staan op oplopende inkoopprijs
   F.dk.grp={}; F.dk.mu={};
-  if(modelAan()){ const per={}; F.dk.order.forEach(k=>{ const b=codeDelen(m.v[m.p[k].idx[0]].code)[0]; (per[b]=per[b]||[]).push(k); });
-    Object.entries(per).forEach(([b,ks])=>{ const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>sufCmp(codeDelen(x.code)[1],codeDelen(y.code)[1])); if(vs.length<2) return;
+  if(modelAan()){ const per={}; F.dk.order.forEach(k=>{ const b=m.p[k].t||''; (per[b]=per[b]||[]).push(k); });
+    const ink=v=>{ const r=modelPrijs(m,v); return r&&r[3]!=null?r[3]:Infinity; }, codeCmp=(a,b)=>String(a).localeCompare(String(b),'nl',{numeric:true});
+    Object.entries(per).forEach(([b,ks])=>{ const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])).sort((x,y)=>(ink(x)-ink(y))||codeCmp(x.code,y.code)); if(vs.length<2) return;
       const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
       // bestaande keuzes per artikel (eerdere beoordeling of concept) terug in de tegels; bij een nieuw model staan alle uitvoeringen uit
       const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null), sel={}; vs.forEach(v=>{ sel[v.id]=eerder?prev.v[v.id]===1:!!(dr&&dr.v&&dr.v[v.id]===1); });
       const ml=modelLabels(m,vs), h=vs[0];
-      F.dk.mu[k0]={basis:b, naam:ml.naam, type:ml.type, hoofd:h.id, ids:vs.map(v=>v.id), lab:ml.lab, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null, oc:null, lab:null};
+      // tl = tegellabels per artikel; oc/lab = de zichtbaarheid en labels die je op de kaart kiest
+      F.dk.mu[k0]={basis:b, naam:ml.naam, type:ml.type, hoofd:h.id, ids:vs.map(v=>v.id), tl:ml.lab, sel, cur:(fotoVan(m,h)?h:vs.find(v=>fotoVan(m,v))||h).id, zij:null, oc:null, lab:null};
       syncModelEx(k0); }); }
   // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
   m.p.forEach((p,k)=>{ if(p.idx.length<2||Object.values(F.dk.grp).some(ks=>ks.includes(k))) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
@@ -1812,8 +1817,8 @@ const ZK={voor:'Voor',links:'Links',rechts:'Rechts',achter:'Achter'};
 function modelZij(mu,v){ const zs=sidesOf(v); return {zs, z:mu.zij&&zs.includes(mu.zij)?mu.zij:(v.zijde&&zs.includes(v.zijde)?v.zijde:zs[0]||null)}; }
 // prijsregel van één uitvoering: de goedkoopste, zoals op de productkaart (verkoop r[5], Blom Care r[7], inkoop r[3])
 const modelPrijs=(m,v)=>pminRow(m,v.p,m.v.indexOf(v));
-// tegellabel: uit Supabase (kolom uitvoering) als die bij deze indeling hoort, anders afgeleid uit de eigenschappen
-const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(MODEL&&MODEL[v.code]&&MODEL[v.code].model===mu.basis&&MODEL[v.code].uit&&MODEL[v.code].uit!=='Hoofdartikel'?MODEL[v.code].uit:mu.lab[v.id]);
+// tegellabel: afgeleid uit de taxonomie (alleen wat afwijkt van het hoofdartikel: armleuningen, greep, afwerking, maten …)
+const modelLab=(mu,v)=>v.id===mu.hoofd?'Hoofdartikel':(mu.tl||{})[v.id]||v.code;
 // een tegel die je aanzet krijgt de zichtbaarheid en labels van het model: wat je op de kaart koos, anders wat de al gekozen uitvoeringen gemeen hebben
 function modelZet(mu,id){ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]});
   if(mu.oc){ x.oc=mu.oc; x.src='gekozen'; } if(mu.lab){ x.lab=mu.lab.slice(); x.src='gekozen'; }
@@ -1841,7 +1846,8 @@ function modelCard(k0,top){
   const price=r?'<div class="mlh"><span class="eye">Getoonde uitvoering · '+esc(cur.code)+' · '+(cur.inA?'in AFAS'+(cur.blom?' ('+esc(cur.blom)+')':''):'nog niet in AFAS')+'</span>'+(top?'<button type="button" class="minfo" data-minfo="1">Specificaties</button>':'')+'</div>'
       +'<div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
       +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm mpc"><span>Meerprijs inkoop</span><b>'+(cur.id===mu.hoofd?'Basisprijs':xc!=null?mpTxt2(xc):'–')+'</b></div></div>'
-      +'<p class="mcap">Meerprijs = inkoop uitvoering min inkoop '+esc(h.code)+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</p>':'';
+      +'<p class="mcap mrow"><span>Meerprijs = inkoop uitvoering min inkoop '+esc(h.code)+(r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw</span>'
+      +(r[4]!=null&&r[5]?'<span class="mmg">Marge '+pct((r[5]-r[4])/r[5])+'</span>':'')+'</p>':'';
   // zichtbaarheid en labels: één keer per model, voor alle gekozen uitvoeringen
   const aan=vs.filter(v=>!d.ex[v.id]), ocs=aan.map(v=>effV(v.id).oc), ocAll=aan.length?(ocs.every(o=>o===ocs[0])?ocs[0]:null):mu.oc;
   const labAll=j=>aan.length?aan.every(v=>(effV(v.id).lab||[])[j]===1):!!(mu.lab&&mu.lab[j]===1), labSome=j=>aan.some(v=>(effV(v.id).lab||[])[j]===1);
@@ -1851,8 +1857,8 @@ function modelCard(k0,top){
   return '<div class="dcard mcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
     +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
     +foto
-    +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · '+esc(mu.basis)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
-    +'<div class="dline">Hoofdartikel '+esc(h.code)+' · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
+    +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · serie '+esc(m.fam)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
+    +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
     +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+vs.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
     +'<p class="mcap">Vink de uitvoeringen aan die je wilt houden. Tik op een tegel om die uitvoering op de foto te zien.</p>'+price+'</div>'+vis+'</div>';
 }
