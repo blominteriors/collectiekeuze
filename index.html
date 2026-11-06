@@ -1148,7 +1148,10 @@ let stripT=null;
 // labels uit AFAS als 0/1; artikelen die niet in AFAS staan hebben geen labels (null)
 const labOf=v=>Array.isArray(v.lab)&&v.lab.length?v.lab.map(x=>x?1:0):[0,0,0,0,0];
 let DR={};   // concept-keuzes per serie vanaf het beginscherm: {v:{id:0|1}, vs:{id:{oc,lab}}}
-const saveDr=()=>{ if(SUP) ls.set('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id,JSON.stringify(DR)); };
+// Test en live staan op hetzelfde adres en delen dus de opslag van de browser. De testversie bewaart keuzes en concepten
+// daarom onder een eigen sleutel: keuzes van live verschijnen niet op test (en andersom), en een reset in Supabase blijft een reset.
+const LSV=OP_LIVE?'':'test-';
+const saveDr=()=>{ if(SUP) ls.set('blom-ck-draft-'+LSV+(me?me.key:'anon')+'-'+SUP.id,JSON.stringify(DR)); };
 // huidige waarde per artikel: concept-keuze, anders AFAS
 function drOf(m,v){ const d=DR[m.id]||{}, k=d.v&&d.v[v.id], s=d.vs&&d.vs[v.id];
   return {keep:k==null?(v.inA?1:0):k, keepSet:k!=null, oc:s?s.oc:afasOc(v), lab:s?s.lab.slice():labOf(v), setSet:!!s}; }
@@ -1189,7 +1192,7 @@ async function loadSup(id){
   MODEL=null; if(window.blomModellen){ const sid=SUP.id; window.blomModellen(SUP.name).then(x=>{ if(SUP&&SUP.id===sid) MODEL=x; }).catch(()=>{}); }
   BRAND=null; if(window.blomBrandvertragend){ const sid=SUP.id; window.blomBrandvertragend(SUP.id,SUP.name).then(b=>{ if(!SUP||SUP.id!==sid) return; BRAND=b;
     if(view==='swipe'&&cur){ if(F&&F.view==='deck'&&!$('form').hidden){ try{ renderDeck(); }catch(_){} } else renderCard(true); } }).catch(()=>{}); }
-  try{ DR=JSON.parse(ls.get('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
+  try{ DR=JSON.parse(ls.get('blom-ck-draft-'+LSV+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
 }
 function chunk(n){ if(loadedChunks[n]) return loadedChunks[n]; const sup=SUP.id, lc=loadedChunks;
   return lc[n]=dfetch('data/'+sup+'-img-'+n+'.json').then(r=>r.json()).then(o=>{ if(SUP.id===sup) Object.assign(IMG,o); return true}).catch(()=>{delete lc[n]}); }
@@ -1268,7 +1271,7 @@ function calcRow(code,row){
 
 /* ---------------- persistence ---------------- */
 const docId=()=>me.key+'--'+SUP.id;
-function lkey(){return 'blom-ck-'+(me?me.key:'anon')+'-'+(SUP?SUP.id:'')}
+function lkey(){return 'blom-ck-'+LSV+(me?me.key:'anon')+'-'+(SUP?SUP.id:'')}
 function loadLocal(){try{return JSON.parse(ls.get(lkey())||'{}')||{}}catch(e){return {}}}
 function saveLocal(){ls.set(lkey(),JSON.stringify(D))}
 let pending={}, writing=false, exists=null;
