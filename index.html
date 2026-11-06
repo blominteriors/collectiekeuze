@@ -809,6 +809,9 @@ body.swv #what{display:none}
 .sdesc p{font-size:14.5px;line-height:1.5}
 .steam .team .leeg{background:var(--grijs);padding:12px 14px;font-size:13.5px;color:var(--g400);border:0}
 .links a{height:52px;font-weight:400}.links a b{font-family:var(--display);font-weight:500;font-size:17px}.links a span{font-size:12px;color:var(--g400)}.links a i{font-style:normal;margin-left:8px;color:var(--ink)}
+
+/* kleine waarschuwing links onderin de foto */
+.phdisc{position:absolute;left:10px;bottom:40px;z-index:3;max-width:70%;padding:2px 6px;background:rgba(255,255,255,.92);border:1px solid var(--n500);font-size:10.5px;line-height:1.3;color:var(--g400)}
 </style>
 
 <div class="app">
@@ -1251,7 +1254,7 @@ function cardHTML(m){
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
   const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
-  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phlab">'+(v.imgq==='base'?'Let op: foto van de basisuitvoering':v.imgq==='bekl'?'Let op: zelfde model, andere bekleding':'Let op: foto van een ander model')+'</div>':'';
+  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'">'+(v.imgq==='base'?'Foto van de basisuitvoering':v.imgq==='bekl'?'Zelfde model, andere bekleding':'Foto van een ander model')+'</div>':'';
   const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='fin'?'Foto: zelfde product, frame/afwerking wijkt af':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
   const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot" aria-hidden="true">'+(n?OK(12):NO(12))+'</i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins2" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span><div class="fb">'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'" title="'+esc(a.code)+(a.inA?' · in AFAS':' · niet in AFAS')+'"><b>'+esc(cap(a.fin)||a.code)+'</b>'+(mp?'<span class="mp">'+mp+'</span>':'')+'<i class="adot" aria-hidden="true">'+(a.inA?OK(12):NO(12))+'</i></button>'}).join('')+'</div></div>':'';
@@ -1264,8 +1267,8 @@ function cardHTML(m){
     <div class="sbar"><i style="width:${pctd}%"></i></div>
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${typeChips}
-    <div class="photo">${sideTabs(v)}<div class="strip" id="strip">${slides}</div>${lab}${fotoVan(m,v)?'<button type="button" class="conf '+(v.conf>=90?'hi':v.conf>=60?'mid':'lo')+'" id="confBtn" aria-expanded="false" aria-controls="confPop">Foto klopt '+v.conf+'% <span aria-hidden="true">ⓘ</span></button><div class="confpop" id="confPop" hidden><b>Foto klopt '+v.conf+'%: hoe goed past deze foto bij dit artikel?</b><ul>'+(v.why||[]).map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>':''}
-      <div class="phfoot2"><span class="q">${fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'?qtxt:'<b>'+gin+'</b> van '+g.pk.length+' in AFAS'}</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b>${pos+1}</b> / ${g.pk.length}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div></div>
+    <div class="photo">${sideTabs(v)}<div class="strip" id="strip">${slides}</div>${lab}
+      <div class="phfoot2"><span class="q"><b>${gin}</b> van ${g.pk.length} in AFAS</span><div class="phnav"><button type="button" data-act="prev" aria-label="Vorig product">‹</button><span class="num"><b>${pos+1}</b> / ${g.pk.length}</span><button type="button" data-act="next" aria-label="Volgend product">›</button></div></div></div>
     ${g.pk.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle '+esc(plural(g.t,2))+(prState==='ok'?', goedkoopste eerst':'')+'">'+thumbs+'</div>':''}
     <div class="ptitle"><b>${esc(P.t)}${plabel(m,k)!=='standaard'?' · '+esc(plabel(m,k)):''}</b>${v.tguess?'<small class="tg">soort niet bevestigd</small>':''}<span>${bnaam?'<b>'+esc(bnaam)+'</b>'+(v.inA&&v.afas?' · '+esc(v.afas):'')+' · ':'<span class="mut">nog niet in AFAS</span> · '}${esc(SUP.short||SUP.name)} ${esc(v.code)}</span></div>
     ${fins}
@@ -1301,7 +1304,7 @@ function pricesSum(v){
   let cols=[[comCat,'Eigen stof / COM'],[cheapCat,'Vanaf<br>(goedkoopste stofgroep)']].filter(x=>x[0]!=null);
   if(!cols.length){ const cs=[...new Set(priceRows(pk(v)).map(r=>r[0]))]; if(!cs.length) return '<div class="psum"><div class="locked">Geen prijs voor '+esc(v.code)+' in de prijslijst.</div></div>'; cols=[[cs[0],'Prijs']]; }
   const P=cols.map(([c])=>calc(pk(v),c)), careOk=p=>careOn()&&p&&p.care!=null, hasCare=P.some(careOk);
-  const gt='minmax(0,.75fr) '+P.map(()=>'minmax(0,1.2fr)').join(' ');
+  const gt='minmax(0,1fr) '+P.map(()=>'minmax(0,1.1fr)').join(' ');
   const row=(lbl,f,cls)=>'<div class="psr'+(cls?' '+cls:'')+'" style="grid-template-columns:'+gt+'"><span>'+lbl+'</span>'+P.map(p=>'<span>'+f(p)+'</span>').join('')+'</div>';
   return '<div class="psum"><div class="psr psh" style="grid-template-columns:'+gt+'"><span><span class="eye">Prijzen</span><small>'+esc(v.code)+' · excl. btw</small></span>'+cols.map(([c,l])=>'<span>'+l+'</span>').join('')+'</div>'
     +'<div class="psr psg" style="grid-template-columns:'+gt+'"><span>Stofgroep</span>'+cols.map(([c])=>'<span><b title="'+esc((SUP.short||SUP.name)+' stofgroep '+c)+'">'+esc(c)+'</b></span>').join('')+'</div>'
@@ -1439,7 +1442,7 @@ function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p
   if(!sideImg(v)) return;
   $('zi').classList.remove('groot');
   $('zi').innerHTML='<img src="'+sideImg(v)+'" alt="'+esc(m.fam+' '+v.code)+'">';
-  $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+' · Foto klopt '+v.conf+'%</small>'+sideBtns(v,'data-zzz');
+  $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+'</small>'+sideBtns(v,'data-zzz');
   $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.zzz; setVi(m,curVi); openZoom(m); });
   $('zp').hidden=$('zn').hidden=g.pk.length<2;
   $('zp').onclick=()=>{ setVi(m,m.p[g.pk[(pos-1+g.pk.length)%g.pk.length]].idx[0]); openZoom(m); };
@@ -1454,7 +1457,7 @@ function openZoomDeck(m,k,j){
   const n=fotos.length, pos=((j||0)%n+n)%n, v=fotos[pos];
   $('zi').classList.remove('groot');
   $('zi').innerHTML='<img src="'+img(v.img)+'" alt="'+esc(m.fam+' '+plabel(m,k))+'">';
-  $('zt').innerHTML=esc(m.fam)+' · '+esc(plabel(m,k))+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+(n>1?' · '+(pos+1)+' / '+n:'')+(v.conf!=null?' · Foto klopt '+v.conf+'%':'')+'</small>';
+  $('zt').innerHTML=esc(m.fam)+' · '+esc(plabel(m,k))+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+(n>1?' · '+(pos+1)+' / '+n:'')+'</small>';
   $('zp').hidden=$('zn').hidden=n<2;
   $('zp').onclick=()=>openZoomDeck(m,k,pos-1);
   $('zn').onclick=()=>openZoomDeck(m,k,pos+1);
