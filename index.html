@@ -1515,7 +1515,7 @@ function cardModelHTML(m){
   // fotostrookje: alle uitvoeringen van de serie, per model bij elkaar, met een stip voor de stand in AFAS
   const thumbs=G.map((g,gi)=>'<div class="vgrp" title="'+esc(g.naam)+'"><span class="vgl">Model '+(gi+1)+'</span><div class="vgt">'+ST.map((e,j)=>{ if(e.g!==g) return ''; const x=m.v[e.vi], a=tegelFoto(m,e.t,x), im=fotoVan(m,a)&&img(a.img), lbl=g.naam+' · '+(g.tl[x.id]||x.code);
     return '<button type="button" class="vbtn'+(j===sp?' on':'')+(im?'':' leeg')+'" data-vi="'+e.vi+'" aria-pressed="'+(j===sp)+'" title="'+esc(lbl+' · '+x.code+' · '+STAND[e.s.k])+'">'+(im?'<img src="'+im+'" alt="">':'')+'<span>'+(j+1)+'</span><i class="sdot '+e.s.k+'" aria-hidden="true"></i></button>'; }).join('')+'</div></div>').join('');
-  const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
+  // geen omschrijving op de seriekaart: de uitvoeringen tonen de eigenschappen en maten al; de tekst van de leverancier staat onder Specificaties
   // per model een blok; alleen het model van de getoonde uitvoering staat open, met al zijn uitvoeringen en hun stand in AFAS
   const blocks=G.map(g=>{ const h=g.hoofd, rh=modelPrijs(m,h), hi=m.v.indexOf(h), open=g===gm, gon=ST.filter(e=>e.g===g&&e.s.k==='klant').length;
     let vanaf=null; if(prState==='ok') g.vs.forEach(x=>{ const r=modelPrijs(m,x); if(r&&r[5]!=null&&(vanaf==null||r[5]<vanaf)) vanaf=r[5]; });
@@ -1539,7 +1539,7 @@ function cardModelHTML(m){
     ${m.src&&m.src.length>1?'<details class="srcl"'+(window.SRCOPEN?' open':'')+' title="'+esc((m.why||[]).join(' · '))+'"><summary class="srct">Samengesteld uit '+m.src.length+' modellen</summary><div class="srcw">'+m.src.map(x=>'<span class="srcc">'+esc(srcName(m,x))+'</span>').join('')+'</div></details>':''}
     ${foto}
     ${ST.length>1?'<div class="vstrip" id="vstrip" aria-label="Alle uitvoeringen van deze serie">'+thumbs+'</div>':''}
-    <div class="sdesc2"><span class="eye">Serie · ${esc(SUP.short||SUP.name)}</span><div class="dname">${esc(m.fam)}</div>${desc}</div>
+    <div class="sdesc2"><span class="eye">Serie · ${esc(SUP.short||SUP.name)}</span><div class="dname">${esc(m.fam)}</div></div>
     <div class="smods"><div class="mlh"><span class="eye">Modellen in deze serie</span><span>${G.length} ${G.length===1?'model':'modellen'} · ${ST.length} ${ST.length===1?'uitvoering':'uitvoeringen'}${nu>ST.length?' · '+nu+' artikelen':''}</span></div>${ST.length>1?'<p class="mcap mtik">Tik op een uitvoering om hem op de foto te zien.</p>':''}${blocks}
       <p class="mcap snote">${PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':''}Welke uitvoeringen je houdt, kies je na ${anyIn(m)?'Serie houden':'Serie opnemen'}.</p></div>
   </div>
