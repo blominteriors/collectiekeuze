@@ -348,6 +348,13 @@
     }
     return rijen;
   }
+  /* Model en uitvoering per artikelnummer (Excel-kolommen Model en Uitvoering, tabel artikelen) */
+  window.blomModellen = async (supNaam) => {
+    const V = VERSIE || 'v1', uit = {};
+    const rijen = await alles(() => sb.from('artikelen').select('nummer_leverancier,model,uitvoering').eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));
+    rijen.forEach(r => { if (r.model) uit[r.nummer_leverancier] = { model: r.model, uit: r.uitvoering || '' }; });
+    return uit;
+  };
   window.blomBrandvertragend = async (supId, supNaam) => {
     const V = VERSIE || 'v1', fr = {}, nfr = {}, oms = {};
     const prijs = await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));

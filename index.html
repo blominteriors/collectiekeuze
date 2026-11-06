@@ -856,6 +856,36 @@ body.swv #what{display:none}
 /* brandvertragend */
 .frb{position:absolute;top:8px;right:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;padding:2px 7px;background:#fff;border:1px solid var(--n500);font-size:10.5px;font-weight:500;color:var(--ink)}
 .photo .frb{top:10px;right:10px}
+
+/* modelkaart: één kaart per model, uitvoeringen kiezen */
+.dcard.mcard{display:block;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y}
+.mimgbox{height:min(34vh,280px);position:relative}
+.mcnt{position:absolute;top:10px;left:12px;z-index:3;font-size:12px;color:var(--g400)}
+.mnav{position:absolute;right:10px;bottom:10px;z-index:3;display:flex;gap:6px}
+.mnav button{width:36px;height:36px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:var(--ink)}
+.mcard .dmeta{display:block;padding:10px 12px}
+.mcard .dname{font-size:24px}
+.mlh{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 6px}.mlh span:last-child{font-size:12px;color:var(--g400)}
+.mlist{display:grid;gap:6px}
+.mrow{display:grid;grid-template-columns:44px 1fr;border:1px solid var(--n500);background:#fff}
+.mrow.cur{border:2px solid var(--ink);background:var(--grijs)}
+.mck{width:24px;height:24px;margin:auto;border:1.5px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;padding:0;color:#fff}
+.mck.on{background:var(--ink)}
+.mbody{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;padding:8px 10px 8px 6px;border:0;border-left:1px solid var(--n500);background:none;text-align:left;color:var(--ink);min-width:0}
+.mimg{width:36px;height:36px;display:flex;align-items:center;justify-content:center}.mimg img{max-width:100%;max-height:100%;object-fit:contain}
+.mtxt{display:grid;min-width:0;overflow:hidden}.mtxt b{font-family:var(--display);font-weight:500;font-size:14px;line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+.mbody{white-space:normal}.mpr{padding-left:4px}
+.mtxt small{font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#E5A800;margin-right:4px;vertical-align:1px}.mdot.in{background:#2E9E5B}
+.mpr{font-family:var(--display);font-weight:500;font-size:14px;white-space:nowrap}
+.mh{margin:12px 0 6px}
+.msw{display:flex;flex-wrap:wrap;gap:6px}
+.mst{display:inline-flex;align-items:center;border:1px solid var(--n500);background:#fff}
+.mst .mck{width:20px;height:20px;margin:0 6px}
+.mst .mstn{border:0;background:none;padding:6px 10px 6px 2px;font-size:12.5px;color:var(--ink)}
+.mst.cur{border:2px solid var(--ink)}.mst.grijs{opacity:.45}
+.mhint{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--g400)}
+.mcard .dvis{border-top:1px solid var(--n500)}
 </style>
 
 <div class="app">
@@ -1059,6 +1089,7 @@ async function loadSup(id){
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
   D=loadLocal(); TEAM={}; subscribe(); loadPrices();
+  MODEL=null; if(window.blomModellen){ const sid=SUP.id; window.blomModellen(SUP.name).then(x=>{ if(SUP&&SUP.id===sid) MODEL=x; }).catch(()=>{}); }
   BRAND=null; if(window.blomBrandvertragend){ const sid=SUP.id; window.blomBrandvertragend(SUP.id,SUP.name).then(b=>{ if(!SUP||SUP.id!==sid) return; BRAND=b;
     if(view==='swipe'&&cur){ if(F&&F.view==='deck'&&!$('form').hidden){ try{ renderDeck(); }catch(_){} } else renderCard(true); } }).catch(()=>{}); }
   try{ DR=JSON.parse(ls.get('blom-ck-draft-'+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
@@ -1111,6 +1142,7 @@ const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
 // brandvertragend: uit de prijslijst (kolom 'Brandvertragend' / 'Niet brandvertragend' per prijsregel)
 const FLAM='<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 1c.4 2.2-.8 3.4-1.9 4.6C5.6 6.8 4.5 8 4.5 10a3.5 3.5 0 007 0c0-1.3-.6-2.3-1.2-3 .1 1.2-.4 2-1.2 2.3.5-1.9-.1-5.3-.5-8.3z" fill="#E4572E"/></svg>';
+let MODEL=null;   // uit Supabase: {artikelnummer: {model, uit}} (Excel-kolommen Model en Uitvoering)
 let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uitvoering en artikelen.omschrijving)
 function frLabel(vs){
   if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
@@ -1638,8 +1670,19 @@ function openForm(m){
   // concept-keuzes van het beginscherm gaan voor
   const dr=DR[m.id]; if(dr){ m.v.forEach(v=>{ const s2=dr.vs&&dr.vs[v.id]; if(s2) F.vs[v.id]={oc:s2.oc,lab:s2.lab.slice(),src:'gekozen',n:nIn}; const k2=dr.v&&dr.v[v.id]; if(k2===0) F.dk.ex[v.id]=true; }); }
   F.vs0=JSON.parse(JSON.stringify(F.vs));
+  // modellen: producten met dezelfde Model-waarde (Excel) worden één kaart; het eerste product staat in de volgorde
+  F.dk.grp={}; F.dk.mu={};
+  if(MODEL){ const per={}; F.dk.order.forEach(k=>{ const v=m.p[k].idx.map(i=>m.v[i]).find(x=>MODEL[x.code]); if(!v) return; const nm=MODEL[v.code].model; (per[nm]=per[nm]||[]).push(k); });
+    Object.entries(per).forEach(([nm,ks])=>{ if(ks.length<2) return; const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
+      const vs=ks.flatMap(k=>m.p[k].idx.map(i=>m.v[i])), fins=[...new Set(vs.map(finKey).filter(Boolean))];
+      // bestaande keuzes per artikel (eerdere beoordeling) terug in de vinkjes; anders staat alles aan
+      const eerder=prev&&prev.v&&vs.some(v=>prev.v[v.id]!=null);
+      const sel={}; ks.forEach(k=>{ sel[k]=eerder?m.p[k].idx.some(i=>prev.v[m.v[i].id]===1):true; });
+      const fs={}; fins.forEach(f=>{ fs[f]=eerder?vs.some(v=>finKey(v)===f&&prev.v[v.id]===1):true; });
+      F.dk.mu[k0]={naam:nm, sel, fs, cur:ks.find(k=>m.p[k].idx.some(i=>fotoVan(m,m.v[i])))??k0, cf:null};
+      syncModelEx(k0); }); }
   // afwerkingen: alleen aan als ze in AFAS staan of als je ze eerder koos; geen voorstel
-  m.p.forEach(p=>{ if(p.idx.length<2) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
+  m.p.forEach((p,k)=>{ if(p.idx.length<2||Object.values(F.dk.grp).some(ks=>ks.includes(k))) return; p.idx.forEach(i=>{ const v=m.v[i]; if(F.dk.ex[v.id]) return; const pv=F.v[v.id]; F.dk.ex[v.id]=pv!=null?pv===0:!v.inA; }); });   // uitgangssituatie, om voorstellen uit je keuzes opnieuw te kunnen berekenen
   $('form').hidden=false; $('formBody').scrollTop=0; renderForm();
 }
 
@@ -1695,7 +1738,49 @@ function hasProp(k){ const m=F.m, d=F.dk; if(m.p[k].idx.some(i=>d.ax[m.v[i].id])
 function nvOf(m,k){ const vs=m.p[k].idx.map(i=>m.v[i]); if(vs.some(v=>v.inA&&v.blom)) return null; const v=vs.find(v=>v.nv); return v?{n:v.nv,w:v.nvw,c:v.nvc}:null; }
 const ZOOMICO='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M11.5 11.5L16.5 16.5M5 7.5h5M7.5 5v5"/></svg>';
 const PKICO='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="1.5" width="13" height="13"/><rect x="3.5" y="3.5" width="9" height="5.5"/><path d="M3.5 11h6M3.5 13h4"/></svg>';
+// een kaart in het deck is één product of één model (meerdere producten)
+const itemKs=k=>(F.dk.grp&&F.dk.grp[k])||[k];
+const itemVs=k=>itemKs(k).flatMap(kk=>F.m.p[kk].idx.map(i=>F.m.v[i]));
+// uit de vinkjes van het model (uitvoeringen en afwerkingen) volgt per artikel houden of niet
+function syncModelEx(k0){ const d=F.dk, m=F.m, mu=d.mu[k0]; if(!mu) return;
+  d.grp[k0].forEach(k=>m.p[k].idx.forEach(i=>{ const v=m.v[i], f=finKey(v); d.ex[v.id]=!(mu.sel[k]&&(!f||mu.fs[f]!==false)); })); }
+const uitLabel=(m,k)=>{ const v=m.p[k].idx.map(i=>m.v[i]).find(x=>MODEL&&MODEL[x.code]&&MODEL[x.code].uit); return v?MODEL[v.code].uit:plabel(m,k); };
+function modelCard(k0,top){
+  const m=F.m, d=F.dk, mu=d.mu[k0], ks=d.grp[k0], cur=mu.cur, has=anyIn(m);
+  const vsOf=k=>m.p[k].idx.map(i=>m.v[i]);
+  const fins=[...new Set(itemVs(k0).map(finKey).filter(Boolean))];
+  const curV=(()=>{ const vs=vsOf(cur); return vs.find(v=>mu.cf&&finKey(v)===mu.cf)||vs.find(v=>!d.ex[v.id])||vs[0]; })();
+  const rowPrice=k=>{ const aan=vsOf(k).filter(v=>!fins.length||mu.fs[finKey(v)]!==false); const r=pminRow(m,k,(aan[0]&&m.p[k].idx.find(i=>m.v[i]===aan[0]))??m.p[k].idx[0]); return r&&r[5]!=null?r[5]:null; };
+  const vanaf=Math.min(...ks.map(k=>{ const r=pminRow(m,k); return r&&r[5]!=null?r[5]:Infinity; }));
+  const nSel=ks.filter(k=>mu.sel[k]).length, pos=ks.indexOf(cur);
+  const CKW='<svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+  const rows=ks.map(k=>{ const vs=vsOf(k), a=vs.find(v=>fotoVan(m,v)&&img(v.img))||vs[0], inA=vs.some(v=>v.inA), pr=rowPrice(k);
+    return '<div class="mrow'+(k===cur?' cur':'')+'"><button type="button" class="mck'+(mu.sel[k]?' on':'')+'" data-msel="'+k+'" aria-pressed="'+!!mu.sel[k]+'" aria-label="'+esc(uitLabel(m,k))+' houden">'+(mu.sel[k]?CKW:'')+'</button>'
+      +'<button type="button" class="mbody" data-mcur="'+k+'"><span class="mimg">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'')+'</span><span class="mtxt"><b>'+esc(uitLabel(m,k))+'</b><small>'+esc([...new Set(vs.map(v=>v.code))].join(' · '))+' · <i class="mdot'+(inA?' in':'')+'"></i>'+(inA?'In AFAS':'Nog niet in AFAS')+'</small></span><span class="mpr">'+(pr!=null?eur(pr):'')+'</span></button></div>'; }).join('');
+  const sw=fins.length>1?'<div class="eye mh">Afwerkingen</div><div class="msw">'+fins.map(f=>{ const v=itemVs(k0).find(x=>finKey(x)===f), heeft=vsOf(cur).some(x=>finKey(x)===f), on=mu.fs[f]!==false;
+      return '<span class="mst'+(heeft?'':' grijs')+(mu.cf===f||(!mu.cf&&finKey(curV)===f)?' cur':'')+'"><button type="button" class="mck'+(on?' on':'')+'" data-mfs="'+esc(f)+'" aria-pressed="'+on+'">'+(on?CKW:'')+'</button><button type="button" class="mstn" data-mcf="'+esc(f)+'"'+(heeft?'':' title="Deze uitvoering bestaat niet in '+esc(cap(v.fin))+'"')+'>'+esc(cap(v.fin)||f)+'</button></span>'; }).join('')+'</div>':'';
+  const ci=m.p[cur].idx.find(i=>m.v[i]===curV), r=pminRow(m,cur,ci), care=r&&careOn()&&r[7]!=null;
+  const price=r?'<div class="eye mh">Gekozen uitvoering · '+esc(curV.code)+'</div><div class="dpr'+(care?'':' nocare')+'"><div class="big"><span>Verkoop</span><b>'+eur(r[5])+'</b></div>'+(care?'<div class="big care"><span>Blom Care</span><b>'+eur(r[7])+'</b></div>':'')
+      +'<div class="sm"><span>Inkoop</span><b>'+eur(r[3])+'</b></div><div class="sm"><span>Marge</span><b>'+(r[4]!=null&&r[5]?pct((r[5]-r[4])/r[5]):'–')+'</b></div></div><p class="dcap">Vanafprijs'+(curV.fin?' · '+esc(cap(curV.fin)):'')+(r[0]?' · stof cat. '+esc(r[0]):'')+' · excl. btw</p>':'';
+  // zichtbaarheid en labels: één keer per model, voor alle aangevinkte uitvoeringen
+  const aan=itemVs(k0).filter(v=>!d.ex[v.id]), ocs=aan.map(v=>effV(v.id).oc), ocAll=aan.length&&ocs.every(o=>o===ocs[0])?ocs[0]:null;
+  const labAll=j=>aan.length&&aan.every(v=>(effV(v.id).lab||[])[j]===1), labSome=j=>aan.some(v=>(effV(v.id).lab||[])[j]===1);
+  const att=top?' ':' tabindex="-1" ';
+  const vis='<div class="dvis'+(d.need===k0&&!ocAll?' need':'')+'"><div class="dvh"><span class="eye">Zichtbaarheid</span><span class="dvnow">Geldt voor alle aangevinkte uitvoeringen</span></div>'
+    +'<div class="dseg">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'">'+l+'</button>').join('')+'</div>'
+    +'<div class="dvlh"><span class="eye">Labels</span></div><div class="dlbs">'+LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('')+'</div></div>';
+  return '<div class="dcard mcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
+    +(top?'<span class="dst yes" id="sYes">HOUDEN</span><span class="dst no" id="sNo">NIET</span>':'')
+    +'<div class="dimg mimgbox"><span class="mcnt">Uitvoering '+(pos+1)+' van '+ks.length+'</span>'+frLabel(itemVs(k0))
+    +(!fotoVan(m,curV)?NOFOTO_K:img(curV.img)?'<img src="'+img(curV.img)+'" alt="'+esc(mu.naam)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(top?'<span class="mnav"><button type="button" data-mnav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" data-mnav="1" aria-label="Volgende uitvoering">›</button></span>':'')+'</div>'
+    +'<div class="dmeta"><div class="dtype">'+esc(m.p[cur].t||'Artikel')+' · Model</div><div class="dname">'+esc(mu.naam)+'</div>'
+    +'<div class="dline">'+esc(SUP.short||SUP.name)+' · '+ks.length+' uitvoeringen'+(isFinite(vanaf)?' · vanaf '+eur(vanaf):'')+'</div>'
+    +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+ks.length+' aangevinkt</span></div><div class="mlist">'+rows+'</div>'
+    +'<p class="dcap">Vink uit wat je niet wilt. Tik op een regel om foto en prijs te bekijken.</p>'+sw+price+'</div>'+vis+'</div>';
+}
 function deckCard(k,top){
+  if(F.dk.grp&&F.dk.grp[k]) return modelCard(k,top);
   const m=F.m, p=m.p[k], a=m.v[p.idx[0]], inA=pIn(m,k), has=anyIn(m), d=F.dk, fp=finPrices(m,k);
   const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
   // prijs van de aangezette afwerkingen (de goedkoopste daarvan)
@@ -1904,11 +1989,13 @@ function renderDeck(){
   if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
   if(d.i>=n) return renderDeckDone();
-  const k=d.order[d.i], k2=d.order[d.i+1];
-  B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke producten '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+'</div></div>'
+  const k=d.order[d.i], k2=d.order[d.i+1], isM=!!d.grp[k], mu=d.mu[k], heeftM=Object.keys(d.grp).length>0;
+  const fins=isM?[...new Set(itemVs(k).map(finKey).filter(Boolean))]:[], nSel=isM?d.grp[k].filter(x=>mu.sel[x]).length:0, nFin=isM?fins.filter(f=>mu.fs[f]!==false).length:0;
+  B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke '+(heeftM?'modellen':'producten')+' '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+(heeftM?' modellen':'')+'</div></div>'
     +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
-    +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(k):'')+'</div>'
-    +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+'Niet</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':'')+'</span></button></div>'
+    +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?deckInfo(isM?mu.cur:k):'')+'</div>'
+    +'<div class="dbtns"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button><button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+d.grp[k].length+(fins.length>1?'<small>in '+nFin+(nFin===1?' afwerking':' afwerkingen')+'</small>':''):(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
+    +(isM?'<p class="mhint">Uitgevinkte uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
   $('dList').onclick=toList;
@@ -1916,7 +2003,13 @@ function renderDeck(){
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
   B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openZoomDeck(F.m,+b.dataset.dzoom); });
   // online collectie en labels op de kaart: voor alle aangezette afwerkingen van dit product
-  const aanIds=()=>m.p[k].idx.map(i=>m.v[i].id).filter(id=>!d.ex[id]);
+  const aanIds=()=>itemVs(k).map(v=>v.id).filter(id=>!d.ex[id]);
+  if(isM){ const dc0=$('dcard');
+    dc0.querySelectorAll('[data-msel]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const x=+b.dataset.msel; mu.sel[x]=!mu.sel[x]; syncModelEx(k); renderDeck(); });
+    dc0.querySelectorAll('[data-mcur]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.cur=+b.dataset.mcur; renderDeck(); });
+    dc0.querySelectorAll('[data-mnav]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const ks=d.grp[k], i=ks.indexOf(mu.cur); mu.cur=ks[(i+ +b.dataset.mnav+ks.length)%ks.length]; renderDeck(); });
+    dc0.querySelectorAll('[data-mfs]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const f=b.dataset.mfs; mu.fs[f]=mu.fs[f]===false; syncModelEx(k); renderDeck(); });
+    dc0.querySelectorAll('[data-mcf]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); mu.cf=b.dataset.mcf; renderDeck(); }); }
   const dc=$('dcard');
   if(dc){ dc.querySelectorAll('[data-doc]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const o=b.dataset.doc; aanIds().forEach(id=>{ const x=F.vs[id]||(F.vs[id]={oc:null,lab:[0,0,0,0,0]}); x.oc=o; x.src='gekozen'; }); d.ct[k]=Date.now(); d.need=null; renderDeck(); });
     dc.querySelectorAll('[data-dweg]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); deckGo('no'); });
@@ -1957,16 +2050,16 @@ function deckGo(dir,fromDrag){
   if(!fromDrag&&dir!=='up'&&Date.now()<DECK_T) return;
   const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
   if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
-  if(dir==='yes'&&m.p[k].idx.every(i=>d.ex[m.v[i].id])){ buzz(20); toast('Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
-  if(dir==='yes'){ const open=m.p[k].idx.map(i=>m.v[i]).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
+  if(dir==='yes'&&itemVs(k).every(v=>d.ex[v.id])){ buzz(20); toast(d.grp[k]?'Vink minstens één uitvoering aan, of kies Model niet':'Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
+  if(dir==='yes'){ const open=itemVs(k).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
     if(open.length){ d.need=k; renderDeck(); buzz(20); toast('Kies eerst op de kaart of het product online komt'); return; } }
   if(d.info) d.info=false; d.need=null;
   const c=$('dcard'), u=$('dstack')&&$('dstack').querySelector('.dcard.under');
-  const commit=()=>{ const ids=m.p[k].idx.map(i=>m.v[i].id);
-    d.hist.push({k,prev:ids.map(id=>F.v[id]),vs:JSON.parse(JSON.stringify(F.vs)),ex:Object.assign({},d.ex),ax:Object.assign({},d.ax),fl:JSON.parse(JSON.stringify(d.fl))});
+  const commit=()=>{ const ids=itemVs(k).map(v=>v.id);
+    d.hist.push({k,ids,mu:d.mu[k]?JSON.parse(JSON.stringify(d.mu[k])):null,prev:ids.map(id=>F.v[id]),vs:JSON.parse(JSON.stringify(F.vs)),ex:Object.assign({},d.ex),ax:Object.assign({},d.ax),fl:JSON.parse(JSON.stringify(d.fl))});
     // een voorstel uit je keuzes dat je met Houden bevestigt, telt als jouw keuze
     if(dir==='yes'){ let cf=false; ids.forEach(id=>{ const e=F.vs[id]; if(e&&e.src==='vk'&&!d.ex[id]){ F.vs[id]={oc:e.oc,lab:e.lab.slice(),src:'gekozen',n:e.n}; cf=true; } }); if(cf) d.ct[k]=Date.now(); }
-    if(dir==='yes'&&ids.length>1) m.p[k].idx.map(i=>m.v[i]).forEach(v=>{ const f=finKey(v); if(f) (d.fl[f]=d.fl[f]||[]).push(!!d.ex[v.id]); });
+    if(dir==='yes'&&ids.length>1&&!d.grp[k]) m.p[k].idx.map(i=>m.v[i]).forEach(v=>{ const f=finKey(v); if(f) (d.fl[f]=d.fl[f]||[]).push(!!d.ex[v.id]); });
     ids.forEach(id=>{ F.v[id]=dir==='yes'?(d.ex[id]?0:1):0; });
     d.i++; d.enter=true; buzz(dir==='yes'?[10,30,10]:12); renderForm(); };
   if(!c) return commit();
@@ -1978,7 +2071,7 @@ function deckGo(dir,fromDrag){
 }
 function deckUndo(){
   const d=F.dk, m=F.m, h=d.hist.pop(); if(!h) return;
-  m.p[h.k].idx.forEach((i,j)=>{ const id=m.v[i].id; if(h.prev[j]==null) delete F.v[id]; else F.v[id]=h.prev[j]; });
+  (h.ids||m.p[h.k].idx.map(i=>m.v[i].id)).forEach((id,j)=>{ if(h.prev[j]==null) delete F.v[id]; else F.v[id]=h.prev[j]; }); if(h.mu) d.mu[h.k]=h.mu;
   if(h.vs) F.vs=h.vs; if(h.ex){ d.ex=h.ex; d.ax=h.ax; d.fl=h.fl; }
   d.i=d.order.indexOf(h.k); d.info=false; d.enter=true; F.view='deck'; renderForm();
 }
@@ -2009,14 +2102,14 @@ function saveDeck(){
 }
 function renderDeckDone(){
   const m=F.m, d=F.dk, has=anyIn(m), B=$('formBody');
-  const ks=d.order, yes=ks.filter(k=>m.p[k].idx.some(i=>F.v[m.v[i].id]===1));
+  const ks=d.order, yes=ks.filter(k=>itemVs(k).some(v=>F.v[v.id]===1));
   B.innerHTML='<div class="deck ddone"><div class="dbig">'+(yes.length?OK(34):NO(34))+'</div><h2>'+(yes.length?'Klaar!':'Niets gekozen')+'</h2>'
-    +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+' producten '+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
-    +'<div class="dgrid">'+ks.map(k=>{const p=m.p[k], a=m.v[p.idx[0]], on=p.idx.some(i=>F.v[m.v[i].id]===1); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(shortTitle(m,k))+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(p.idx.map(i=>m.v[i]).find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
+    +'<p>'+(yes.length?'<b>'+yes.length+'</b> van '+ks.length+(Object.keys(d.grp||{}).length?' modellen ':' producten ')+(has?'gehouden':'opgenomen')+'. Tik op een product om je keuze om te draaien.':'Je hebt geen enkel product gekozen. Swipe opnieuw, of sluit dit scherm en kies <b>Serie niet houden</b>.')+'</p>'
+    +'<div class="dgrid">'+ks.map(k=>{const vs=itemVs(k), a=vs.find(v=>fotoVan(m,v)&&img(v.img))||vs[0], on=vs.some(v=>F.v[v.id]===1), naam=d.grp[k]?d.mu[k].naam+' ('+d.grp[k].filter(x=>m.p[x].idx.some(i=>F.v[m.v[i].id]===1)).length+'/'+d.grp[k].length+')':shortTitle(m,k); return '<button type="button" class="dgi '+(on?'yes':'no')+'" data-flip="'+k+'">'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<i></i>')+'<span>'+esc(naam)+'</span>'+(on?'<small class="dgo">'+esc(({niet:'niet online',intern:'online intern',klant:'online klanten'})[effV(vs.find(v=>F.v[v.id]===1).id).oc]||'online: kiezen')+'</small>':'')+'<em>'+(on?OK(12):NO(12))+'</em></button>'}).join('')+'</div>'
     +'<button type="button" class="opzl" id="dOpz">Opzet online collectie bekijken (met deze serie)</button>'
     +'<div class="dbtns2"><button type="button" class="ghost" id="dAgain">Opnieuw swipen</button><button type="button" class="ghost" id="dList2">Overzicht</button><button type="button" class="cta" id="dNext"'+(yes.length?'':' disabled')+'>Opslaan en volgende serie →</button></div>'
     +'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>⌫</kbd> laatste terug</span></div></div>';
-  B.querySelectorAll('[data-flip]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.flip, ids=m.p[k].idx.map(i=>m.v[i].id), on=ids.some(id=>F.v[id]===1); ids.forEach(id=>F.v[id]=on?0:(d.ex[id]?0:1)); renderDeckDone(); });
+  B.querySelectorAll('[data-flip]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.flip, ids=itemVs(k).map(v=>v.id), on=ids.some(id=>F.v[id]===1); ids.forEach(id=>F.v[id]=on?0:(d.ex[id]?0:1)); renderDeckDone(); });
   $('dAgain').onclick=()=>{ d.i=0; d.hist=[]; d.enter=true; renderForm(); };
   $('dNext').onclick=saveDeck; $('dList2').onclick=toList; $('dOpz').onclick=openOpzet;
   if(yes.length) buzz([10,40,10,40,10]);
