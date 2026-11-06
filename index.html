@@ -443,8 +443,7 @@ details.box .tablewrap{border:0}
 /* schermvullende foto: klik (desktop) om verder in te zoomen, op mobiel met twee vingers */
 .zoom .zi img{cursor:zoom-in}
 .zoom .zi.groot{display:flex;align-items:flex-start;justify-content:flex-start;touch-action:pan-x pan-y pinch-zoom}
-.zoom .zi.groot img{max-width:none;max-height:none;width:150%;cursor:zoom-out;margin:auto;flex:none}
-@media (max-width:767px){.zoom .zi.groot img{width:160%}}
+.zoom .zi.groot img{max-width:none;max-height:none;cursor:zoom-out;margin:auto;flex:none}
 .dmeta{border-top:1px solid var(--n500);padding:10px 12px 12px;display:grid;gap:4px;flex:none}
 .dtype{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g400)}
 .dname{font-family:var(--display);font-weight:500;font-size:21px;line-height:1.1}
@@ -825,6 +824,14 @@ body.swv #what{display:none}
 .sseg button.on{background:var(--ink);color:#fff;font-weight:600}
 .status .dlb.chg{outline:none}
 .status{padding-bottom:6px}
+
+/* info: per afwerking online en labels */
+.dinfo .ioc button.on{background:var(--ink);color:#fff;font-weight:600}
+.dinfo .ilb{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.dinfo .dlb{height:28px;padding:0 8px;border:1px solid var(--n500);background:#fff;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink)}
+.dinfo .dlb .dot{width:8px;height:8px;border-radius:50%;background:var(--lc);display:inline-block}
+.dinfo .dlb .ck{display:flex}
+.dinfo .dlb.on{background:var(--lc);border:2px solid var(--ink);padding:0 7px;font-weight:500}
 </style>
 
 <div class="app">
@@ -1487,10 +1494,12 @@ function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; $('zi').class
 $('zx').onclick=closeZoom;
 // klik op de foto: verder inzoomen op de plek waar je klikt, nog een keer klikken: terug
 $('zi').onclick=e=>{ const z=$('zi');
-  if(e.target===z){ if(z.classList.contains('groot')) z.classList.remove('groot'); else closeZoom(); return; }
+  if(e.target===z){ if(z.classList.contains('groot')){ z.classList.remove('groot'); const im=z.querySelector('img'); if(im) im.style.width=''; } else closeZoom(); return; }
   if(e.target.tagName!=='IMG') return;
   const r=e.target.getBoundingClientRect(), fx=(e.clientX-r.left)/r.width, fy=(e.clientY-r.top)/r.height;
-  if(z.classList.toggle('groot')){ z.scrollLeft=z.scrollWidth*fx-z.clientWidth/2; z.scrollTop=z.scrollHeight*fy-z.clientHeight/2; } };
+  // 1,6x de grootte waarop de foto nu in beeld staat (niet 1,6x de schermbreedte: bij een staande foto werd dat veel te groot)
+  if(z.classList.toggle('groot')){ e.target.style.width=Math.round(r.width*1.6)+'px'; z.scrollLeft=z.scrollWidth*fx-z.clientWidth/2; z.scrollTop=z.scrollHeight*fy-z.clientHeight/2; }
+  else e.target.style.width=''; };
 document.addEventListener('keydown',e=>{ if($('zoom').hidden) return; if(e.key==='Escape') closeZoom(); else if(e.key==='ArrowRight') $('zn').click(); else if(e.key==='ArrowLeft') $('zp').click(); });
 
 /* ---------------- deciding ---------------- */
@@ -1787,8 +1796,16 @@ function specKV(m,v){
 function deckInfo(k){
   const m=F.m, p=m.p[k], v=m.v[p.idx.find(i=>!F.dk.ex[m.v[i].id])??p.idx[0]];
   return '<div class="dinfo" id="dinfo"><div class="ihead"><b>'+esc(shortTitle(m,k))+'</b><button type="button" id="iClose" aria-label="Info sluiten">↓ Sluiten</button></div>'
+    +perAfw(m,k)
     +'<div class="isec"><h3>Specificaties</h3><div class="ikv">'+specKV(m,v).map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')+'</div></div>'
     +'</div>'; }
+// bij twee of meer aangezette afwerkingen: per afwerking de online collectie en de labels kiezen
+function perAfw(m,k){ const aan=m.p[k].idx.map(i=>m.v[i]).filter(v=>!F.dk.ex[v.id]); if(aan.length<2) return '';
+  const OC3=[['niet','Niet online'],['intern','Intern'],['klant','Klanten']];
+  return '<div class="isec"><h3>Per afwerking: online en labels</h3>'+aan.map(a=>{ const e=effV(a.id);
+    return '<div class="irow"><div class="irh"><b>'+esc(cap(a.fin)||a.code)+'</b><span class="ipr">'+esc(a.code)+(a.inA?' · in AFAS':'')+'</span></div>'
+      +'<div class="ioc" style="grid-template-columns:repeat(3,1fr)" role="radiogroup" aria-label="Online collectie '+esc(a.code)+'">'+OC3.map(([o,l])=>'<button type="button" role="radio" aria-checked="'+(e.oc===o)+'" class="'+(e.oc===o?'on':'')+'" data-voc="'+esc(a.id)+'|'+o+'">'+l+'</button>').join('')+'</div>'
+      +'<div class="ilb">'+LABELS.map(([n,c],j)=>{ const on=(e.lab||[])[j]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-vlab="'+esc(a.id)+'|'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('')+'</div></div>'; }).join('')+'</div>'; }
 let TQ=[];   // meldingen over voorstellen, samen getoond
 const LEER=3;   // na zoveel dezelfde keuzes wordt het een voorstel voor de rest van de serie
 // afwerkingen: zet je dezelfde afwerking (bijv. walnoot) 3x achter elkaar uit, dan staat die bij de volgende producten standaard uit
