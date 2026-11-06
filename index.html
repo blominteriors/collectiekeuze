@@ -1886,7 +1886,7 @@ function modelCard(k0,top){
     +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button"'+att+'class="'+(ocAll===o?'on':'')+'" data-doc="'+o+'" aria-pressed="'+(ocAll===o)+'">'+l+'</button>').join('')+'</div>'
     +'<div class="dvlh"><span class="eye">Labels</span></div><div class="dlbs">'+LABELS.map(([n,c],j)=>{ const on=labAll(j); return '<button type="button"'+att+'class="dlb'+(on?' on':labSome(j)?' half':'')+'" style="--lc:'+c+'" data-dlb="'+j+'" aria-pressed="'+!!on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+n+'</button>'; }).join('')+'</div></div>';
   return '<div class="dcard mcard '+(top?'top'+(d.enter?' enter':''):'under')+'"'+(top?' id="dcard"':'')+'>'
-    +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp">MEER INFO</span>':'')
+    +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp" hidden></span>':'')
     +foto
     +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · serie '+esc(m.fam)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
     +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
@@ -2110,7 +2110,7 @@ function renderDeck(){
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?(isM?deckInfo(mvOf(m,mu.cur).p,mvOf(m,mu.cur),mu.naam):deckInfo(k)):'')+'</div>'
     +'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.ids.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
     +(isM?'<p class="mhint">Niet gekozen uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
-    +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span><span><kbd>↑</kbd> info</span><span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
+    +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span>'+(isM?'':'<span><kbd>↑</kbd> info</span>')+'<span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
   $('dList').onclick=toList;
   $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); if($('dInf')) $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
@@ -2160,7 +2160,8 @@ function bindDeckSwipe(){
     S.yes.style.opacity=axis==='x'&&dx>0?Math.min(1,dx/100):0; S.no.style.opacity=axis==='x'&&dx<0?Math.min(1,-dx/100):0; S.up.style.opacity=axis==='y'&&dy<0?Math.min(1,-dy/90):0;
     if(u){ const t=Math.min(1,Math.abs(axis==='y'?dy:dx)/140); u.style.transform='scale('+(.94+.06*t)+') translateY('+(14-14*t)+'px)'; } };
   c.addEventListener('pointerdown',e=>{ if(e.button!==0||e.target.closest('button')) return; id=e.pointerId; x0=e.clientX; y0=e.clientY; dx=dy=0; axis=null; c.classList.add('drag'); try{ c.setPointerCapture(id) }catch(_){} });
-  c.addEventListener('pointermove',e=>{ if(e.pointerId!==id) return; dx=e.clientX-x0; dy=e.clientY-y0; if(!axis&&Math.hypot(dx,dy)>6) axis=Math.abs(dx)>=Math.abs(dy)?'x':(dy<0?'y':'x'); if(axis){ e.preventDefault(); paint(); } });
+  const isM=!!(F.dk.grp&&F.dk.grp[F.dk.order[F.dk.i]]);   // modelkaart: omhoog vegen opent geen info (die kaart scrolt zelf)
+  c.addEventListener('pointermove',e=>{ if(e.pointerId!==id) return; dx=e.clientX-x0; dy=e.clientY-y0; if(!axis&&Math.hypot(dx,dy)>6) axis=Math.abs(dx)>=Math.abs(dy)?'x':(dy<0&&!isM?'y':'x'); if(axis){ e.preventDefault(); paint(); } });
   const end=e=>{ if(e.pointerId!==id) return; id=null; c.classList.remove('drag');
     if(axis==='x'&&Math.abs(dx)>100) return deckGo(dx>0?'yes':'no',true);
     if(axis==='y'&&dy<-90) { c.classList.add('back'); c.style.transform=''; S.up.style.opacity=0; return deckGo('up'); }
@@ -2245,7 +2246,7 @@ document.addEventListener('keydown',e=>{
   if((e.key==='z'||e.key==='Z')&&!done){ e.preventDefault(); openZoomDeck(F.m,F.dk.order[F.dk.i]); return; }
   if((e.key==='ArrowRight'||e.key==='Enter')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('yes'); }
   else if((e.key==='ArrowLeft'||e.key==='Delete')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('no'); }
-  else if(e.key==='ArrowUp'&&!done){ e.preventDefault(); if(!F.dk.info) deckGo('up'); }
+  else if(e.key==='ArrowUp'&&!done){ e.preventDefault(); if(!F.dk.info&&!(F.dk.grp&&F.dk.grp[F.dk.order[F.dk.i]])) deckGo('up'); }   // modelkaart: specificaties alleen via de knop
   else if((e.key==='ArrowDown'||e.key==='Escape')&&F.dk.info){ e.preventDefault(); F.dk.info=false; renderDeck(); }
   else if(e.key==='Backspace'){ e.preventDefault(); deckUndo(); }
   else if(e.key==='Enter'&&done){ e.preventDefault(); const n=$('dNext'); if(n&&!n.disabled) n.click(); }
