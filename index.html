@@ -867,7 +867,8 @@ body.swv #what{display:none}
 .mtabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
 .mfoto .frb{top:6px;right:8px}
 .mimgbox{height:min(26vh,220px);position:relative;border-bottom:0;touch-action:pan-y;cursor:ew-resize}
-.mimgbox .phdisc{left:8px;bottom:6px;max-width:82%}
+.mimgbox .phdisc{left:8px;bottom:6px;max-width:calc(100% - 60px)}
+.mimgbox .dzoom{z-index:4}
 .mar{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:36px;height:36px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:var(--ink);cursor:pointer}
 .mar.l{left:8px}.mar.r{right:8px}
 .mfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 12px 8px;font-size:12px;color:var(--g400);font-variant-numeric:tabular-nums}
@@ -1122,7 +1123,7 @@ async function loadSup(id){
   if(SUP&&SUP.id===s.id&&DATA) return;
   SUP=s; ls.set('blom-ck-sup',SUP.id);
   DATA=cache[SUP.id]||(cache[SUP.id]=await dfetch('data/'+SUP.id+'.json').then(r=>r.json()));
-  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); if(MODEL_SUPS[DATA.sup]) afwerkingUitCode(m); zusterFoto(m);});
+  M=DATA.models; byId={}; M.forEach((m,i)=>{m.i=i; byId[m.id]=m; zelfdeCode(m); if(HOUTCODE_SUPS[DATA.sup]) afwerkingUitCode(m); zusterFoto(m);});
   // live: geen knop 'Bekijk als productkaart online collectie' op de swipekaart; geen naamvoorstellen tonen, alleen Blom-namen die in AFAS staan (op het testadres blijven de voorstellen zichtbaar)
   pasCorrectiesToe(SUP.id);
   // geen naamvoorstellen: alleen Blom-namen die in AFAS staan (test en live)
@@ -1449,7 +1450,8 @@ function cardModelHTML(m){
   const tabs='<div class="mtabs">'+(zs.length>1?zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-czz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join(''):'')+'</div>';
   const foto='<div class="mfoto smfoto">'+tabs+frLabel([v])
     +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(zs.length>1?'<button type="button" class="mar l" data-czn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-czn="1" aria-label="Volgende zijde">›</button>':'')+ft.disc+'</div>'
+    +(zs.length>1?'<button type="button" class="mar l" data-czn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-czn="1" aria-label="Volgende zijde">›</button>':'')
+    +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')+ft.disc+'</div>'
     +'<div class="mfoot"><span><b>'+esc(v.code)+'</b>'+(isH?' · hoofdartikel':'')+(z?' · '+ZK[z]:'')+ft.foot+'</span>'
     +(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
   const desc=v.desc?'<p>'+esc(v.desc)+'</p>':'<p class="note">Omschrijving ontbreekt. '+(v.dwrong?'De tekst op piaval.it bij '+esc(v.code)+' beschrijft artikel '+esc(v.dwrong)+' en is daarom niet overgenomen.':(DATA.descSrc?'De prijslijst geeft geen omschrijving voor '+esc(v.code)+'.':'Piaval.it heeft geen tekst voor precies artikel '+esc(v.code)+'.'))+'</p>';
@@ -1668,7 +1670,9 @@ function bindCard(m){
   // seriekaart met modellen: pijltjes bladeren door de zijden, een modelblok toont zijn hoofdartikel, tik op de foto = groot
   $('sSwipe').querySelectorAll('[data-czn]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const tb=[...$('sSwipe').querySelectorAll('.sfold [data-czz]')], zs=tb.map(x=>x.dataset.czz), z=(tb.find(x=>x.classList.contains('on'))||{dataset:{}}).dataset.czz; if(zs.length<2) return; SIDE=zs[(zs.indexOf(z)+(+b.dataset.czn)+zs.length)%zs.length]; setVi(m,curVi); });
   $('sSwipe').querySelectorAll('[data-mh]').forEach(b=>b.onclick=()=>setVi(m,+b.dataset.mh));
-  const sf=$('sfoto'); if(sf) sf.onclick=e=>{ if(e.target.closest('button')) return; openZoom(m); };
+  const sz=$('sSwipe').querySelector('[data-szoom]'), zvi=sz?+sz.dataset.szoom:curVi;
+  if(sz) sz.onclick=e=>{ e.stopPropagation(); openZoom(m,zvi); };
+  const sf=$('sfoto'); if(sf) sf.onclick=e=>{ if(e.target.closest('button')) return; openZoom(m,zvi); };
   $('sSwipe').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>setVi(m,m.p[+b.dataset.pk].idx[0]));
   $('sSwipe').querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>setVi(m,groups(m)[+b.dataset.type].idx[0]));
   $('sSwipe').querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const n=g.pk.length; setVi(m,m.p[g.pk[(pos+(b.dataset.act==='next'?1:-1)+n)%n]].idx[0]); });
@@ -1693,12 +1697,13 @@ function bindCard(m){
 }
 
 /* ---------------- foto schermvullend ---------------- */
-function openZoom(m){ const v=m.v[curVi], g=grpOf(m,curVi), pos=g.pk.indexOf(v.p);
+// vi: het artikel waarvan de foto groot komt (seriekaart met modellen: de foto van de tegel, niet per se het getoonde artikel)
+function openZoom(m,vi){ const i=vi==null?curVi:vi, v=m.v[i], g=grpOf(m,i), pos=g.pk.indexOf(v.p);
   if(!sideImg(v)) return;
   $('zi').classList.remove('groot');
   $('zi').innerHTML='<img src="'+sideImg(v)+'" alt="'+esc(m.fam+' '+v.code)+'">';
   $('zt').innerHTML=esc(m.fam)+' · '+esc(m.p[v.p].l)+'<small>'+esc(v.code)+(v.fin?' · '+esc(cap(v.fin)):'')+' · '+(pos+1)+' / '+g.pk.length+'</small>'+sideBtns(v,'data-zzz');
-  $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.zzz; setVi(m,curVi); openZoom(m); });
+  $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ SIDE=b.dataset.zzz; setVi(m,curVi); openZoom(m,vi); });
   $('zp').hidden=$('zn').hidden=g.pk.length<2;
   $('zp').onclick=()=>{ setVi(m,m.p[g.pk[(pos-1+g.pk.length)%g.pk.length]].idx[0]); openZoom(m); };
   $('zn').onclick=()=>{ setVi(m,m.p[g.pk[(pos+1)%g.pk.length]].idx[0]); openZoom(m); };
@@ -1717,7 +1722,22 @@ function openZoomDeck(m,k,j){
   $('zp').onclick=()=>openZoomDeck(m,k,pos-1);
   $('zn').onclick=()=>openZoomDeck(m,k,pos+1);
   $('zoom').hidden=false; }
-function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; $('zi').classList.remove('groot'); }
+// schermvullende foto vanuit de modelkaart: per tegel de beste foto, ‹ › bladert door de tegels, de zijden via de knoppen
+function openZoomModel(m,k0,j){ const d=F&&F.dk, mu=d&&d.mu[k0]; if(!mu) return;
+  const fotos=mu.tiles.map(t=>({t, v:tegelFoto(m,t,mvOf(m,t.main))})).filter(x=>fotoVan(m,x.v)&&img(x.v.img)).filter((x,i,a)=>a.findIndex(y=>y.v.img===x.v.img)===i);
+  if(!fotos.length) return;
+  const n=fotos.length, start=j==null?Math.max(0,fotos.findIndex(x=>x.t.ids.includes(mu.cur))):j, pos=((start%n)+n)%n, {t,v}=fotos[pos], cur=mvOf(m,t.main);
+  const {zs,z}=modelZij(mu,v), src=z?img(v.zijden[z].img):img(v.img);
+  $('zi').classList.remove('groot');
+  $('zi').innerHTML='<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'">';
+  $('zt').innerHTML=esc(mu.naam)+' · '+esc(modelLab(mu,cur))+'<small>'+esc(cur.code)+(v!==cur?' · foto van '+esc(v.code):'')+(z?' · '+ZK[z]:'')+(n>1?' · '+(pos+1)+' / '+n+' uitvoeringen':'')+'</small>'
+    +(zs.length>1?'<div class="pk-zij">'+zs.map(s=>'<button type="button" class="'+(s===z?'on':'')+'" data-zzz="'+s+'" aria-pressed="'+(s===z)+'">'+SIDEL[s]+'</button>').join('')+'</div>':'');
+  $('zt').querySelectorAll('[data-zzz]').forEach(b=>b.onclick=()=>{ mu.zij=b.dataset.zzz; openZoomModel(m,k0,pos); });
+  $('zp').hidden=$('zn').hidden=n<2;
+  $('zp').onclick=()=>openZoomModel(m,k0,pos-1);
+  $('zn').onclick=()=>openZoomModel(m,k0,pos+1);
+  $('zoom').hidden=false; }
+function closeZoom(){ $('zoom').hidden=true; $('zi').innerHTML=''; $('zi').classList.remove('groot'); if(F&&F.view==='deck'&&!$('form').hidden) renderDeck(); }
 $('zx').onclick=closeZoom;
 // klik op de foto: verder inzoomen op de plek waar je klikt, nog een keer klikken: terug
 $('zi').onclick=e=>{ const z=$('zi');
@@ -1863,7 +1883,8 @@ const modelTegel=(mu,id)=>mu.tiles.find(t=>t.main===id)||{main:id,ids:[id],ook:[
 /* ---------------- modellen op basiscode ---------------- */
 // model = de leverancierscode vóór de slash (32-61); hoofdartikel = het laagste nummer na de slash (32-61/3);
 // elke code met dezelfde basis is een uitvoering en blijft een eigen artikel (eigen code, prijzen, foto's, AFAS). Geen extra kolommen nodig.
-const MODEL_SUPS={piaval:1};   // leveranciers waarvan de codes zo zijn opgebouwd
+const MODEL_SUPS={piaval:1,brees:1};   // leveranciers met modelkaarten (één kaart per soort binnen de serie)
+const HOUTCODE_SUPS={piaval:1};        // leveranciers met een houtletter achter het artikelnummer (R, N, F)
 const modelAan=()=>!!(SUP&&MODEL_SUPS[SUP.id]);
 // basis en toevoeging; zonder slash hoort een lettertoevoeging achter een nummer (124N, 72B) bij dezelfde basis
 const codeDelen=c=>{ c=String(c); const i=c.indexOf('/'); if(i>=0) return [c.slice(0,i),c.slice(i+1)]; const x=c.match(/^(\d+)([A-Z]+)$/); return x?[x[1],x[2]]:[c,'']; };
@@ -1894,6 +1915,8 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
     const leeg=MFEAT.every(k=>k==='mech'||!e.feat[k]);
     MFEAT.forEach(k=>{ const a=e.feat[k]||'', b=H.feat[k]||''; if(a===b) return; if(a) basis.push(a+(k==='rug'&&v.rugAfgeleid?' (uit code A)':'')); else if(!leeg&&(/^met /.test(b)||k==='stap'||k==='greep')) basis.push(zonder(b)); });
     // afwerking (beuken, walnoot, eiken …) is geen eigen uitvoering: die zit bij het artikel en staat niet in de titel
+    // geen eigenschappen in de data (Bree): dan is de productomschrijving uit de prijslijst de titel ('Deluxe · vierpoot')
+    if(!basis.length&&leeg&&MFEAT.every(k=>k==='mech'||!H.feat[k])){ const pl=plabel(m,v.p), ph=plabel(m,h.p); if(pl&&pl!=='standaard'&&pl!==ph) basis.push(pl); }
     const hs=new Set(h.sizes||[]), nieuw=(v.sizes||[]).filter(s=>!hs.has(s)), a=modelMaten(nieuw.length?nieuw:v.sizes), b=modelMaten(h.sizes);
     if(a&&a!==b) extra.push(a);
     MDIM.forEach(([n],i)=>{ if(e.dim[i]!=null&&e.dim[i]!==H.dim[i]) extra.push(n+' '+e.dim[i]+' cm'); });
@@ -1904,7 +1927,7 @@ function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
       if(dd(2)>=3) woorden.push('hogere zitting'); else if(dd(2)<=-3) woorden.push('lagere zitting');
       const dh=dd(1)-dd(2); if(dh>=3) woorden.push('hogere rug'); else if(dh<=-3) woorden.push('lagere rug');
       if(dd(3)>=3) woorden.push('dieper'); else if(dd(3)<=-3) woorden.push('minder diep'); }
-    return {v,label:cap([basis.join(' · '),woorden.join(', ')].filter(Boolean).join(' · ')),basis,extra,dim:extra.join(' · '),leeg:leeg&&!v.fin}; });
+    return {v,label:cap([basis.join(' · '),woorden.join(', ')].filter(Boolean).join(' · ')),basis,extra,dim:extra.join(' · '),leeg:leeg&&!v.fin&&!basis.length}; });
   const dub=r=>rows.some(x=>x!==r&&x.label===r.label&&x.dim===r.dim);
   // zonder enige specificatie in de prijslijst zeggen we dat, in plaats van alleen de code te herhalen
   rows.filter(r=>!r.hoofd&&r.leeg&&!r.label).forEach(r=>{ r.label='Specificaties ontbreken'; });
@@ -1953,7 +1976,8 @@ function fotoVanTegel(m,cur,pv){ if(pv===cur) return {disc:modelDisc(m,cur), foo
   const regels=cur.fin&&pv.fin&&cur.fin!==pv.fin?['dit artikel '+cur.fin+', foto '+pv.fin]:[];
   return {disc:'<div class="phdisc"><b>Foto van '+esc(pv.code)+'</b>'+(regels.length?'<span>'+esc(regels.join(' · '))+'</span>':'')+'</div>', foot:' · foto van '+esc(pv.code)}; }
 // bij een tegel met meer afwerkingen: '(Beech) · ook 122-11/1R (Oak)'
-const ookTxt=(v,t)=>t.ook.length?(v.fin?' ('+esc(v.fin)+')':'')+' · ook '+t.ook.map(o=>esc(o.code)+(o.fin?' ('+esc(o.fin)+')':'')).join(', '):'';
+// zelfde code met alleen een andere afwerking of maat (Bree): dan alleen die afwerking of maat noemen
+const ookTxt=(v,t)=>t.ook.length?(v.fin?' ('+esc(v.fin)+')':'')+' · ook '+t.ook.map(o=>o.code===v.code?esc(o.fin||o.id):esc(o.code)+(o.fin?' ('+esc(o.fin)+')':'')).join(', '):'';
 // waarschuwing op de foto van de modelkaart: altijd als de foto van een ander artikel is (ook bij alleen een andere afwerking)
 // Kort en concreet: wat is er anders aan het artikel op de foto? Maten (6 cm breder), afwerking (dit artikel Oak, foto Beech)
 // en eigenschappen die van beide bekend zijn. Wat de prijslijst niet vermeldt, noemen we niet.
@@ -1978,7 +2002,8 @@ function modelCard(k0,top){
   const {zs,z}=modelZij(mu,pv), src=!fotoVan(m,pv)?null:z?img(pv.zijden[z].img):img(pv.img), pos=zs.indexOf(z);
   const foto='<div class="mfoto"><div class="mtabs">'+zs.map(s=>'<button type="button"'+att+'class="'+(s===z?'on':'')+'" data-mz="'+s+'" aria-pressed="'+(s===z)+'">'+ZK[s]+'</button>').join('')+'</div>'+frLabel(vs)
     +'<div class="dimg mimgbox" data-mswipe="1">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(mu.naam+' '+cur.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')+ft.disc+'</div>'
+    +(top&&zs.length>1?'<button type="button" class="mar l" data-mzn="-1" aria-label="Vorige zijde">‹</button><button type="button" class="mar r" data-mzn="1" aria-label="Volgende zijde">›</button>':'')
+    +(top&&src?'<button type="button" class="dzoom" data-dzoom="'+k0+'" aria-label="Foto vergroten" title="Foto vergroten (Z)">'+ZOOMICO+'</button>':'')+ft.disc+'</div>'
     +'<div class="mfoot"><span><b>'+esc(cur.code)+'</b>'+(z?' · '+ZK[z]:'')+ft.foot+'</span>'+(zs.length>1?'<span class="mdots">'+zs.map(s=>'<i class="'+(s===z?'on':'')+'"></i>').join('')+'<em>'+(pos+1)+'/'+zs.length+'</em></span>':'')+'</div></div>';
   // uitvoeringen als tegels: links een vinkje (houden), rechts label (alleen het verschil), de volledige code en de meerprijs op inkoop (tik = bekijken)
   const WCK='<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 9.5l3.5 3.3L14.5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
@@ -2004,7 +2029,7 @@ function modelCard(k0,top){
     +(top?'<span class="dst yes" id="sYes">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+'</span><span class="dst no" id="sNo">NIET</span><span class="dst up" id="sUp" hidden></span>':'')
     +foto
     +'<div class="dmeta"><div class="dtype">'+esc(mu.type)+' · serie '+esc(m.fam)+'</div><div class="dname">'+esc(mu.naam)+'</div>'
-    +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+vs.length+' uitvoeringen · meerprijzen op inkoop</div>'
+    +'<div class="dline">Hoofdartikel '+esc(h.code)+' (goedkoopste) · '+T.length+' uitvoeringen'+(vs.length>T.length?' · '+vs.length+' artikelen':'')+' · meerprijzen op inkoop</div>'
     +'<div class="mlh"><span class="eye">Uitvoeringen</span><span>'+nSel+' van '+T.length+' gekozen</span></div><div class="mtiles">'+tiles+'</div>'
     +'<p class="mcap">Vink de uitvoeringen aan die je wilt houden. Tik op een tegel om die uitvoering op de foto te zien.</p>'+price+'</div>'+vis+'</div>';
 }
@@ -2230,7 +2255,7 @@ function renderDeck(){
   $('dList').onclick=toList;
   $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); if($('dInf')) $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
-  B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openZoomDeck(F.m,+b.dataset.dzoom); });
+  B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const kk=+b.dataset.dzoom; if(F.dk.grp[kk]) openZoomModel(F.m,kk); else openZoomDeck(F.m,kk); });
   // online collectie en labels op de kaart: voor alle aangezette afwerkingen van dit product
   const aanIds=()=>itemVs(k).map(v=>v.id).filter(id=>!d.ex[id]);
   // de kaart opnieuw tekenen zonder dat een gescrolde modelkaart terugspringt
@@ -2358,7 +2383,7 @@ document.addEventListener('keydown',e=>{
   if(!$('zoom').hidden) return;   // schermvullende foto open: pijltjes bladeren door de foto's
   if($('form').hidden||!F||F.view!=='deck'||e.target.closest('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return;
   const done=F.dk.i>=F.dk.order.length;
-  if((e.key==='z'||e.key==='Z')&&!done){ e.preventDefault(); openZoomDeck(F.m,F.dk.order[F.dk.i]); return; }
+  if((e.key==='z'||e.key==='Z')&&!done){ e.preventDefault(); const kk=F.dk.order[F.dk.i]; if(F.dk.grp[kk]) openZoomModel(F.m,kk); else openZoomDeck(F.m,kk); return; }
   if((e.key==='ArrowRight'||e.key==='Enter')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('yes'); }
   else if((e.key==='ArrowLeft'||e.key==='Delete')&&!done){ e.preventDefault(); if(F.dk.info){ F.dk.info=false; } deckGo('no'); }
   else if(e.key==='ArrowUp'&&!done){ e.preventDefault(); if(!F.dk.info&&!(F.dk.grp&&F.dk.grp[F.dk.order[F.dk.i]])) deckGo('up'); }   // modelkaart: specificaties alleen via de knop
