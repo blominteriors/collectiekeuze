@@ -810,7 +810,7 @@ body.swv #what{display:none}
 .links a{height:52px;font-weight:400}.links a b{font-family:var(--display);font-weight:500;font-size:17px}.links a span{font-size:12px;color:var(--g400)}.links a i{font-style:normal;margin-left:8px;color:var(--ink)}
 
 /* kleine waarschuwing links onderin de foto */
-.phdisc{position:absolute;left:10px;bottom:40px;z-index:3;max-width:70%;padding:2px 6px;background:rgba(255,255,255,.92);border:1px solid var(--n500);font-size:10.5px;line-height:1.3;color:var(--g400)}
+.phdisc{position:absolute;left:10px;bottom:46px;z-index:3;max-width:70%;padding:2px 6px;background:rgba(255,255,255,.92);border:1px solid var(--n500);font-size:10.5px;line-height:1.3;color:var(--g400)}
 
 /* status bij Blom: duidelijke keuzes */
 .status .srow2{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:4px 8px;padding:6px 10px}
@@ -848,6 +848,10 @@ body.swv #what{display:none}
 .dvis.sv{margin-top:10px;padding:8px 12px 10px}
 .dvis.sv .dlb{height:28px}
 .fold{padding-bottom:6px}
+
+.phdisc{display:grid;gap:1px;max-width:78%}
+.phdisc b{font-weight:600;color:var(--ink)}
+.phdisc span{font-size:10.5px;color:#9A6A00}
 </style>
 
 <div class="app">
@@ -1047,7 +1051,7 @@ async function loadSup(id){
   pasCorrectiesToe(SUP.id);
   // geen naamvoorstellen: alleen Blom-namen die in AFAS staan (test en live)
   M.forEach(m=>m.v.forEach(v=>{ delete v.nv; delete v.nvw; delete v.nvc; if(!(v.inA&&v.blom&&v.blom===v.pkn)) delete v.pkn; }));
-  loadedChunks={}; for(const k in IMG) delete IMG[k];
+  loadedChunks={}; for(const k in IMG) delete IMG[k]; for(const k in FK) delete FK[k];
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
   D=loadLocal(); TEAM={}; subscribe(); loadPrices();
@@ -1302,13 +1306,32 @@ function zusterFoto(m){
 }
 function srcName(m,x){ const S=m.fam.toUpperCase(), X=x.toUpperCase(); let r=X.startsWith(S)?x.slice(S.length).trim():x; if(!r) r=m.fam;
   return r.toLowerCase().replace(/(^|\s)([a-z])/g,(a,b,c)=>b+c.toUpperCase()).replace(/\bIi\b/g,'II'); }
+/* ---------------- waarschuwing bij de foto ---------------- */
+// verschillen uit de fotocontrole leesbaar maken: 'Breedte wijkt af: foto 66 cm, dit artikel 71 cm.' -> '5 cm breder dan model 109-12/1'
+const DIMW={Breedte:['breder','smaller'],Zitbreedte:['zitting breder','zitting smaller'],Diepte:['dieper','minder diep'],Zitdiepte:['zitting dieper','zitting minder diep'],Hoogte:['hoger','lager'],Zithoogte:['zithoogte hoger','zithoogte lager'],Armleuninghoogte:['armleuning hoger','armleuning lager']};
+function fotoVerschillen(v){ const ref=v.imgc&&v.imgc!==v.code?'model '+v.imgc:'het model op de foto';
+  return (v.why||[]).map(w=>{ let r=w.match(/^(\S+) wijkt af: foto ([\d.,]+) cm, dit artikel ([\d.,]+) cm/);
+    if(r&&DIMW[r[1]]){ const a=parseFloat(r[2].replace(',','.')), b=parseFloat(r[3].replace(',','.')), d=Math.round((b-a)*10)/10; if(!d) return null; return fmt(Math.abs(d))+' cm '+DIMW[r[1]][d>0?0:1]+' dan '+ref; }
+    r=w.match(/^(\S+) wijkt af: (.*?)\.?$/); return r?cap(r[1])+': '+r[2]:null; }).filter(Boolean); }
+// dezelfde foto bij een ander product van de serie (bijv. barkrukken met verschillende zithoogte): herkennen aan het beeld zelf
+const FK={}; function fotoKey(i){ if(i==null) return null; if(FK[i]) return FK[i]; const d=IMG[i]; if(!d) return null; return FK[i]=d.length+':'+d.slice(-120); }
+const maatVan=(m,v)=>{ const d=(v.dim||[]); if(d.some(x=>x!=null)) return d; const z=m.p[v.p].idx.map(i=>m.v[i]).find(x=>(x.dim||[]).some(y=>y!=null)); return z?z.dim:[]; };
+function zelfdeFotoAls(m,v){ const k=fotoKey(v.img); if(!k) return null;
+  return m.v.find(x=>x.p!==v.p&&fotoVan(m,x)&&fotoKey(x.img)===k)||null; }
+function maatVerschil(m,v,x){ const dl=['breedte','zitbreedte','diepte','zitdiepte','zithoogte','armleuninghoogte','hoogte'], a=maatVan(m,v), b=maatVan(m,x), out=[];
+  [4,0,6,2].forEach(i=>{ if(a[i]!=null&&b[i]!=null&&a[i]!==b[i]) out.push(dl[i]+' '+fmt(a[i])+' cm (foto: '+fmt(b[i])+' cm)'); }); return out.slice(0,2); }
+function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
+  if(v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'){ kop=v.imgq==='base'?'Foto van de basisuitvoering':v.imgq==='bekl'?'Zelfde model, andere bekleding':'Foto van een ander model'; regels=fotoVerschillen(v); }
+  else { const x=zelfdeFotoAls(m,v); if(x){ kop='Zelfde foto als '+x.code; regels=maatVerschil(m,v,x).map(t=>'Dit artikel: '+t); } }
+  if(!kop) return '';
+  return '<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'"><b>'+esc(kop)+'</b>'+regels.slice(0,3).map(t=>'<span>'+esc(t)+'</span>').join('')+'</div>'; }
 function cardHTML(m){
   const v=m.v[curVi], nin=m.v.filter(x=>x.inA).length, G=groups(m), g=grpOf(m,curVi), k=v.p, P=m.p[k], pos=g.pk.indexOf(k), gin=g.pk.filter(x=>pIn(m,x)).length;
   const shown=x=>x===k?curVi:m.p[x].idx[0];
   const FP=finPrices(m,k);
   const typeChips=G.length>1?'<div class="types">'+G.map((x,n)=>'<button type="button" class="'+(x===g?'on':'')+'" data-type="'+n+'">'+esc(x.t)+' <span>'+x.pk.length+'</span></button>').join('')+'</div>':'';
   const slides=g.pk.map(x=>m.v[shown(x)]).map(x=>'<div class="slide">'+(!fotoVan(m,x)?NOFOTO:img(x.img)?'<img src="'+(x===v?sideImg(x):img(x.img))+'" alt="'+esc(m.fam+' '+x.code)+'">':'<span class="wait">foto laden…</span>')+'</div>').join('');
-  const lab=fotoVan(m,v)&&v.imgq&&v.imgq!=='exact'&&v.imgq!=='web'&&v.imgq!=='fin'?'<div class="phdisc" title="'+esc((v.why||[]).join(' · '))+'">'+(v.imgq==='base'?'Foto van de basisuitvoering':v.imgq==='bekl'?'Zelfde model, andere bekleding':'Foto van een ander model')+'</div>':'';
+  const lab=fotoDisc(m,v);
   const qtxt=!fotoVan(m,v)?'':v.imgq==='exact'?'Foto: '+esc(v.code):v.imgq==='base'?'Foto: basisuitvoering, hout/afwerking kan afwijken':v.imgq==='fin'?'Foto: zelfde product, frame/afwerking wijkt af':v.imgq==='bekl'?'Foto: zelfde model, bekleding wijkt af':v.imgq==='web'?'Foto: van internet ('+fmt(v.conf||0)+'% zeker)':'Foto: ander artikel uit de serie';
   const thumbs=g.pk.map((x,j)=>{const a=m.v[shown(x)], n=pIn(m,x); return '<button type="button" class="vbtn'+(x===k?' on':'')+'" data-pk="'+x+'" aria-pressed="'+(x===k)+'" title="'+esc(m.p[x].l)+(n?' · in AFAS':' · niet in AFAS')+'"><i class="adot" aria-hidden="true">'+(n?OK(12):NO(12))+'</i>'+(fotoVan(m,a)&&img(a.img)?'<img src="'+img(a.img)+'" alt="">':'<span class="ni"></span>')+'<span>'+(j+1)+'</span></button>'}).join('');
   const fins=P.idx.length>1?'<div class="fins2" title="Zelfde product in een andere houtsoort of afwerking; elke afwerking heeft een eigen artikelnummer"><span class="eye">'+esc(P.fl||'Afwerking')+'</span><div class="fb">'+P.idx.map(i=>{const a=m.v[i], mp=mpTxt(FP,a.id); return '<button type="button" class="'+(i===curVi?'on':'')+'" data-vi="'+i+'" title="'+esc(a.code)+(a.inA?' · in AFAS':' · niet in AFAS')+'"><b>'+esc(cap(a.fin)||a.code)+'</b>'+(mp?'<span class="mp">'+mp+'</span>':'')+'<i class="adot" aria-hidden="true">'+(a.inA?OK(12):NO(12))+'</i></button>'}).join('')+'</div></div>':'';
