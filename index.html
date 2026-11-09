@@ -343,19 +343,19 @@ details.box .tablewrap{border:0}
 .pbar[hidden]{display:none}
 .pbk{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;margin-top:-4px}
 .pbk .pbl{font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-variant-numeric:tabular-nums}
-.actions .pbk button.pbt{flex:none;height:32px;min-height:32px;padding:0 2px;border:0;background:none;font-family:inherit;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px;color:var(--ink);gap:0}
-.pbv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--n500);font-variant-numeric:tabular-nums}
+.pbk button.pbt{flex:none;height:32px;min-height:32px;padding:0 2px;border:0;background:none;font-family:inherit;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px;color:var(--ink);gap:0}
+.pbv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--ink);font-variant-numeric:tabular-nums}
 .pbv>div{display:grid;gap:1px;padding:4px 8px 5px;border-right:1px solid var(--n500);min-width:0}
 .pbv>div:last-child{border-right:0}
 .pbv span{font-size:10.5px;color:var(--g400);white-space:nowrap}
 .pbv b{font-weight:500;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pbv .vk b{font-family:var(--display);font-weight:500;font-size:14.5px}
-.pbv .care{box-shadow:inset 0 2px 0 var(--roze)}
+.pbv .care{box-shadow:inset 0 3px 0 #f2a77a}.pbk .pbl b{color:var(--ink);font-weight:600}
 @media (max-width:420px){.pbv>div{padding:4px 5px 5px}.pbv span{font-size:10px}.pbv b{font-size:11.5px;overflow:visible}.pbv .vk b{font-size:12.5px}}
 .hbp{border:1px solid var(--n500);padding:8px 10px 9px;max-height:min(50vh,50dvh);overflow-y:auto;overscroll-behavior:contain;margin-bottom:4px}
 .hbp[hidden]{display:none}
 .hbk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
-.actions .hbk button.hbx{width:32px;height:32px;padding:0;border:0;background:none;font-size:20px;line-height:1;color:var(--ink);justify-content:center}
+.hbk button.hbx{width:32px;height:32px;padding:0;border:0;background:none;font-size:20px;line-height:1;color:var(--ink);justify-content:center}
 .hbr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:10px;align-items:baseline;padding:4px 0;border-top:1px solid var(--n300);font-size:12px;font-variant-numeric:tabular-nums}
 .hbr span:nth-child(2){color:var(--g400);font-size:11.5px}
 .hbr b{font-weight:400;white-space:nowrap;text-align:right}
@@ -969,6 +969,32 @@ body.swv #what{display:none}
 .labtog .s2d i{width:8px;height:8px}
 .labtog.open{border-style:dashed;padding:2px 4px}.labtog.open .slb{border:0;padding:0 4px;height:20px}
 .mblok.sblok{border-left-width:1px;margin-top:6px}
+/* stap 1 in de stijl van stap 2 */
+.ssoort .sokop{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid var(--n300)}
+.ssoort>.s1k{margin:10px 16px 0}
+.s1foto{position:relative;height:300px;cursor:zoom-in;border-bottom:1px solid var(--n300);overflow:hidden}
+.s1foto img{position:absolute;left:12px;right:12px;top:10px;bottom:46px;width:calc(100% - 24px);height:calc(100% - 56px);object-fit:contain;object-position:center bottom}
+.s1foto.fr img{top:36px;height:calc(100% - 82px)}
+.s1foto .nofoto,.s1foto .wait{position:absolute;inset:0 0 40px;display:grid;place-items:center}
+.s1foto .frb{top:8px;right:8px}
+.s1foto .mar{top:auto;bottom:6px;transform:none;width:34px;height:34px}
+.s1foto .mar.l{left:6px}.s1foto .mar.r{right:6px}
+.s1foto .dzoom{bottom:46px;right:6px;width:32px;height:32px}
+.s1zij{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;border:1px solid var(--n500);background:#fff;max-width:calc(100% - 96px);overflow-x:auto;scrollbar-width:none}
+.s1zij::-webkit-scrollbar{display:none}
+.s1zij button{flex:none;height:28px;padding:0 9px;border:0;border-right:1px solid var(--n500);background:#fff;font-size:11.5px;color:var(--ink);white-space:nowrap}
+.s1zij button:last-child{border-right:0}
+.s1zij button.on{background:var(--ink);color:#fff;font-weight:600}
+.ssoort .smods .mlh{margin:8px 0 5px}
+.s1tiles .s1c{padding:5px 8px;min-height:0}.s1tiles{gap:4px}
+.s1cr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}.s1cr .mmp{justify-self:auto}
+.s1tiles .s1c .s2s{margin-right:0}
+.s1tiles .s2tt{font-size:13.5px}
+.ssoort .snote{margin:4px 0 0}
+.actions.soort{grid-template-columns:52px 1fr 1fr}
+.actions.soort .b-undo span{display:none}
+.below .steam2 .team{margin:0 2px 14px}
+.links a b{font-weight:500}
 .mblok.sblok .mgrid{border-top:0}
 .dbtns.m2{grid-template-columns:1fr 1.8fr}
 .dbtns.m2 .dyl{font-size:clamp(12.5px,3.5vw,15px);text-wrap:balance}
@@ -981,9 +1007,15 @@ body.swv #what{display:none}
 .s2n{margin-left:auto;flex:none;font-size:12px;color:var(--g400);white-space:nowrap}
 .s2b{display:flex;flex-direction:column;overflow-y:auto;min-height:0;overscroll-behavior:contain}
 .s2b>*{flex:none}
-.s2foto{flex:1 1 auto;min-height:190px;max-height:480px;position:relative;border-bottom:1px solid var(--n300);cursor:zoom-in}
+.s2foto{flex:1 1 auto;min-height:130px;max-height:480px;position:relative;border-bottom:1px solid var(--n300);cursor:zoom-in}
 .s2foto img{position:absolute;left:12px;right:12px;top:10px;bottom:8px;width:calc(100% - 24px);height:calc(100% - 18px);object-fit:contain;object-position:center bottom}
-.s2foto.mp img{top:60px;height:calc(100% - 68px)}
+.s2foto.fr img{top:36px;height:calc(100% - 44px)}
+.s1k{border:1px solid var(--ink);margin:6px 12px 0;background:#fff}
+.s1k .s2cap{border-bottom:0}
+.s2b>.s1k{flex:1 0 auto;display:flex;flex-direction:column}
+.s2b>.s1k>*{flex:none}.s2b>.s1k>.s2foto{flex:1 1 auto}
+.s2lint{padding-bottom:7px;border-bottom:1px solid var(--n300)}
+.s2f .pbk{margin-top:0}
 .s2foto .nofoto,.s2foto .wait{position:absolute;inset:0;display:grid;place-items:center}
 .s2foto .frb{top:8px;right:8px}
 .s2foto .mar{top:auto;bottom:10px;transform:none}
@@ -998,7 +1030,7 @@ body.swv #what{display:none}
 .s2c1 b{color:var(--ink);font-weight:600}
 .s2c1 .sst{flex:none;height:20px;padding:0 6px;font-size:11px}
 .s2c2{font-size:11.5px;color:var(--ink)}.s2c2 .eye{margin-right:4px}
-.s2kies{padding:8px 8px 4px}
+.s2kies{padding:6px 8px 2px}
 .s2kies .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 4px 6px}
 .s2kies .mcap{margin:5px 4px 0}
 .s2g{display:grid;gap:3px}
@@ -1029,7 +1061,7 @@ body.swv #what{display:none}
 .s2s{display:flex;align-items:center;gap:3px;font-size:9.5px;color:var(--g400);white-space:nowrap;border-top:1px solid var(--n300);padding-top:3px;margin-top:1px}
 .s2d{display:inline-flex;gap:1.5px;flex:none}
 .s2d i{width:8px;height:8px;border-radius:50%;background:var(--lc);display:block}
-.s2spec{margin:6px 12px 10px}
+.s2spec{margin:2px 12px 4px}
 .s2f{border-top:1px solid var(--ink);padding:7px 12px calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:6px;background:#fff}
 .s2f .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0}
 .s2vg{font-size:11px;color:var(--g400);white-space:nowrap}
@@ -1557,6 +1589,7 @@ function renderCard(soft){
   const nieuwB=b0!==curB||cur!==m; curB=b0;
   if(cur!==m||curOrd!==prState||nieuwB){ const fresh=nieuwB; cur=m; curOrd=prState; curVi=modelAan()?m.v.indexOf(soortModellen(m)[0].hoofd):m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
   const has=anyIn(m);
+  $('actions').classList.toggle('soort',curB!=null);
   if(curB!=null){ const pl=soortPl(curB); $('noTxt').textContent=pl+' niet houden'; $('yesTxt').textContent=pl+' houden'; }
   else { $('noTxt').textContent=has?'Serie niet houden':'Serie niet opnemen'; $('yesTxt').textContent=has?'Serie houden':'Serie opnemen'; }
   $('what').innerHTML='Je beoordeelt de <b>hele serie '+esc(m.fam)+'</b><span class="kh"> · <kbd>Enter</kbd> '+(has?'houden':'opnemen')+' · <kbd>Del</kbd> niet · <kbd>⌫</kbd> vorige · <kbd>← →</kbd> artikel</span>';
@@ -1653,6 +1686,8 @@ function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
 // stand van een uitvoering (tegel) in AFAS: 'klant' (online voor klanten), 'intern', 'niet' (in AFAS, niet online) of 'geen' (niet in AFAS)
 // onder de foto (stap 1): zichtbaarheid en de labels als bolletjes; tik op de bolletjes = labels voluit (en terug)
 let LABOPEN=false;
+const labelsNu=lab=>{ const aan=LABELS.filter((x,i)=>lab[i]===1); if(!aan.length) return 'geen'; if(aan.length<=2&&!LABOPEN) return esc(aan.map(x=>x[0]).join(', '));
+  return '<button type="button" class="labtog'+(LABOPEN?' open':'')+'" data-labtog="1" aria-expanded="'+LABOPEN+'" title="'+esc(aan.map(x=>x[0]).join(', '))+'">'+(LABOPEN?aan.map(([n,c])=>'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>').join(''):'<span class="s2d">'+aan.map(([n,c])=>'<i style="--lc:'+c+'"></i>').join('')+'</span>')+'</button>'; };
 const standKort=s=>{ const aan=LABELS.filter((x,i)=>s.lab[i]===1); if(!aan.length) return '<span class="sst '+s.k+'">'+STAND[s.k]+'</span>';
   return '<span class="sst '+s.k+'">'+STAND[s.k]+'</span><button type="button" class="labtog'+(LABOPEN?' open':'')+'" data-labtog="1" aria-expanded="'+LABOPEN+'" title="'+esc(aan.map(x=>x[0]).join(', '))+'" aria-label="Labels: '+esc(aan.map(x=>x[0]).join(', '))+'">'
     +(LABOPEN?aan.map(([n,c])=>'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>').join(''):'<span class="s2d">'+aan.map(([n,c])=>'<i style="--lc:'+c+'"></i>').join('')+'</span>')+'</button>'; };
@@ -1671,38 +1706,41 @@ const statusArtikel=(m,v)=>v.inA?v:(tegelArtikelen(m,v).find(x=>x.inA)||v);
 function cardSoortHTML(m){
   const v=m.v[curVi], G=soortModellen(m), g=G.find(x=>x.vs.includes(v))||G[0], S=soortenVan(m), si=S.indexOf(curB);
   const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
-  const ST=g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main),s:tegelStand(m,t)})), sp=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))), ct=ST[sp].t;
-  // brandvertragend: alle uitvoeringen = label in de kop; een deel = alleen op die tegels en onder de foto; geen = nergens
-  const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=ST.filter(e=>frT(e.t)).length, frAlle=frN>0&&frN===ST.length, frDeel=frN>0&&!frAlle;
-  const FR=()=>'<span class="frb st">'+FLAM+'Brandvertragend</span>';
-  const fz=frameRegels(m,g);
-  const pv=tegelFoto(m,ct,v), fm=fotoMelding(m,v,pv);
-  const zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv);
-  const tabs=zs.length>1?'<div class="mtabs">'+zs.map(x=>'<button type="button" class="'+(x===z?'on':'')+'" data-czz="'+x+'" aria-pressed="'+(x===z)+'">'+ZK[x]+'</button>').join('')+'</div>':'';
-  const tm=m.v[ST[sp].vi], tl=g.tl[tm.id]||v.code, td=g.td[tm.id]==='Hoofdartikel'?'':(g.td[tm.id]||'');
-  const foto='<div class="mfoto smfoto">'+tabs
-    +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
-    +(ST.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
-    +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')
-    +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')+'</div>'+fm.html
-    +'<div class="scap"><div class="sct"><b>'+esc(tl)+'</b>'+(ST.length>1?'<span class="num">'+(sp+1)+'/'+ST.length+'</span>':'')+'</div>'
-    +'<div class="scs"><span class="scc"><b>'+esc(tegelCode(m,ct)||fm.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</span><span class="eye">Nu</span>'+standKort(ST[sp].s)+'</div></div></div>';
-  const h=g.hoofd, ht=g.tiles.find(t=>t.ids.includes(h.id))||g.tiles[0], rh=modelPrijs(m,tegelArt(m,ht)||h), mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; }, maat=g.tiles.some(t=>g.td[t.main]&&g.td[t.main]!=='Hoofdartikel');
-  const its=g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, tdx=g.td[x.id]==='Hoofdartikel'?'':g.td[x.id], d=tdx||(hoofd&&maat?'Standaard maten':'');
-    return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
-      +tegelRegels(m,x,t,hoofd,mp(tegelArt(m,t)||x),fz.tegel[t.main]||'')+'<span class="mus">'+standChips(tegelStand(m,t))+(frDeel&&frT(t)?FR():'')+'</span></button>'; }).join('');
-  const kort=!!(window.matchMedia&&matchMedia('(max-width:420px)').matches);
+  const T=g.tiles, ct=T.find(t=>t.ids.includes(v.id))||T[0], art=tegelArt(m,ct)||v;
+  // brandvertragend: alle uitvoeringen = label op de foto; een deel = op die tegels, en op de foto als de getoonde het is
+  const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=T.filter(frT).length, frAlle=frN>0&&frN===T.length, frDeel=frN>0&&!frAlle;
+  const fz=frameRegels(m,g), fkop=(fz.kop||'').replace(/^Alle [^:]+:\s*/,'');
+  const pv=tegelFoto(m,ct,v), fm=fotoMelding(m,art,pv), zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv), st=tegelStand(m,ct);
+  const ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
+  const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
+  const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
+  const foto='<div class="s1k"><div class="s1foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+'" id="sfoto">'
+      +(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+      +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')
+      +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')
+      +(T.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
+      +(zs.length>1?'<div class="s1zij" role="group" aria-label="Zijde">'+zs.map(x=>'<button type="button" class="'+(x===z?'on':'')+'" data-czz="'+x+'" aria-pressed="'+(x===z)+'">'+ZK[x]+'</button>').join('')+'</div>':'')
+    +'</div>'+fm.html
+    +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
+      +'<div class="s2c2"><span class="eye">Labels nu</span>'+labelsNu(st.lab)+'</div></div></div>';
+  const its=T.map(t=>{ const s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
+    const mpx=t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'';
+    return '<button type="button" class="s2c s1c'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering op de foto">'
+      +'<b class="s2tt">'+esc(g.tl[t.main]||'')+'</b>'
+      +(T.length>4?'<span class="s1cr"><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx+'</span>':'<span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx)
+      +(fr?'<span class="s2fr">'+esc(fr)+'</span>':'')
+      +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+'Brandvertragend</span>':'')
+      +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></button>'; }).join('');
   return '<div class="fold sfold ssoort">'
     +'<div class="stitle sokop"><span class="sok"><span class="disp sn">'+esc(m.fam)+'</span> <span class="sks">'+esc(soortNaam(curB))+'</span></span>'
-      +(S.length>1?'<span class="skn">'+(kort?(si+1)+'/'+S.length:'soort '+(si+1)+' van '+S.length)+'</span>':'')
+      +(S.length>1?'<span class="skn">soort '+(si+1)+' van '+S.length+'</span>':'')
       +'<span class="sprog"><span>serie '+Math.min(done+1,M.length)+'/'+M.length+' · <b>'+pctd+'%</b></span>'+(S.length>1?'<button type="button" class="sskip" data-skip="1">Hele serie overslaan</button>':'')+'</span></div>'
-    +'<div class="sbar"><i style="width:'+pctd+'%"></i></div>'
     +foto
-    +'<div class="smods"><div class="mlh"><span class="eye">'+ST.length+' '+(ST.length===1?'uitvoering':'uitvoeringen')+'</span>'+(fz.kop?'<span class="sfz">'+esc(fz.kop)+'</span>':'')+'</div>'+(ST.length>1?'<p class="mcap mtik">Tik op een uitvoering om hem op de foto te zien.</p>':'')
-    +'<div class="mblok sblok"><div class="mgrid">'+its+'</div></div>'
-    +'<p class="mcap snote">'+(PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':'')+'Welke uitvoeringen je houdt, kies je na '+esc(soortPl(curB))+' houden.</p></div>'
+    +'<div class="smods"><div class="mlh"><span class="eye">Uitvoeringen van de '+esc(plural(curB,2))+' · '+T.length+'</span>'+(fkop?'<span class="sfz">'+esc(fkop)+'</span>':'')+'</div>'
+    +'<div class="s2tiles s1tiles">'+its+'</div>'
+    +'<p class="mcap snote">Tik op een uitvoering om hem op de foto te zien. Welke je houdt, kies je na '+esc(soortPl(curB))+' houden.</p></div>'
     +'</div>'
-    +belowHTML(m,v,'',{zonderOmschrijving:true,prijsBox:'',soort:curB});
+    +belowHTML(m,art,'',{zonderOmschrijving:true,prijsBox:'',soort:curB});
 }
 function cardModelHTML(m){
   if(curB!=null&&m===cur) return cardSoortHTML(m);
@@ -1906,7 +1944,7 @@ function belowHTML(m,v,full,opt){
     ${full?'<details class="box" id="hbBox"'+(prOpen?' open':'')+'><summary>Hele berekening <span>bruto · condities · transport</span></summary>'+full+'</details>':''}
     ${opt.prijsBox?'':spec}
     ${ptab}
-    <section class="steam"><span class="eye">Keuzes van het team</span><div class="team">${team}</div></section>
+    ${opt.soort!=null?'<details class="box steam2"><summary>Keuzes van het team <span>'+(ps.filter(p=>{ const r=soortRec(p.c[m.id],opt.soort); return r&&r.s; }).length||'nog geen')+' keuze'+(ps.filter(p=>{ const r=soortRec(p.c[m.id],opt.soort); return r&&r.s; }).length===1?'':'s')+'</span></summary><div class="team">'+team+'</div></details>':'<section class="steam"><span class="eye">Keuzes van het team</span><div class="team">'+team+'</div></section>'}
     ${v.url?'<section class="links"><a href="'+esc(v.url)+'" target="_blank" rel="noopener"><b>Productpagina '+esc(SUP.short||SUP.name)+'</b><span>'+esc((v.url.match(/^https?:\/\/(?:www\.)?([^\/]+)/)||[])[1]||'')+' <i aria-hidden="true">↗</i></span></a></section>':''}
   </div>`;
 }
@@ -1920,34 +1958,36 @@ function setVi(m,i){
 // alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
 function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
   // seriekaart per soort: de foto krijgt de ruimte die overblijft tot en met de regel onder de foto (190 tot 440 px)
-  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.smfoto .mimgbox'), cap=sb&&fo.querySelector('.smfoto');
-  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; sb.style.height=Math.max(190,Math.min(440,mh-rest-6))+'px'; return; }
+  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.s1foto'), cap=sb&&fo;
+  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; sb.style.height=Math.max(130,Math.min(440,mh-rest-4))+'px'; return; }
   if(!ph) return;   // seriekaart met modellen: eigen fotohoogte, niets oprekken
   ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px';
   fo.style.minHeight=mh+'px'; }
 window.addEventListener('resize',()=>{ const fo=view==='swipe'&&$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo); });
 // vaste prijsregel boven de knoppen (seriekaart met modellen): zelfde rij als stap 2 (modelPrijs = vanaf-prijs, goedkoopste stofgroep)
 let hbOpen=false;
-function updPbar(m){ const pb=$('pbar'), ac=$('actions'); if(!pb) return;
-  const aan=!!m&&modelAan()&&PRIJS()&&view==='swipe';
-  pb.hidden=!aan; ac.classList.toggle('metprijs',aan); if(!aan){ pb.innerHTML=''; return; }
-  const v0=m.v[curVi], tv=tegelVan(m,v0), v=(tv&&tegelArt(m,tv))||v0, r=prState==='ok'?modelPrijs(m,v):null, care=r&&careOn()&&r[7]!=null, leeg=prState==='wait'?'laden…':'–';
+// prijslint van de uitvoering op de foto (stap 1 en stap 2): kopregel met code en stofgroep, vier vakken, en de hele berekening als paneel erboven
+function lintHTML(m,v){ const r=prState==='ok'?modelPrijs(m,v):null, care=r&&careOn()&&r[7]!=null, leeg=prState==='wait'?'laden…':'–';
   const vak=(lbl,x,cls)=>'<div'+(cls?' class="'+cls+'"':'')+'><span>'+lbl+'</span><b>'+(r?x:leeg)+'</b></div>';
-  const kop=esc(v.code)+(r&&r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw';
+  const kop0=(r&&r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw', kop='<b>'+esc(v.code)+'</b>'+kop0;
   const rij=(a,b,x,vet)=>'<div class="hbr'+(vet?' vet':'')+'"><span>'+a+'</span><span>'+b+'</span><b>'+(x!=null?eur(x):'–')+'</b></div>';
   const open=hbOpen&&!!r;
-  pb.innerHTML=(open?'<div class="hbp" id="hbp" role="region" aria-label="Hele berekening '+esc(v.code)+'"><div class="hbk"><span class="eye">Hele berekening · '+esc(v.code)+'</span><button type="button" class="hbx" id="hbx" aria-label="Berekening sluiten">×</button></div>'
+  return (open?'<div class="hbp" id="hbp" role="region" aria-label="Hele berekening '+esc(v.code)+'"><div class="hbk"><span class="eye">Hele berekening · '+esc(v.code)+'</span><button type="button" class="hbx" id="hbx" aria-label="Berekening sluiten">×</button></div>'
       +rij('Bruto','prijslijst',r[2])
       +rij('Netto inkoop',PR.k!=null?'− korting '+pct(PR.k):'',r[3])
       +rij('Verreken',PR.t!=null?'+ transport '+pct(PR.t):'',r[4])
       +rij('Verkoop',(PR.o!=null?'× '+fmt(PR.o)+', ':'')+'afgerond op € 5',r[5],1)
       +(care?rij('Blom Care',PR.oc!=null?'× '+fmt(PR.oc):'',r[7],1):'')
       +'<p class="hbn">Bron: prijslijst (Excel), bedragen ongewijzigd. Andere stofgroepen onder Alle prijzen.</p></div>':'')
-    +'<div class="pbk"><span class="pbl" title="'+kop+'">'+kop+'</span><button type="button" class="pbt" id="pbt" aria-expanded="'+open+'"'+(r?'':' disabled')+'>'+(open?'Berekening sluiten':'Hele berekening ›')+'</button></div>'
-    +'<div class="pbv">'+vak('Inkoop',r&&r[3]!=null?eur(r[3]):'–')+vak('Verkoop',r&&r[5]!=null?eur(r[5]):'–','vk')+vak('Blom Care',care?eur(r[7]):'–','vk care')+vak('Marge',r&&r[5]&&r[4]!=null?pct((r[5]-r[4])/r[5]):'–')+'</div>';
-  const zet=o=>{ hbOpen=o; updPbar(m); };
-  $('pbt').onclick=()=>zet(!open); const x=$('hbx'); if(x) x.onclick=()=>zet(false); }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&hbOpen&&$('hbp')&&$('zoom').hidden){ e.preventDefault(); e.stopImmediatePropagation(); hbOpen=false; updPbar(cur); } },true);
+    +'<div class="pbk"><span class="pbl" title="'+esc(v.code)+kop0+'">'+kop+'</span><button type="button" class="pbt" id="pbt" aria-expanded="'+open+'"'+(r?'':' disabled')+'>'+(open?'Berekening sluiten':'Hele berekening ›')+'</button></div>'
+    +'<div class="pbv">'+vak('Inkoop',r&&r[3]!=null?eur(r[3]):'–')+vak('Verkoop',r&&r[5]!=null?eur(r[5]):'–','vk')+vak('Blom Care',care?eur(r[7]):'–','vk care')+vak('Marge',r&&r[5]&&r[4]!=null?pct((r[5]-r[4])/r[5]):'–')+'</div>'; }
+function bindLint(root,opnieuw){ const pt=root.querySelector('#pbt'); if(pt) pt.onclick=()=>{ hbOpen=pt.getAttribute('aria-expanded')!=='true'; opnieuw(); }; const x=root.querySelector('#hbx'); if(x) x.onclick=()=>{ hbOpen=false; opnieuw(); }; }
+function updPbar(m){ const pb=$('pbar'), ac=$('actions'); if(!pb) return;
+  const aan=!!m&&modelAan()&&PRIJS()&&view==='swipe'&&!(S2&&!$('s2').hidden);
+  pb.hidden=!aan; ac.classList.toggle('metprijs',aan); if(!aan){ pb.innerHTML=''; return; }
+  const v0=m.v[curVi], tv=tegelVan(m,v0), v=(tv&&tegelArt(m,tv))||v0;
+  pb.innerHTML=lintHTML(m,v); bindLint(pb,()=>updPbar(m)); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&hbOpen&&$('hbp')&&$('zoom').hidden){ e.preventDefault(); e.stopImmediatePropagation(); hbOpen=false; if(S2&&!$('s2').hidden) renderS2(); else updPbar(cur); } },true);
 function bindCard(m){
   updPbar(m);   // eerst de prijsregel: die bepaalt hoeveel ruimte er boven de vouw overblijft
   const fo=$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo);
@@ -2817,7 +2857,7 @@ $('fSave').onclick=()=>{ if(!F) return; const m=F.m;
 /* ---------------- stap 2 per soort (leveranciers met modelkaarten) ----------------
    Eigen scherm dat zonder scrollen past: foto met prijsblok, uitvoeringen als raster (twee kenmerken) of tegels,
    en onderin één zichtbaarheid en vijf labels voor alle gekozen uitvoeringen van de soort (g:[]). */
-let S2=null;
+var S2=null;
 function openS2(m,b){ const g=alleModellen(m).find(x=>x.basis===b); if(!g) return openForm(m,b);
   const SR=soortRec(D[m.id],b), prev=SR&&SR.s==='wel'?SR:null, sel={};
   g.tiles.forEach(t=>{ sel[t.main]=!!prev&&t.ids.some(id=>vStatus(prev,{id})==='wel'); });
@@ -2825,7 +2865,7 @@ function openS2(m,b){ const g=alleModellen(m).find(x=>x.basis===b); if(!g) retur
   if(prev){ const k=g.tiles.flatMap(t=>t.ids).find(id=>vStatus(prev,{id})==='wel'), e=k?effOf(prev,k):{oc:prev.oc,lab:prev.lab}; oc=e.oc||null; if(e.lab) lab=e.lab.map(x=>x?1:0); }
   else { const cnt={}; g.vs.filter(v=>v.inA).forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); cnt[k]=(cnt[k]||0)+1; }); const top=Object.keys(cnt).sort((a,c)=>cnt[c]-cnt[a])[0]; if(top){ const [o,l]=top.split('|'); oc=o; lab=[...l].map(Number); } }
   const t0=g.tiles.find(t=>t.ids.includes((m.v[curVi]||{}).id))||g.tiles[0];
-  S2={m,b,g,sel,oc,lab,cur:t0.main,hist:[],eerder:!!prev,spec:false};
+  S2={m,b,g,sel,oc,lab,cur:t0.main,hist:[],eerder:!!prev,spec:false}; updPbar(null);
   $('s2').hidden=false; renderS2(); }
 // raster: elke tegeltitel heeft precies twee kenmerken, elke combinatie hoogstens één keer, minstens 2×2 en minstens de helft gevuld
 function s2Koppen(hs){ const T=hs.map(h=>h.split(/\s+/)), zelfde=(a,b)=>{ a=a.toLowerCase(); b=b.toLowerCase(); const [k,l]=a.length<=b.length?[a,b]:[b,a]; return k.length>=4&&l.startsWith(k)&&l.length-k.length<=2; };
@@ -2846,7 +2886,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   const fz=frameRegels(m,g), ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
   const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
   const r=PRIJS()&&prState==='ok'?modelPrijs(m,art):null, care=r&&careOn()&&r[7]!=null, leeg=prState==='wait'?'laden…':'–';
-  const pblok=PRIJS()?'<div class="s2p" aria-label="Prijzen '+esc(art.code)+'">'+[['Verkoop',r&&r[5]!=null?eur(r[5]):leeg,'vk'],['Blom Care',care?eur(r[7]):leeg,'vk care'],['Inkoop',r&&r[3]!=null?eur(r[3]):leeg,''],['Marge',r&&r[5]&&r[4]!=null?pct((r[5]-r[4])/r[5]):leeg,'']].map(([a,x,c])=>'<span class="'+c+'">'+a+'</span><b class="'+c+'">'+x+'</b>').join('')+'</div>':'';
+  const pblok0=PRIJS()?'<div class="s2p" aria-label="Prijzen '+esc(art.code)+'">'+[['Verkoop',r&&r[5]!=null?eur(r[5]):leeg,'vk'],['Blom Care',care?eur(r[7]):leeg,'vk care'],['Inkoop',r&&r[3]!=null?eur(r[3]):leeg,''],['Marge',r&&r[5]&&r[4]!=null?pct((r[5]-r[4])/r[5]):leeg,'']].map(([a,x,c])=>'<span class="'+c+'">'+a+'</span><b class="'+c+'">'+x+'</b>').join('')+'</div>':'';
   const st=tegelStand(m,ct), labNu=LABELS.filter((x,i)=>st.lab[i]===1).map(x=>x[0]);
   const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
   const cel=(t,titel)=>{ const on=!!S2.sel[t.main], s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main];
@@ -2869,16 +2909,16 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   const spec=belowHTML(m,art,'',{zonderOmschrijving:true,alleenSpec:true}).replace('<details class="box">','<details class="box s2spec"'+(S2.spec?' open':'')+'>');
   $('s2').innerHTML='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
     +'<div class="s2b" id="s2b">'
-      +'<div class="s2foto'+(PRIJS()?' mp':'')+'" id="s2foto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')+pblok
+      +'<div class="s1k"><div class="s2foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+'" id="s2foto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
         +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')
         +(T.length>1?'<button type="button" class="mar l" data-s2n="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-s2n="1" aria-label="Volgende uitvoering">›</button>':'')+'</div>'+fm.html
       +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
-        +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div>'
+        +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div></div>'
       +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+(fz.kop?'<span class="sfz">'+esc(fz.kop)+'</span>':'')+'</div>'+keuze
         +'<p class="mcap">Vink rechtsboven aan wat je houdt; tik op een tegel om die '+esc(soortNaam(b))+' op de foto te zien.</p></div>'
       +spec
     +'</div>'
-    +'<div class="s2f"><div class="mlh"><span class="eye">Alle '+esc(plk)+' van '+esc(m.fam)+'</span><span class="s2vg">'+(S2.eerder?'voorgevuld met je eerdere keuze':'voorgevuld met de stand in AFAS')+'</span></div>'
+    +'<div class="s2f">'+(PRIJS()?'<div class="pbar s2lint">'+lintHTML(m,art)+'</div>':'')+'<div class="mlh"><span class="eye">Alle '+esc(plk)+' van '+esc(m.fam)+'</span><span class="s2vg">'+(S2.eerder?'voorgevuld met je eerdere keuze':'voorgevuld met de stand in AFAS')+'</span></div>'
       +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button" class="'+(S2.oc===o?'on':'')+'" data-s2oc="'+o+'" aria-pressed="'+(S2.oc===o)+'">'+l+'</button>').join('')+'</div>'
       +'<div class="dlbs" role="group" aria-label="Labels">'+LABELS.map(([nm,c],j)=>{ const on=S2.lab[j]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-s2lab="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+nm+'</button>'; }).join('')+'</div>'
       +'<div class="s2btn"><button type="button" class="s2u" id="s2Undo" aria-label="Laatste wijziging terug"'+(S2.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="s2No">'+NO(18)+esc(pl)+' niet houden</button>'
@@ -2893,7 +2933,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   B.querySelectorAll('[data-s2lab]').forEach(x=>x.onclick=()=>{ snap(); const j=+x.dataset.s2lab; S2.lab[j]=S2.lab[j]===1?0:1; renderS2(); });
   $('s2Undo').onclick=s2Undo; $('s2No').onclick=()=>s2Opslaan(true); $('s2Yes').onclick=()=>s2Opslaan(false); $('s2Back').onclick=s2Sluit;
   $('s2foto').onclick=e=>{ if(!e.target.closest('button')) s2Zoom(); };
-  { const p=B.querySelector('.s2p'), im=B.querySelector('#s2foto img'); if(p&&im){ const top=p.offsetTop+p.offsetHeight+4; im.style.top=top+'px'; im.style.height='calc(100% - '+(top+8)+'px)'; } }
+  bindLint(B,renderS2);
   const sp=B.querySelector('.s2spec'); if(sp) sp.addEventListener('toggle',()=>{ S2.spec=sp.open; });
 }
 function s2Stap(d){ const T=S2.g.tiles, i=Math.max(0,T.findIndex(t=>t.main===S2.cur)); S2.cur=T[(i+d+T.length)%T.length].main; renderS2(); }
@@ -3034,7 +3074,7 @@ function laadUitleg(){
 }
 $('helpClose').onclick=()=>$('helpModal').hidden=true;
 /* ---------------- vaste balk op het serie-scherm (na doorscrollen) ---------------- */
-function updMini(){ const mb=$('minibar'); if(!mb) return; const st=document.querySelector('#sSwipe .stitle');
+function updMini(){ const mb=$('minibar'); if(!mb) return; if(modelAan()&&curB!=null){ mb.hidden=true; document.body.classList.remove('mini'); return; } const st=document.querySelector('#sSwipe .stitle');
   const on=view==='swipe'&&!!cur&&!!st&&$('main').scrollTop>st.offsetTop+st.offsetHeight; mb.hidden=!on; document.body.classList.toggle('mini',on); if(!on) return;
   const m=cur, v=m.v[curVi], g=grpOf(m,curVi), c0=counts(D,M), done=c0.w+c0.n, pc=Math.floor(done/(M.length||1)*100);
   const nm=v.inA&&v.blom?v.blom:(v.nv||shortTitle(m,v.p)), im=fotoVan(m,v)?(sideImg(v)||img(v.img)):null;
