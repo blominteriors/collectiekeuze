@@ -907,6 +907,14 @@ body.swv #what{display:none}
 .fmeld{display:flex;align-items:flex-start;gap:7px;padding:6px 12px;background:#fdf3df;border-top:1px solid #c98a1a;border-bottom:1px solid #c98a1a;color:#4d3300;font-size:12px;line-height:1.35}
 .fmeld svg{flex:none;margin-top:1px}
 .fmeld b{font-weight:600}
+/* op de foto: onderin, boven de zijdetabs (stap 1) of tussen de pijltjes (stap 2); het product schuift erboven */
+.s1foto .fmeld,.s2foto .fmeld{position:absolute;z-index:3;padding:4px 8px;font-size:11.5px;gap:6px;border:1px solid #c98a1a}
+.s1foto .fmeld{left:46px;right:46px;bottom:8px}
+.s1foto.zij .fmeld{left:8px;right:8px;bottom:44px}
+.s1foto.fm.zij img{height:calc(100% - 88px)}.s1foto.fm.zij.fr img{height:calc(100% - 114px)}
+.s2foto .fmeld{left:50px;right:50px;bottom:10px}
+.s1foto.fm .dzoom{bottom:auto;top:8px}.s1foto.fm.fr .dzoom{top:38px}
+.s2foto.fm img{height:calc(100% - 54px)}.s2foto.fm.fr img{height:calc(100% - 80px)}
 .zt .fmeld{margin-top:6px;text-align:left}
 .mimgbox .dzoom{z-index:4}
 .mar{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:36px;height:36px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:var(--ink);cursor:pointer}
@@ -1399,7 +1407,7 @@ let MODEL=null;   // uit Supabase: {artikelnummer: [{model, uit, afas, fin, kort
 // onderscheiden, mk = model kenmerken, kc/kr = controleren en reden (alleen beheerder). Zelfde code meer keer (Bree): op AFAS-nummer of afwerking.
 function kortToepassen(x){ let n=0;
   M.forEach(m=>m.v.forEach(v=>{ const rs=x&&x[v.code]; if(!rs||!rs.length) return;
-    const r=rs.length===1?rs[0]:(rs.find(r=>r.afas&&r.afas===v.afas)||rs.find(r=>r.fin===(v.fin||''))); if(!r||!r.kort) return;
+    const r=rs.length===1?rs[0]:(rs.find(r=>r.afas&&r.afas===v.afas)||rs.find(r=>r.fin===(v.fin||''))); if(!r) return; if(r.hf&&v.hf!==r.hf){ v.hf=r.hf; n++; } if(!r.kort) return;
     v.kort=r.kort; v.maatk=r.maatk; v.mk=r.mk; v.kc=r.kc; v.kr=r.kr; n++; }));
   return n; }
 // opnieuw tekenen met de gegevens die later binnenkomen (korte namen, brandvertragend)
@@ -1737,13 +1745,14 @@ function cardSoortHTML(m){
   const ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
   const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
   const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
-  const foto='<div class="s1k"><div class="s1foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+'" id="sfoto">'
+  const foto='<div class="s1k"><div class="s1foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+(fm.html?' fm':'')+(zs.length>1?' zij':'')+'" id="sfoto">'
       +(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
       +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')
       +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')
       +(T.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
       +(zs.length>1?'<div class="s1zij" role="group" aria-label="Zijde">'+zs.map(x=>'<button type="button" class="'+(x===z?'on':'')+'" data-czz="'+x+'" aria-pressed="'+(x===z)+'">'+ZK[x]+'</button>').join('')+'</div>':'')
-    +'</div>'+fm.html
+      +fm.html
+    +'</div>'
     +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
       +'<div class="s2c2"><span class="eye">Labels nu</span>'+labelsNu(st.lab)+'</div></div></div>';
   const its=T.map(t=>{ const s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
@@ -1979,10 +1988,12 @@ function setVi(m,i){
   sec.innerHTML=cardHTML(m); bindCard(m); $('main').scrollTop=keep;
 }
 // alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
+function fitFotoMeld(box){ const n=box&&box.querySelector('.fmeld'), im=box&&box.querySelector('img'); if(!n||!im) return;
+  im.style.height=''; const top=parseFloat(getComputedStyle(im).top)||0, onder=box.getBoundingClientRect().bottom-n.getBoundingClientRect().top+4; im.style.height='calc(100% - '+Math.round(top+onder)+'px)'; }
 function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
   // seriekaart per soort: de foto krijgt de ruimte die overblijft tot en met de regel onder de foto (190 tot 440 px)
   const sb=fo.classList.contains('ssoort')&&fo.querySelector('.s1foto'), cap=sb&&fo.querySelector('.smods');
-  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; const hk=fo.querySelector('.sokop'); if(hk) fo.style.setProperty('--kh',hk.offsetHeight+'px'); const mn0=window.innerWidth>=700?240:200; sb.style.height=Math.max(mn0,Math.min(440,mh-rest-4))+'px'; return; }
+  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; const hk=fo.querySelector('.sokop'); if(hk) fo.style.setProperty('--kh',hk.offsetHeight+'px'); const mn0=window.innerWidth>=700?240:200; sb.style.height=Math.max(mn0,Math.min(440,mh-rest-4))+'px'; fitFotoMeld(sb); return; }
   if(!ph) return;   // seriekaart met modellen: eigen fotohoogte, niets oprekken
   ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px';
   fo.style.minHeight=mh+'px'; }
@@ -2370,13 +2381,14 @@ function tegelFoto(m,t,cur){ const rk=v=>fotoVan(m,v)?(FOTO_RANK[v.imgq]||0):-1;
 // code = het artikel waar de foto bij hoort, als dat in dezelfde tegel zit (57-92/1 bij een foto van 57-92/1); anders de eigen code.
 const FMELD_ICO='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="#c98a1a" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6v4" stroke="#4d3300" stroke-width="1.5"/><circle cx="8" cy="12" r=".9" fill="#4d3300"/></svg>';
 function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fotoVan(m,pv)) return geen;
-  const fc=pv.imgc&&pv.imgc!==pv.code?pv.imgc:pv.code, x=m.v.find(y=>y.code===fc)||null;
+  const hm=[pv.hf].concat(pv.why||[]).map(t=>String(t||'').match(/Foto is van artikel ([^,\s]+),? niet van/)).find(Boolean);
+  const fc=hm?hm[1]:(pv.imgc&&pv.imgc!==pv.code?pv.imgc:pv.code), x=m.v.find(y=>y.code===fc)||null;
   const T=alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t}))), tv=a=>a?T.find(e=>e.t.ids.includes(a.id)):null, tc=tv(cur), tx=tv(x);
   if(x&&tc&&tx&&tx.t===tc.t) return {html:'',code:x.code};
-  if(pv.imgq==='web'||pv.imgq==='fin'||pv.imgq==='bekl') return geen;
-  let naam='';
-  if(x&&tx&&tc){ const a=(tc.g.tl[tc.t.main]||'').split(' · '), b=(tx.g.tl[tx.t.main]||'').split(' · '), d=b.filter(p=>p&&!a.includes(p)); naam=(d.length?d:b).join(' · '); }
-  else if(pv.imgq!=='base'&&pv.imgq!=='model') return geen;
+  if(!hm&&(pv.imgq==='web'||pv.imgq==='fin'||pv.imgq==='bekl')) return geen;
+  let naam=x&&x!==cur&&x.kort?x.kort:'';
+  if(naam){} else if(x&&tx&&tc){ const a=(tc.g.tl[tc.t.main]||'').split(' · '), b=(tx.g.tl[tx.t.main]||'').split(' · '), d=b.filter(p=>p&&!a.includes(p)); naam=(d.length?d:b).join(' · '); }
+  else if(!hm&&pv.imgq!=='base'&&pv.imgq!=='model') return geen;
   return {code:cur.code, html:'<div class="fmeld" role="note">'+FMELD_ICO+'<span><b>Let op:</b> andere uitvoering op de foto'+(naam?' ('+esc(naam)+')':'')+'</span></div>'}; }
 // regel 2 en 3 van een uitvoeringstegel (seriekaart en modelkaart): één code met 'Hoofdartikel' of de meerprijs,
 // daaronder alleen bij meer afwerkingen 'Frame: walnoot of beuken'. De codes per afwerking staan onder Specificaties.
@@ -2932,9 +2944,9 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   const spec=belowHTML(m,art,'',{zonderOmschrijving:true,alleenSpec:true}).replace('<details class="box">','<details class="box s2spec"'+(S2.spec?' open':'')+'>');
   $('s2').innerHTML='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
     +'<div class="s2b" id="s2b">'
-      +'<div class="s1k"><div class="s2foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+'" id="s2foto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+      +'<div class="s1k"><div class="s2foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+(fm.html?' fm':'')+'" id="s2foto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
         +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')
-        +(T.length>1?'<button type="button" class="mar l" data-s2n="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-s2n="1" aria-label="Volgende uitvoering">›</button>':'')+'</div>'+fm.html
+        +(T.length>1?'<button type="button" class="mar l" data-s2n="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-s2n="1" aria-label="Volgende uitvoering">›</button>':'')+fm.html+'</div>'
       +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
         +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div></div>'
       +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+((kopKenm(g,fz)||fz.kop)?'<span class="sfz">'+esc(kopKenm(g,fz)||fz.kop)+'</span>':'')+'</div>'+keuze
@@ -2956,7 +2968,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   B.querySelectorAll('[data-s2lab]').forEach(x=>x.onclick=()=>{ snap(); const j=+x.dataset.s2lab; S2.lab[j]=S2.lab[j]===1?0:1; renderS2(); });
   $('s2Undo').onclick=s2Undo; $('s2No').onclick=()=>s2Opslaan(true); $('s2Yes').onclick=()=>s2Opslaan(false); $('s2Back').onclick=s2Sluit;
   $('s2foto').onclick=e=>{ if(!e.target.closest('button')) s2Zoom(); };
-  bindLint(B,renderS2);
+  bindLint(B,renderS2); fitFotoMeld($('s2foto'));
   const sp=B.querySelector('.s2spec'); if(sp) sp.addEventListener('toggle',()=>{ S2.spec=sp.open; });
 }
 function s2Stap(d){ const T=S2.g.tiles, i=Math.max(0,T.findIndex(t=>t.main===S2.cur)); S2.cur=T[(i+d+T.length)%T.length].main; renderS2(); }
