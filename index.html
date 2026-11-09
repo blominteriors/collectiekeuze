@@ -2400,9 +2400,11 @@ function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fot
   if(ra){ const x=m.v.find(y=>y.code===ra[1]), tx=tv(x); if(x&&tx&&tc&&tx.t===tc.t) return geen;
     return meld('andere uitvoering op de foto ('+esc(x?kortVan(x):ra[1])+')'); }
   const precies=/^Foto hoort bij precies dit artikelnummer|^Foto staat op \S+ bij dit artikelnummer/.test(hf);
-  const prijslijst=/^Foto uit de prijslijst/.test(hf), algemeen=/^Algemene foto van de serie/.test(hf);
+  // prijslijstfoto uit de kolom van het eigen artikelnummer hoort bij de uitvoering zelf (zoals 'precies dit artikel')
+  const kolom=(hf.match(/in de kolom van (.+?)\s*$/)||[])[1], eigenKolom=!!kolom&&kolom.trim()===String(pv.code).trim();
+  const prijslijst=/^Foto uit de prijslijst/.test(hf)&&!eigenKolom, algemeen=/^Algemene foto van de serie/.test(hf);
   const k=fotoKey(pv.img), delers=k&&g&&tc?g.vs.filter(y=>y!==pv&&fotoVan(m,y)&&fotoKey(y.img)===k&&tv(y)&&tv(y).t!==tc.t):[];
-  if(!precies&&!prijslijst&&delers.length){ const n=(hf.match(/^Algemene foto van de serie \(([^)]+)\)/)||[])[1];
+  if(!precies&&!prijslijst&&!eigenKolom&&delers.length){ const n=(hf.match(/^Algemene foto van de serie \(([^)]+)\)/)||[])[1];
     const code=n&&!/onbekend/i.test(n)&&n!==cur.code?n:delers.map(y=>y.code).sort((p,q)=>String(p).localeCompare(String(q),'nl',{numeric:true}))[0];
     return meld('dezelfde foto als '+esc(code)); }
   // c niet als de uitvoeringen alleen in maat verschillen (dezelfde tafel in een andere maat is niet misleidend)
