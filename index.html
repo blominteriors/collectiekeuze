@@ -971,7 +971,7 @@ body.swv #what{display:none}
 .mblok.sblok{border-left-width:1px;margin-top:6px}
 /* stap 1 in de stijl van stap 2 */
 .ssoort .sokop{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid var(--n300)}
-.ssoort>.s1k{margin:10px 16px 0}
+.ssoort>.s1k{margin:10px 16px 0;position:sticky;top:var(--kh,60px);z-index:5;box-shadow:0 0 0 16px #fff;clip-path:inset(-20px -20px 0 -20px)}
 .s1foto{position:relative;height:300px;cursor:zoom-in;border-bottom:1px solid var(--n300);overflow:hidden}
 .s1foto img{position:absolute;left:12px;right:12px;top:10px;bottom:46px;width:calc(100% - 24px);height:calc(100% - 56px);object-fit:contain;object-position:center bottom}
 .s1foto.fr img{top:36px;height:calc(100% - 82px)}
@@ -1007,14 +1007,15 @@ body.swv #what{display:none}
 .s2n{margin-left:auto;flex:none;font-size:12px;color:var(--g400);white-space:nowrap}
 .s2b{display:flex;flex-direction:column;overflow-y:auto;min-height:0;overscroll-behavior:contain}
 .s2b>*{flex:none}
-.s2foto{flex:1 1 auto;min-height:130px;max-height:480px;position:relative;border-bottom:1px solid var(--n300);cursor:zoom-in}
+.s2foto{flex:1 1 auto;min-height:200px;max-height:480px;position:relative;border-bottom:1px solid var(--n300);cursor:zoom-in}
 .s2foto img{position:absolute;left:12px;right:12px;top:10px;bottom:8px;width:calc(100% - 24px);height:calc(100% - 18px);object-fit:contain;object-position:center bottom}
 .s2foto.fr img{top:36px;height:calc(100% - 44px)}
 .s1k{border:1px solid var(--ink);margin:6px 12px 0;background:#fff}
 .s1k .s2cap{border-bottom:0}
-.s2b>.s1k{flex:1 0 auto;display:flex;flex-direction:column}
+.s2b>.s1k{flex:1 0 auto;display:flex;flex-direction:column;position:sticky;top:0;z-index:4;box-shadow:0 0 0 12px #fff;clip-path:inset(-14px -14px 0 -14px)}
+@media (min-width:700px){.s2foto{min-height:240px}}
 .s2b>.s1k>*{flex:none}.s2b>.s1k>.s2foto{flex:1 1 auto}
-.s2lint{padding-bottom:7px;border-bottom:1px solid var(--n300)}
+.s2lint{padding-bottom:5px;border-bottom:1px solid var(--n300)}
 .s2f .pbk{margin-top:0}
 .s2foto .nofoto,.s2foto .wait{position:absolute;inset:0;display:grid;place-items:center}
 .s2foto .frb{top:8px;right:8px}
@@ -1057,12 +1058,15 @@ body.swv #what{display:none}
 .s2c .mmp{font-size:10.5px;padding:0 4px;justify-self:start}
 .s2hf{font-size:10.5px;color:var(--g400)}
 .s2fr{font-size:10.5px;color:var(--g400)}
+/* beheerder: korte naam controleren (reden als tooltip) */
+.kchk{display:inline-grid;place-items:center;width:14px;height:14px;margin-left:5px;border:1px solid var(--ink);background:#ffe9a8;color:var(--ink);font:500 10px/1 var(--display);vertical-align:1px;cursor:help}
 .s2c .frb.st{justify-self:start;font-size:9.5px;padding:0 4px}
 .s2s{display:flex;align-items:center;gap:3px;font-size:9.5px;color:var(--g400);white-space:nowrap;border-top:1px solid var(--n300);padding-top:3px;margin-top:1px}
 .s2d{display:inline-flex;gap:1.5px;flex:none}
 .s2d i{width:8px;height:8px;border-radius:50%;background:var(--lc);display:block}
-.s2spec{margin:2px 12px 4px}
-.s2f{border-top:1px solid var(--ink);padding:7px 12px calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:6px;background:#fff}
+.s2spec{margin:0 12px 0}
+.s2spec>summary{min-height:38px!important;font-size:15px!important}
+.s2f{border-top:1px solid var(--ink);padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:4px;background:#fff}
 .s2f .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0}
 .s2vg{font-size:11px;color:var(--g400);white-space:nowrap}
 .s2f .dseg button{height:32px}
@@ -1073,7 +1077,7 @@ body.swv #what{display:none}
 .s2btn .dyes{background:var(--ink);color:#fff}
 .s2btn button:disabled{opacity:.4;cursor:default}
 .s2btn .dyes:disabled{background:var(--n300);border-color:var(--n300);color:var(--ink);opacity:1}
-.s2f .dkeys{margin:0}
+.s2f .dkeys{margin:0;padding:0;gap:2px 12px;font-size:10.5px;line-height:1.3;justify-content:center}.s2f .dkeys kbd{padding:0 4px;font-size:10px}
 .dsk{font-family:var(--body);font-weight:400;font-size:12px;color:var(--g400);text-transform:none;letter-spacing:0}
 .sst{display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border:1px solid var(--ink);font-size:12px;font-weight:600;white-space:nowrap;color:var(--ink);background:#fff}
 .sst.klant{background:var(--ink);color:#fff}
@@ -1333,7 +1337,7 @@ async function loadSup(id){
   forced=null; hist=[]; cur=null; PR=null; prState='wait';
   $('hSup').textContent=SUP.short||SUP.name; $('hDate').textContent='geïmporteerd op '+dstr(); $('hDate').title='Momentopname: data geïmporteerd op '+dstr();
   D=loadLocal(); TEAM={}; subscribe(); loadPrices();
-  MODEL=null; if(window.blomModellen){ const sid=SUP.id; window.blomModellen(SUP.name).then(x=>{ if(SUP&&SUP.id===sid) MODEL=x; }).catch(()=>{}); }
+  MODEL=null; if(window.blomModellen){ const sid=SUP.id; window.blomModellen(SUP.name).then(x=>{ if(!SUP||SUP.id!==sid) return; MODEL=x; if(kortToepassen(x)) herteken(); }).catch(()=>{}); }
   BRAND=null; if(window.blomBrandvertragend){ const sid=SUP.id; window.blomBrandvertragend(SUP.id,SUP.name).then(b=>{ if(!SUP||SUP.id!==sid) return; BRAND=b;
     if(view==='swipe'&&cur){ if(F&&F.view==='deck'&&!$('form').hidden){ try{ renderDeck(); }catch(_){} } else renderCard(true); } }).catch(()=>{}); }
   try{ DR=JSON.parse(ls.get('blom-ck-draft-'+LSV+(me?me.key:'anon')+'-'+SUP.id)||'{}')||{} }catch(e){ DR={} }
@@ -1389,7 +1393,25 @@ const rawRows=code=>((PR&&PR.r&&PR.r[code])||[]).filter(r=>!(!r[2]&&!r[5]));
 const frBoth=code=>{ const rs=rawRows(code); return rs.some(r=>frOf(r)===1)&&rs.some(r=>frOf(r)===0); };
 // brandvertragend: uit de prijslijst (kolom 'Brandvertragend' / 'Niet brandvertragend' per prijsregel)
 const FLAM='<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.6 1c.4 2.2-.8 3.4-1.9 4.6C5.6 6.8 4.5 8 4.5 10a3.5 3.5 0 007 0c0-1.3-.6-2.3-1.2-3 .1 1.2-.4 2-1.2 2.3.5-1.9-.1-5.3-.5-8.3z" fill="#E4572E"/></svg>';
-let MODEL=null;   // uit Supabase: {artikelnummer: {model, uit}}: model = basiscode, uit = tegellabel (gaat voor op het afgeleide label)
+let MODEL=null;   // uit Supabase: {artikelnummer: [{model, uit, afas, fin, kort, maatk, mk, kc, kr}]}
+// korte uitvoeringsnaam (standaard in de data-repo) per artikel op v zetten: kort = tegeltitel, maatk = maten die de uitvoering
+// onderscheiden, mk = model kenmerken, kc/kr = controleren en reden (alleen beheerder). Zelfde code meer keer (Bree): op AFAS-nummer of afwerking.
+function kortToepassen(x){ let n=0;
+  M.forEach(m=>m.v.forEach(v=>{ const rs=x&&x[v.code]; if(!rs||!rs.length) return;
+    const r=rs.length===1?rs[0]:(rs.find(r=>r.afas&&r.afas===v.afas)||rs.find(r=>r.fin===(v.fin||''))); if(!r||!r.kort) return;
+    v.kort=r.kort; v.maatk=r.maatk; v.mk=r.mk; v.kc=r.kc; v.kr=r.kr; n++; }));
+  return n; }
+// opnieuw tekenen met de gegevens die later binnenkomen (korte namen, brandvertragend)
+function herteken(){ if(view!=='swipe'||!cur) return;
+  try{ if(S2&&!$('s2').hidden){ const g=alleModellen(S2.m).find(x=>x.basis===S2.b); if(g) S2.g=g; renderS2(); return; }
+    if(F&&F.view==='deck'&&!$('form').hidden) renderDeck(); else renderCard(true); }catch(_){} }
+const tegelMaat=(m,t)=>{ const a=tegelArt(m,t)||mvOf(m,t.main); return a&&a.maatk?a.maatk:''; };
+const tegelCodeMaat=(m,t)=>{ const mk=tegelMaat(m,t); return tegelCode(m,t)+(mk?' · '+mk:''); };
+// model kenmerken één keer per model, voor het frame in de kop: 'greep in rug · frame beuken'
+const modelKenm=g=>{ const v=g.vs.find(x=>x.mk); return v?v.mk:''; };
+const kopKenm=(g,fz)=>{ const mk=modelKenm(g), fr=(fz.kop||'').replace(/^Alle [^:]+:\s*/,''); return mk?[mk,fr].filter(Boolean).join(' · '):''; };
+// alleen de beheerder: klein teken op de tegel als de korte naam nagekeken moet worden, met de reden als tooltip
+const kortTeken=(m,t)=>{ if(!BEH()) return ''; const a=tegelArt(m,t)||mvOf(m,t.main); return a&&a.kc?'<span class="kchk" title="Korte naam controleren: '+esc(a.kr||'')+'" aria-label="Korte naam controleren: '+esc(a.kr||'')+'">!</span>':''; };
 let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uitvoering en artikelen.omschrijving)
 function frLabel(vs){
   if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
@@ -1709,7 +1731,7 @@ function cardSoortHTML(m){
   const T=g.tiles, ct=T.find(t=>t.ids.includes(v.id))||T[0], art=tegelArt(m,ct)||v;
   // brandvertragend: alle uitvoeringen = label op de foto; een deel = op die tegels, en op de foto als de getoonde het is
   const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=T.filter(frT).length, frAlle=frN>0&&frN===T.length, frDeel=frN>0&&!frAlle;
-  const fz=frameRegels(m,g), fkop=(fz.kop||'').replace(/^Alle [^:]+:\s*/,'');
+  const fz=frameRegels(m,g), fkop=kopKenm(g,fz)||(fz.kop||'').replace(/^Alle [^:]+:\s*/,'');
   const pv=tegelFoto(m,ct,v), fm=fotoMelding(m,art,pv), zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv), st=tegelStand(m,ct);
   const ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
   const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
@@ -1726,8 +1748,8 @@ function cardSoortHTML(m){
   const its=T.map(t=>{ const s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
     const mpx=t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'';
     return '<button type="button" class="s2c s1c'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering op de foto">'
-      +'<b class="s2tt">'+esc(g.tl[t.main]||'')+'</b>'
-      +(T.length>4?'<span class="s1cr"><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx+'</span>':'<span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx)
+      +'<b class="s2tt">'+esc(g.tl[t.main]||'')+kortTeken(m,t)+'</b>'
+      +(T.length>4?'<span class="s1cr"><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx+'</span>':'<span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx)
       +(fr?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+'Brandvertragend</span>':'')
       +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></button>'; }).join('');
@@ -1739,8 +1761,8 @@ function cardSoortHTML(m){
     +'<div class="smods"><div class="mlh"><span class="eye">Uitvoeringen van de '+esc(plural(curB,2))+' · '+T.length+'</span>'+(fkop?'<span class="sfz">'+esc(fkop)+'</span>':'')+'</div>'
     +'<div class="s2tiles s1tiles">'+its+'</div>'
     +'<p class="mcap snote">Tik op een uitvoering om hem op de foto te zien. Welke je houdt, kies je na '+esc(soortPl(curB))+' houden.</p></div>'
-    +'</div>'
-    +belowHTML(m,art,'',{zonderOmschrijving:true,prijsBox:'',soort:curB});
+    +belowHTML(m,art,'',{zonderOmschrijving:true,prijsBox:'',soort:curB})
+    +'</div>';
 }
 function cardModelHTML(m){
   if(curB!=null&&m===cur) return cardSoortHTML(m);
@@ -1911,7 +1933,7 @@ function belowHTML(m,v,full,opt){
   const bron=v.desc?esc(v.dsrc||DATA.descSrc||'piaval.it, vertaald')+(v.descOf?', tekst van artikel '+esc(v.descOf)+' (geen eigen pagina voor '+esc(v.code)+')':'')+(DATA.descSrc?'':'. Namen van houtsoorten en afwerkingen zoals Piaval ze noemt'):'';
   // alle afwerkingen van de tegel met hun code en de naam zoals Piaval hem geeft (op de tegel staat alleen 'Frame: walnoot of beuken')
   const tg=modelAan()?alleModellen(m).flatMap(g=>g.tiles).find(t=>t.ids.includes(v.id)):null, tgv=tg?tg.ids.map(id=>mvOf(m,id)).filter(Boolean):[];
-  const kv=[['Product',esc(m.p[v.p].l)],v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,tgv.length>1?['Afwerkingen',tgv.map(x=>esc(x.code)+(x.fin?' '+esc(cap(x.fin)):'')).join(' · ')]:null,tg?['Artikelen in de serie',fmt(alleModellen(m).reduce((a,g)=>a+g.vs.length,0))+' (inclusief afwerkingen)']:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, (opt.zonderOmschrijving&&v.inA&&v.blom)?['Naam bij Blom',esc(v.blom)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
+  const kv=[['Product',esc(m.p[v.p].l)],v.uitv?['Uitvoering',esc(v.uitv)]:null,v.fin?['Afwerking',esc(cap(v.fin))+(v.finAfgeleid?' (afgeleid uit de code)':'')]:null,tgv.length>1?['Afwerkingen',tgv.map(x=>esc(x.code)+(x.fin?' '+esc(cap(x.fin)):'')).join(' · ')]:null,tg?['Artikelen in de serie',fmt(alleModellen(m).reduce((a,g)=>a+g.vs.length,0))+' (inclusief afwerkingen)']:null,(opt.zonderOmschrijving&&bron)?['Bron omschrijving',bron]:null,(opt.zonderOmschrijving&&v.eigAfgeleid)?['Eigenschappen',esc('overgenomen van '+v.eigAfgeleid+' (de prijslijst geeft er geen voor '+v.code+')')]:null,(v.sizes&&v.sizes.length)?['Maten',esc(v.sizes.join(', '))]:null,...dims, v.dimvan?['Herkomst maten',esc(v.dimvan)]:null, v.stof?['Stofmetrage',fmt(v.stof/100)+' m (1 stuk)']:null, v.gew?['Gewicht',fmt(v.gew)+' kg']:null, v.bron?['Prijslijst',esc(v.bron)]:null, v.afas?['AFAS-nummer',esc(v.afas)]:null, (opt.zonderOmschrijving&&v.inA&&v.blom)?['Naam bij Blom',esc(v.blom)]:null, v.opm?['Opmerking prijslijst',esc(v.opm)]:null, (PRIJS()&&v.opts&&v.opts.length)?['Opties en meerprijzen',v.opts.map(esc).join('<br>')]:null].filter(Boolean);
   let ptab='';
   if(prState==='ok'){ const bc=c=>PR.bc&&PR.bc[c]!=null?PR.bc[c]:null;
     const rows=priceRows(pk(v)).map(r=>calcRow(pk(v),r)).sort((a,b)=>((bc(a.cat)??99)-(bc(b.cat)??99))||a.b-b.b);
@@ -1958,8 +1980,8 @@ function setVi(m,i){
 // alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
 function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
   // seriekaart per soort: de foto krijgt de ruimte die overblijft tot en met de regel onder de foto (190 tot 440 px)
-  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.s1foto'), cap=sb&&fo;
-  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; sb.style.height=Math.max(130,Math.min(440,mh-rest-4))+'px'; return; }
+  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.s1foto'), cap=sb&&fo.querySelector('.smods');
+  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; const hk=fo.querySelector('.sokop'); if(hk) fo.style.setProperty('--kh',hk.offsetHeight+'px'); const mn0=window.innerWidth>=700?240:200; sb.style.height=Math.max(mn0,Math.min(440,mh-rest-4))+'px'; return; }
   if(!ph) return;   // seriekaart met modellen: eigen fotohoogte, niets oprekken
   ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px';
   fo.style.minHeight=mh+'px'; }
@@ -2271,7 +2293,7 @@ function modelMaten(sizes){ if(!sizes||!sizes.length) return ''; const r=[],q=[]
 // ook voor het hoofdartikel; 'Hoofdartikel' staat dan op de regel eronder. De app leidt in dat geval zelf niets af.
 const uitvVast=vs=>vs.length>0&&vs.every(v=>v.uitv);
 function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
-  if(uitvVast(vs)){ const lab={}, dim={}; vs.forEach((v,i)=>{ lab[v.id]=v.uitv; dim[v.id]=i?'':'Hoofdartikel'; });
+  if(uitvVast(vs)){ const lab={}, dim={}; vs.forEach((v,i)=>{ lab[v.id]=v.kort||v.uitv; dim[v.id]=i?'':'Hoofdartikel'; });
     const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
     return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
   const zonder=t=>/^met /.test(t)?'zonder '+t.slice(4):/^zonder /.test(t)?'met '+t.slice(7):'niet '+t;
@@ -2893,8 +2915,8 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
     const tl2=g.tl[t.main]||'';
     return '<div class="s2c'+(t===ct?' nu':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
       +'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>'
-      +(titel?'<b class="s2tt">'+esc(tl2)+'</b><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
-        :'<span class="s2code">'+esc(tegelCode(m,t))+'</span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
+      +(titel?'<b class="s2tt">'+esc(tl2)+kortTeken(m,t)+'</b><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
+        :'<span class="s2code">'+esc(tegelCodeMaat(m,t))+kortTeken(m,t)+'</span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
       +(t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'')
       +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')
@@ -2914,7 +2936,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
         +(T.length>1?'<button type="button" class="mar l" data-s2n="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-s2n="1" aria-label="Volgende uitvoering">›</button>':'')+'</div>'+fm.html
       +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
         +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div></div>'
-      +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+(fz.kop?'<span class="sfz">'+esc(fz.kop)+'</span>':'')+'</div>'+keuze
+      +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+((kopKenm(g,fz)||fz.kop)?'<span class="sfz">'+esc(kopKenm(g,fz)||fz.kop)+'</span>':'')+'</div>'+keuze
         +'<p class="mcap">Vink rechtsboven aan wat je houdt; tik op een tegel om die '+esc(soortNaam(b))+' op de foto te zien.</p></div>'
       +spec
     +'</div>'
