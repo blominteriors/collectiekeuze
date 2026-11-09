@@ -751,6 +751,7 @@ body.zonderprijzen .metprijs{display:none!important}
 .grow select{height:36px;padding:0 6px;font-size:13px;line-height:1.2}
 .gdel{width:32px;height:32px;border:1px solid var(--n500);background:#fff;font-size:18px;line-height:1;color:#B3261E}
 .modal form.gform{padding:12px 0 0;gap:8px;max-width:none;background:none}
+.gww{display:flex;gap:8px}.gww input{flex:1;min-width:0}.gww button{height:40px;padding:0 12px;border:1px solid var(--g300);background:none;font:inherit;font-size:13.5px;cursor:pointer}
 .gform input[type=email],.gform input[type=text]{font-size:15px;height:40px;padding:0 10px;border:1px solid var(--g300)}
 .grol{display:flex;gap:16px;font-size:13.5px}.grol label{display:flex;align-items:center;gap:6px}.grol input{width:auto}
 .note.fout,.gmsg.fout{color:#B3261E}
@@ -1253,12 +1254,13 @@ body.swv #what{display:none}
 <div class="modal" id="usersModal" hidden>
   <div class="box gbox">
     <div class="ghead"><h2>Gebruikers</h2><button type="button" class="gx" id="usersClose" aria-label="Sluiten">×</button></div>
-    <p class="note">Alleen wie hier staat, kan inloggen. De eerste keer logt iemand in met een inloglink op zijn eigen e-mailadres en kiest dan een wachtwoord.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten. <b>Beoordelaar zonder prijzen</b>: als beoordelaar, maar ziet geen prijzen.</p>
+    <p class="note">Alleen wie hier staat, kan inloggen. Vul je bij het toevoegen een wachtwoord in, dan wordt het account meteen aangemaakt: geef het wachtwoord zelf door, bij de eerste keer inloggen kiest de persoon een eigen wachtwoord. Laat je het leeg, dan logt de persoon de eerste keer in met een inloglink op zijn eigen e-mailadres. Bij een bestaand account vervangt een ingevuld wachtwoord het oude.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten. <b>Beoordelaar zonder prijzen</b>: als beoordelaar, maar ziet geen prijzen.</p>
     <div class="glist" id="gList"><p class="note">Laden…</p></div>
     <form id="gForm" class="gform" autocomplete="off">
       <b>Gebruiker toevoegen</b>
       <input id="gEmail" type="email" placeholder="naam@blominterieurs.nl" required>
       <input id="gNaam" type="text" placeholder="Naam (optioneel)">
+      <div class="gww"><input id="gWw" type="text" placeholder="Tijdelijk wachtwoord (optioneel, min. 8 tekens)" autocomplete="off" spellcheck="false" minlength="8"><button type="button" id="gWwNieuw">Voorstel</button></div>
       <div class="grol"><label><input type="radio" name="gRol" value="beoordelaar" checked> Beoordelaar</label><label><input type="radio" name="gRol" value="beoordelaar_zonder_prijzen"> Beoordelaar zonder prijzen</label><label><input type="radio" name="gRol" value="beheerder"> Beheerder</label></div>
       <button class="cta" type="submit">Toevoegen</button>
       <p class="note gmsg" id="gMsg"></p>
@@ -3238,11 +3240,21 @@ async function laadGebruikers(){
 }
 $('mUsers').onclick=()=>{ $('menu').hidden=true; $('usersModal').hidden=false; gMsg(''); laadGebruikers(); };
 $('usersClose').onclick=()=>$('usersModal').hidden=true;
-$('gForm').addEventListener('submit',async e=>{ e.preventDefault(); const em=$('gEmail').value.trim().toLowerCase(), nm=$('gNaam').value.trim(), rol=(document.querySelector('input[name="gRol"]:checked')||{}).value||'beoordelaar';
+// voorstel voor een tijdelijk wachtwoord: 12 tekens zonder letters die op elkaar lijken (0/O, 1/l/I)
+$('gWwNieuw').onclick=()=>{ const t='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', r=new Uint32Array(12); crypto.getRandomValues(r);
+  $('gWw').value=Array.from(r,x=>t[x%t.length]).join(''); $('gWw').focus(); $('gWw').select(); };
+$('gForm').addEventListener('submit',async e=>{ e.preventDefault(); const em=$('gEmail').value.trim().toLowerCase(), nm=$('gNaam').value.trim(), ww=$('gWw').value, rol=(document.querySelector('input[name="gRol"]:checked')||{}).value||'beoordelaar';
   if(!/^[^@\s]+@blominterieurs\.nl$/.test(em)){ gMsg('Gebruik een @blominterieurs.nl-adres.',true); return; }
-  const {error}=await window.blomRpc('gebruiker_zet',{p_email:em,p_naam:nm,p_rol:rol});
-  if(error){ gMsg(gFout(error),true); return; }
-  gMsg(em+' toegevoegd als '+ROLN[rol]+'. Deze persoon kan nu inloggen via het inlogscherm.'); $('gEmail').value=''; $('gNaam').value=''; laadGebruikers(); });
+  if(ww&&ww.length<8){ gMsg('Het wachtwoord moet minimaal 8 tekens hebben.',true); $('gWw').focus(); return; }
+  const knop=$('gForm').querySelector('button[type=submit]'); knop.disabled=true;
+  // met wachtwoord: account meteen aanmaken (Edge Function account-aanmaken, zet de persoon ook op de lijst)
+  const {data,error}=ww?await window.blomFunctie('account-aanmaken',{email:em,naam:nm,rol,wachtwoord:ww}):await window.blomRpc('gebruiker_zet',{p_email:em,p_naam:nm,p_rol:rol});
+  knop.disabled=false;
+  if(error){ gMsg(gFout(error)+(data&&data.lijst?' (wel op de lijst gezet als '+ROLN[rol]+')':''),true); if(data&&data.lijst) laadGebruikers(); return; }
+  gMsg(!ww?em+' toegevoegd als '+ROLN[rol]+'. Deze persoon kan nu inloggen via het inlogscherm met een inloglink.'
+    :data&&data.nieuw===false?em+' is '+ROLN[rol]+' en heeft een nieuw wachtwoord. Geef het zelf door; bij de eerste keer inloggen kiest de persoon een eigen wachtwoord.'
+    :'Account voor '+em+' aangemaakt als '+ROLN[rol]+'. Geef het wachtwoord zelf door; bij de eerste keer inloggen kiest de persoon een eigen wachtwoord.');
+  $('gEmail').value=''; $('gNaam').value=''; $('gWw').value=''; laadGebruikers(); });
 let afterName=null;
 const VASTE_GEBRUIKERS=['Jan','Johan','Test'];
 /* De beoordelaar is het ingelogde account: de gebruikersnaam is het deel van het e-mailadres
