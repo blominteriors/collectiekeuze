@@ -1008,13 +1008,18 @@ body.swv #what{display:none}
 .s2tiles{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .s2tiles.kort{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .s2c{position:relative;display:grid;gap:2px;align-content:start;text-align:left;padding:5px;border:1px solid var(--n500);background:#fff;min-width:0;font:inherit;color:var(--ink);cursor:pointer}
-.s2c.on{background:#EDEDEB}
+
 .s2c.nu{box-shadow:inset 0 0 0 2px var(--ink);border-color:var(--ink)}
 .s2c.leeg{background:var(--n200,#f1f1f1);border-style:dashed;cursor:default;min-height:52px}
 .s2r1{display:flex;align-items:center;gap:5px;min-width:0}
-.s2k{flex:none;width:15px;height:15px;border:1.5px solid var(--ink);display:grid;place-items:center;background:#fff;box-sizing:border-box}
-.s2k svg{width:11px;height:11px}
-.s2c.on .s2k{background:#fff;border-color:var(--ink)}.s2c.on .s2k path{stroke:var(--ink)}
+.s2c{padding-right:40px;min-height:52px}
+.s2kb{position:absolute;top:0;right:0;width:44px;height:44px;padding:0;border:0;background:none;display:grid;place-items:center;cursor:pointer;z-index:1}
+.s2k{width:32px;height:32px;border:1.5px solid var(--g400);display:grid;place-items:center;background:#fff;box-sizing:border-box}
+.s2kb[aria-checked="true"] .s2k{border:2px solid var(--ink)}
+.s2k svg{width:22px;height:22px}.s2k path{stroke:var(--ink);stroke-width:2.4}
+.s2kb:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+.s2c .s2s{margin-right:-34px}
+
 .s2tt{font-family:var(--display);font-weight:500;font-size:12.5px;line-height:1.2;overflow-wrap:anywhere}
 .s2code{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .s2c .mmp{font-size:10.5px;padding:0 4px;justify-self:start}
@@ -2845,13 +2850,15 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
   const st=tegelStand(m,ct), labNu=LABELS.filter((x,i)=>st.lab[i]===1).map(x=>x[0]);
   const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
   const cel=(t,titel)=>{ const on=!!S2.sel[t.main], s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main];
-    return '<button type="button" class="s2c'+(on?' on':'')+(t===ct?' nu':'')+'" data-s2t="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" title="'+esc(g.tl[t.main]||'')+'">'
-      +(titel?'<span class="s2r1"><i class="s2k" aria-hidden="true">'+(on?CK:'')+'</i><b class="s2tt">'+esc(g.tl[t.main]||'')+'</b></span><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
-        :'<span class="s2r1"><i class="s2k" aria-hidden="true">'+(on?CK:'')+'</i><span class="s2code">'+esc(tegelCode(m,t))+'</span></span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
+    const tl2=g.tl[t.main]||'';
+    return '<div class="s2c'+(t===ct?' nu':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
+      +'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>'
+      +(titel?'<b class="s2tt">'+esc(tl2)+'</b><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
+        :'<span class="s2code">'+esc(tegelCode(m,t))+'</span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
       +(t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'')
       +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')
-      +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></button>'; };
+      +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></div>'; };
   const R=s2Raster(g);
   const keuze=R?'<div class="s2g" style="grid-template-columns:auto repeat('+R.cols.length+',minmax(0,1fr))">'
       +(R.ck.kop?'<span></span><span class="s2gkop" style="grid-column:span '+R.cols.length+'">'+esc(R.ck.kop)+'</span>':'')
@@ -2868,7 +2875,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
       +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
         +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div>'
       +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+(fz.kop?'<span class="sfz">'+esc(fz.kop)+'</span>':'')+'</div>'+keuze
-        +'<p class="mcap">Tik om te houden of niet; de foto toont de laatst getikte '+esc(soortNaam(b))+'.</p></div>'
+        +'<p class="mcap">Vink rechtsboven aan wat je houdt; tik op een tegel om die '+esc(soortNaam(b))+' op de foto te zien.</p></div>'
       +spec
     +'</div>'
     +'<div class="s2f"><div class="mlh"><span class="eye">Alle '+esc(plk)+' van '+esc(m.fam)+'</span><span class="s2vg">'+(S2.eerder?'voorgevuld met je eerdere keuze':'voorgevuld met de stand in AFAS')+'</span></div>'
@@ -2876,10 +2883,11 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
       +'<div class="dlbs" role="group" aria-label="Labels">'+LABELS.map(([nm,c],j)=>{ const on=S2.lab[j]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-s2lab="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+nm+'</button>'; }).join('')+'</div>'
       +'<div class="s2btn"><button type="button" class="s2u" id="s2Undo" aria-label="Laatste wijziging terug"'+(S2.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="s2No">'+NO(18)+esc(pl)+' niet houden</button>'
         +'<button type="button" class="dyes" id="s2Yes"'+(n?'':' disabled')+'>'+(n?OK(18)+'Opslaan · '+n+' van de '+T.length:'Kies '+esc(plk))+'</button></div>'
-      +(pc?'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>Del</kbd> '+esc(plk)+' niet houden</span><span><kbd>⌫</kbd> laatste wijziging terug</span><span><kbd>← →</kbd> uitvoering</span></div>':'')
+      +(pc?'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>Del</kbd> '+esc(plk)+' niet houden</span><span><kbd>⌫</kbd> laatste wijziging terug</span><span><kbd>spatie</kbd> vinkje</span><span><kbd>← →</kbd> uitvoering</span></div>':'')
     +'</div>';
   const B=$('s2'), snap=()=>{ S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur}); if(S2.hist.length>60) S2.hist.shift(); };
-  B.querySelectorAll('[data-s2t]').forEach(x=>x.onclick=()=>{ const id=x.dataset.s2t; snap(); S2.sel[id]=!S2.sel[id]; S2.cur=id; renderS2(); });
+  B.querySelectorAll('[data-s2k]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const id=x.dataset.s2k; snap(); S2.sel[id]=!S2.sel[id]; renderS2(); const k=$('s2').querySelector('[data-s2k="'+CSS.escape(id)+'"]'); if(k) k.focus({preventScroll:true}); });
+  B.querySelectorAll('[data-s2t]').forEach(x=>{ x.onclick=()=>{ if(S2.cur===x.dataset.s2t) return; S2.cur=x.dataset.s2t; renderS2(); }; });
   B.querySelectorAll('[data-s2n]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); s2Stap(+x.dataset.s2n); });
   B.querySelectorAll('[data-s2oc]').forEach(x=>x.onclick=()=>{ snap(); S2.oc=x.dataset.s2oc; renderS2(); });
   B.querySelectorAll('[data-s2lab]').forEach(x=>x.onclick=()=>{ snap(); const j=+x.dataset.s2lab; S2.lab[j]=S2.lab[j]===1?0:1; renderS2(); });
@@ -2908,6 +2916,7 @@ document.addEventListener('keydown',e=>{ if(!S2||$('s2').hidden||!$('zoom').hidd
   if(k==='Enter'){ if(!$('s2Yes').disabled) s2Opslaan(false); }
   else if(k==='Delete') s2Opslaan(true);
   else if(k==='Backspace') s2Undo();
+  else if(k===' '){ const id=S2.cur; S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur}); S2.sel[id]=!S2.sel[id]; renderS2(); }
   else if(k==='ArrowRight') s2Stap(1); else if(k==='ArrowLeft') s2Stap(-1);
   else if(k==='Escape') s2Sluit();
   else ok=false;
