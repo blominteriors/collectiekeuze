@@ -1641,7 +1641,8 @@ const NOFOTO_K='<div class="nofoto"><svg class="x" viewBox="0 0 100 100" preserv
 // het bron-artikel wordt in de hele leverancier gezocht, niet alleen in de eigen serie
 let TYPEN=null, TYPEN_M=null;
 function typeVan(code){ if(TYPEN_M!==M){ TYPEN={}; M.forEach(mm=>mm.v.forEach(y=>{ TYPEN[y.code]=y.type; })); TYPEN_M=M; } return TYPEN[code]; }
-const okBron=(x,c)=>{ if(!c||c===x.code) return true; const t=typeVan(c); return !t||!x.type||t===x.type; };
+// leveranciers met modelkaarten: de foto wordt altijd getoond; of hij bij de uitvoering hoort, zegt de fotomelding (herkomst_foto)
+const okBron=(x,c)=>{ if(!c||c===x.code) return true; if(typeof modelAan==='function'&&modelAan()) return true; const t=typeVan(c); return !t||!x.type||t===x.type; };
 function fotoVan(m,x){ return !!x&&x.img!=null&&okBron(x,x.imgc); }
 // zelfde artikelcode anders geschreven (bijvoorbeeld 140T/1 en 140/T1): de foto hoort bij dit artikel, dus exact
 const codeN=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -2400,7 +2401,8 @@ function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fot
   const kortVan=x=>{ if(x.kort) return x.kort; const e=tv(x); return e?(e.g.tl[e.t.main]||x.code):x.code; };
   const ra=hf.match(/^Foto is van artikel ([^,\s]+),? niet van/);
   if(ra){ const x=m.v.find(y=>y.code===ra[1]), tx=tv(x); if(x&&tx&&tc&&tx.t===tc.t) return geen;
-    return meld('andere uitvoering op de foto ('+esc(x?kortVan(x):ra[1])+')'); }
+    const naam=x&&tx&&tc&&tx.g===tc.g?kortVan(x):(((x&&x.type)||typeVan(ra[1])||'').toLowerCase()+' '+ra[1]).trim();
+    return meld('andere uitvoering op de foto ('+esc(naam)+')'); }
   const ral=hf.match(/^Algemene foto van de serie \(([^)]+)\)/), alc=ral&&!/onbekend/i.test(ral[1])?ral[1].trim():null;
   if(alc&&alc!==cur.code){ const x=m.v.find(y=>y.code===alc), tx=tv(x);
     if(!(x&&tx&&tc&&tx.t===tc.t)){ const naam=x&&tx&&tc&&tx.g===tc.g?kortVan(x):((typeVan(alc)||'').toLowerCase()+' '+alc).trim();
