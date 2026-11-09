@@ -1407,7 +1407,7 @@ let MODEL=null;   // uit Supabase: {artikelnummer: [{model, uit, afas, fin, kort
 // onderscheiden, mk = model kenmerken, kc/kr = controleren en reden (alleen beheerder). Zelfde code meer keer (Bree): op AFAS-nummer of afwerking.
 function kortToepassen(x){ let n=0;
   M.forEach(m=>m.v.forEach(v=>{ const rs=x&&x[v.code]; if(!rs||!rs.length) return;
-    const r=rs.length===1?rs[0]:(rs.find(r=>r.afas&&r.afas===v.afas)||rs.find(r=>r.fin===(v.fin||''))); if(!r) return; if(r.hf&&v.hf!==r.hf){ v.hf=r.hf; n++; } if(!r.kort) return;
+    const r=rs.length===1?rs[0]:(rs.find(r=>r.afas&&r.afas===v.afas)||rs.find(r=>r.fin===(v.fin||''))); if(!r) return; if(r.hf&&v.hf!==r.hf){ v.hf=r.hf; n++; } if(r.fk!=null) v.fk=r.fk; if(!r.kort) return;
     v.kort=r.kort; v.maatk=r.maatk; v.mk=r.mk; v.kc=r.kc; v.kr=r.kr; n++; }));
   return n; }
 // opnieuw tekenen met de gegevens die later binnenkomen (korte namen, brandvertragend)
@@ -2380,16 +2380,28 @@ function tegelFoto(m,t,cur){ const rk=v=>fotoVan(m,v)?(FOTO_RANK[v.imgq]||0):-1;
 // of de foto is van de basisuitvoering of van een ander model. Bij twijfel geen melding.
 // code = het artikel waar de foto bij hoort, als dat in dezelfde tegel zit (57-92/1 bij een foto van 57-92/1); anders de eigen code.
 const FMELD_ICO='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="#c98a1a" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6v4" stroke="#4d3300" stroke-width="1.5"/><circle cx="8" cy="12" r=".9" fill="#4d3300"/></svg>';
+// Fotomelding: alleen op basis van Supabase (herkomst_foto per artikel, met foto_klopt_pct); de eigen markering van de app telt niet.
+// Eén melding tegelijk, in deze volgorde (nooit op de tegels, geen melding bij alleen stofkleur of afwerking = dezelfde tegel):
+// a. 'Foto is van artikel X, niet van Y': andere uitvoering op de foto (korte naam van X)
+// b. zelfde foto (zelfde beeld) bij een andere uitvoering van hetzelfde model, en de foto hoort niet aantoonbaar bij deze uitvoering:
+//    dezelfde foto als [code waar de foto bij hoort, of de eerste in de reeks]
+// c. foto uit de prijslijst of algemene seriefoto, bij een model met meer uitvoeringen: foto toont het model, niet deze uitvoering
 function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fotoVan(m,pv)) return geen;
-  const hm=[pv.hf].concat(pv.why||[]).map(t=>String(t||'').match(/Foto is van artikel ([^,\s]+),? niet van/)).find(Boolean);
-  const fc=hm?hm[1]:(pv.imgc&&pv.imgc!==pv.code?pv.imgc:pv.code), x=m.v.find(y=>y.code===fc)||null;
-  const T=alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t}))), tv=a=>a?T.find(e=>e.t.ids.includes(a.id)):null, tc=tv(cur), tx=tv(x);
-  if(x&&tc&&tx&&tx.t===tc.t) return {html:'',code:x.code};
-  if(!hm&&(pv.imgq==='web'||pv.imgq==='fin'||pv.imgq==='bekl')) return geen;
-  let naam=x&&x!==cur&&x.kort?x.kort:'';
-  if(naam){} else if(x&&tx&&tc){ const a=(tc.g.tl[tc.t.main]||'').split(' · '), b=(tx.g.tl[tx.t.main]||'').split(' · '), d=b.filter(p=>p&&!a.includes(p)); naam=(d.length?d:b).join(' · '); }
-  else if(!hm&&pv.imgq!=='base'&&pv.imgq!=='model') return geen;
-  return {code:cur.code, html:'<div class="fmeld" role="note">'+FMELD_ICO+'<span><b>Let op:</b> andere uitvoering op de foto'+(naam?' ('+esc(naam)+')':'')+'</span></div>'}; }
+  const hf=String(pv.hf||''); if(!hf) return geen;
+  const T=alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t}))), tv=a=>a?T.find(e=>e.t.ids.includes(a.id)):null, tc=tv(cur), g=tc&&tc.g;
+  const meld=t=>({code:cur.code, html:'<div class="fmeld" role="note">'+FMELD_ICO+'<span><b>Let op:</b> '+t+'</span></div>'});
+  const kortVan=x=>{ if(x.kort) return x.kort; const e=tv(x); return e?(e.g.tl[e.t.main]||x.code):x.code; };
+  const ra=hf.match(/^Foto is van artikel ([^,\s]+),? niet van/);
+  if(ra){ const x=m.v.find(y=>y.code===ra[1]), tx=tv(x); if(x&&tx&&tc&&tx.t===tc.t) return geen;
+    return meld('andere uitvoering op de foto ('+esc(x?kortVan(x):ra[1])+')'); }
+  const precies=/^Foto hoort bij precies dit artikelnummer|^Foto staat op \S+ bij dit artikelnummer/.test(hf);
+  const prijslijst=/^Foto uit de prijslijst/.test(hf), algemeen=/^Algemene foto van de serie/.test(hf);
+  const k=fotoKey(pv.img), delers=k&&g&&tc?g.vs.filter(y=>y!==pv&&fotoVan(m,y)&&fotoKey(y.img)===k&&tv(y)&&tv(y).t!==tc.t):[];
+  if(!precies&&!prijslijst&&delers.length){ const n=(hf.match(/^Algemene foto van de serie \(([^)]+)\)/)||[])[1];
+    const code=n&&!/onbekend/i.test(n)&&n!==cur.code?n:delers.map(y=>y.code).sort((p,q)=>String(p).localeCompare(String(q),'nl',{numeric:true}))[0];
+    return meld('dezelfde foto als '+esc(code)); }
+  if((prijslijst||algemeen)&&g&&g.tiles.length>1) return meld('foto toont het model, niet deze uitvoering');
+  return geen; }
 // regel 2 en 3 van een uitvoeringstegel (seriekaart en modelkaart): één code met 'Hoofdartikel' of de meerprijs,
 // daaronder alleen bij meer afwerkingen 'Frame: walnoot of beuken'. De codes per afwerking staan onder Specificaties.
 // Code: die zonder afwerkingsletter (57-92/1 naast 57-92/1N), anders die van de goedkoopste afwerking.

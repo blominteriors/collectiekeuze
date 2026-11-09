@@ -355,11 +355,11 @@
   window.blomModellen = async (supNaam) => {
     const V = VERSIE || 'v1', uit = {};
     const rijen = await alles(() => sb.from('artikelen')
-      .select('nummer_leverancier,afas_nr,afwerking,model,uitvoering,uitvoering_kort,maat_kort,model_kenmerken,kort_controleren,kort_reden,herkomst_foto')
+      .select('nummer_leverancier,afas_nr,afwerking,model,uitvoering,uitvoering_kort,maat_kort,model_kenmerken,kort_controleren,kort_reden,herkomst_foto,foto_klopt_pct')
       .eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));
     rijen.forEach(r => { if (!r.model) return; (uit[r.nummer_leverancier] = uit[r.nummer_leverancier] || []).push({
       model: r.model, uit: r.uitvoering || '', afas: r.afas_nr || '', fin: r.afwerking || '', kort: r.uitvoering_kort || '',
-      maatk: r.maat_kort || '', mk: r.model_kenmerken || '', kc: !!r.kort_controleren, kr: r.kort_reden || '', hf: r.herkomst_foto || '' }); });
+      maatk: r.maat_kort || '', mk: r.model_kenmerken || '', kc: !!r.kort_controleren, kr: r.kort_reden || '', hf: r.herkomst_foto || '', fk: r.foto_klopt_pct == null ? null : Number(r.foto_klopt_pct) }); });
     return uit;
   };
   window.blomBrandvertragend = async (supId, supNaam) => {
