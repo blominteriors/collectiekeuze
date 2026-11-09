@@ -2386,6 +2386,11 @@ const FMELD_ICO='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="tr
 // b. zelfde foto (zelfde beeld) bij een andere uitvoering van hetzelfde model, en de foto hoort niet aantoonbaar bij deze uitvoering:
 //    dezelfde foto als [code waar de foto bij hoort, of de eerste in de reeks]
 // c. foto uit de prijslijst of algemene seriefoto, bij een model met meer uitvoeringen: foto toont het model, niet deze uitvoering
+// verschillen de uitvoeringen (tegels) van een model alleen in maat? Dan zijn de korte namen gelijk zodra de maatdelen eruit zijn
+// ('Standaard · 140' en 'Standaard · 160'; 'b 53', 'h 88', 'zithoogte 43', 'Ø 80', '140 cm', '220 × 110' tellen als maat)
+const MAATDEEL=/^(?:(?:b|h|d|zithoogte|zh|breedte|hoogte|diepte)\s*[\d.,–-]+(?:\s*cm)?|[øØ].*|\d[\d.,–-]*(?:\s*(?:cm|mm))?|.*\d\s*[×x]\s*\d.*)$/i;
+function alleenMaat(m,g){ const zonder=t=>{ const a=tegelArt(m,t)||mvOf(m,t.main), naam=(a&&a.kort)||g.tl[t.main]||''; return naam.split(' · ').map(p=>p.trim()).filter(p=>p&&!MAATDEEL.test(p)).join(' · ')||'Standaard'; };
+  const namen=new Set(g.tiles.map(zonder)); return namen.size===1; }
 function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fotoVan(m,pv)) return geen;
   const hf=String(pv.hf||''); if(!hf) return geen;
   const T=alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t}))), tv=a=>a?T.find(e=>e.t.ids.includes(a.id)):null, tc=tv(cur), g=tc&&tc.g;
@@ -2400,7 +2405,8 @@ function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fot
   if(!precies&&!prijslijst&&delers.length){ const n=(hf.match(/^Algemene foto van de serie \(([^)]+)\)/)||[])[1];
     const code=n&&!/onbekend/i.test(n)&&n!==cur.code?n:delers.map(y=>y.code).sort((p,q)=>String(p).localeCompare(String(q),'nl',{numeric:true}))[0];
     return meld('dezelfde foto als '+esc(code)); }
-  if((prijslijst||algemeen)&&g&&g.tiles.length>1) return meld('foto toont het model, niet deze uitvoering');
+  // c niet als de uitvoeringen alleen in maat verschillen (dezelfde tafel in een andere maat is niet misleidend)
+  if((prijslijst||algemeen)&&g&&g.tiles.length>1&&!alleenMaat(m,g)) return meld('foto toont het model, niet deze uitvoering');
   return geen; }
 // regel 2 en 3 van een uitvoeringstegel (seriekaart en modelkaart): één code met 'Hoofdartikel' of de meerprijs,
 // daaronder alleen bij meer afwerkingen 'Frame: walnoot of beuken'. De codes per afwerking staan onder Specificaties.
