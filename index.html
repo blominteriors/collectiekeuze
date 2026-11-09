@@ -965,6 +965,9 @@ body.swv #what{display:none}
 .ssoort .scs{gap:6px}.ssoort .scs .scc{margin-right:4px}
 .ssoort .smods .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .sfz{font-size:11.5px;color:var(--g400);text-align:right}
+.labtog{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:24px;padding:2px 6px;border:1px solid var(--n500);background:#fff;cursor:pointer;font:inherit}
+.labtog .s2d i{width:8px;height:8px}
+.labtog.open{border-style:dashed;padding:2px 4px}.labtog.open .slb{border:0;padding:0 4px;height:20px}
 .mblok.sblok{border-left-width:1px;margin-top:6px}
 .mblok.sblok .mgrid{border-top:0}
 .dbtns.m2{grid-template-columns:1fr 1.8fr}
@@ -1003,6 +1006,7 @@ body.swv #what{display:none}
 .s2h.s2hr{align-self:center;padding:0 4px 0 0;color:var(--ink);font-weight:500;white-space:nowrap}
 .s2gkop{font-size:11px;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;text-align:center;border-bottom:1px solid var(--n300);padding-bottom:2px}
 .s2tiles{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.s2tiles.kort{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .s2c{position:relative;display:grid;gap:2px;align-content:start;text-align:left;padding:5px;border:1px solid var(--n500);background:#fff;min-width:0;font:inherit;color:var(--ink);cursor:pointer}
 .s2c.on{background:#EDEDEB}
 .s2c.nu{box-shadow:inset 0 0 0 2px var(--ink);border-color:var(--ink)}
@@ -1642,6 +1646,11 @@ function fotoDisc(m,v){ if(!fotoVan(m,v)) return ''; let kop='', regels=[];
 // uitvoeringen: tik = die uitvoering tonen). Prijzen en specificaties van de getoonde uitvoering staan ingeklapt onderaan.
 // Hier kies je alleen of de serie blijft; welke uitvoeringen, zichtbaarheid en labels kies je in stap 2.
 // stand van een uitvoering (tegel) in AFAS: 'klant' (online voor klanten), 'intern', 'niet' (in AFAS, niet online) of 'geen' (niet in AFAS)
+// onder de foto (stap 1): zichtbaarheid en de labels als bolletjes; tik op de bolletjes = labels voluit (en terug)
+let LABOPEN=false;
+const standKort=s=>{ const aan=LABELS.filter((x,i)=>s.lab[i]===1); if(!aan.length) return '<span class="sst '+s.k+'">'+STAND[s.k]+'</span>';
+  return '<span class="sst '+s.k+'">'+STAND[s.k]+'</span><button type="button" class="labtog'+(LABOPEN?' open':'')+'" data-labtog="1" aria-expanded="'+LABOPEN+'" title="'+esc(aan.map(x=>x[0]).join(', '))+'" aria-label="Labels: '+esc(aan.map(x=>x[0]).join(', '))+'">'
+    +(LABOPEN?aan.map(([n,c])=>'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>').join(''):'<span class="s2d">'+aan.map(([n,c])=>'<i style="--lc:'+c+'"></i>').join('')+'</span>')+'</button>'; };
 const STAND={klant:'Online · klanten',intern:'Intern',niet:'Niet online',geen:'Niet in AFAS'};
 const tegelStand=(m,t)=>{ const sv=t.ids.map(id=>mvOf(m,id)).find(x=>x&&x.inA); return sv?{k:afasOc(sv),lab:labOf(sv)}:{k:'geen',lab:[]}; };
 const standChips=s=>'<span class="sst '+s.k+'">'+STAND[s.k]+'</span>'+LABELS.map(([n,c],i)=>s.lab[i]===1?'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>':'').join('');
@@ -1672,7 +1681,7 @@ function cardSoortHTML(m){
     +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')
     +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')+'</div>'+fm.html
     +'<div class="scap"><div class="sct"><b>'+esc(tl)+'</b>'+(ST.length>1?'<span class="num">'+(sp+1)+'/'+ST.length+'</span>':'')+'</div>'
-    +'<div class="scs"><span class="scc"><b>'+esc(tegelCode(m,ct)||fm.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</span><span class="eye">Nu</span>'+standChips(ST[sp].s)+'</div></div></div>';
+    +'<div class="scs"><span class="scc"><b>'+esc(tegelCode(m,ct)||fm.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</span><span class="eye">Nu</span>'+standKort(ST[sp].s)+'</div></div></div>';
   const h=g.hoofd, ht=g.tiles.find(t=>t.ids.includes(h.id))||g.tiles[0], rh=modelPrijs(m,tegelArt(m,ht)||h), mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; }, maat=g.tiles.some(t=>g.td[t.main]&&g.td[t.main]!=='Hoofdartikel');
   const its=g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, tdx=g.td[x.id]==='Hoofdartikel'?'':g.td[x.id], d=tdx||(hoofd&&maat?'Standaard maten':'');
     return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
@@ -1906,8 +1915,8 @@ function setVi(m,i){
 // alles boven de vouw laten passen: de foto krijgt de hoogte die overblijft (tussen 150 en 380 px)
 function fitFold(fo){ const mh=$('main').clientHeight; fo.style.minHeight=''; const ph=fo.querySelector('.photo');
   // seriekaart per soort: de foto krijgt de ruimte die overblijft tot en met de regel onder de foto (190 tot 440 px)
-  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.smfoto .mimgbox'), cap=sb&&fo.querySelector('.smfoto .scap');
-  if(sb&&cap){ sb.style.height='0px'; const rest=cap.getBoundingClientRect().bottom-fo.getBoundingClientRect().top; sb.style.height=Math.max(190,Math.min(440,mh-rest-10))+'px'; return; }
+  const sb=fo.classList.contains('ssoort')&&fo.querySelector('.smfoto .mimgbox'), cap=sb&&fo.querySelector('.smfoto');
+  if(sb&&cap){ sb.style.minHeight='0px'; sb.style.height='0px'; const mn=$('main'), rest=cap.getBoundingClientRect().bottom-mn.getBoundingClientRect().top+mn.scrollTop; sb.style.height=Math.max(190,Math.min(440,mh-rest-6))+'px'; return; }
   if(!ph) return;   // seriekaart met modellen: eigen fotohoogte, niets oprekken
   ph.style.minHeight='0'; ph.style.height='0px'; const rest=fo.offsetHeight; ph.style.height=Math.max(150,Math.min(380,mh-rest-2))+'px';
   fo.style.minHeight=mh+'px'; }
@@ -1935,8 +1944,8 @@ function updPbar(m){ const pb=$('pbar'), ac=$('actions'); if(!pb) return;
   $('pbt').onclick=()=>zet(!open); const x=$('hbx'); if(x) x.onclick=()=>zet(false); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&hbOpen&&$('hbp')&&$('zoom').hidden){ e.preventDefault(); e.stopImmediatePropagation(); hbOpen=false; updPbar(cur); } },true);
 function bindCard(m){
+  updPbar(m);   // eerst de prijsregel: die bepaalt hoeveel ruimte er boven de vouw overblijft
   const fo=$('sSwipe').querySelector('.fold'); if(fo) fitFold(fo);
-  updPbar(m);
   const sp=$('strip'), g=grpOf(m,curVi), pos=g.pk.indexOf(m.v[curVi].p);
   clearTimeout(stripT);
   if(sp){
@@ -1978,6 +1987,7 @@ function bindCard(m){
   const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
   const ap=$('apBox'); if(ap) ap.addEventListener('toggle',()=>{ apOpen=ap.open; });
   const sk=$('sSwipe').querySelector('[data-skip]'); if(sk) sk.onclick=()=>skipSerie(m);
+  $('sSwipe').querySelectorAll('[data-labtog]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); LABOPEN=!LABOPEN; setVi(m,curVi); });
   const hb=$('hbBox'); if(hb) hb.addEventListener('toggle',()=>{ prOpen=hb.open; });
   const pb=$('psBox'); if(pb) pb.addEventListener('toggle',()=>{ psOpen=pb.open; });
   updMini();
@@ -2839,15 +2849,15 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
       +(titel?'<span class="s2r1"><i class="s2k" aria-hidden="true">'+(on?CK:'')+'</i><b class="s2tt">'+esc(g.tl[t.main]||'')+'</b></span><span class="s2code">'+esc(tegelCode(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
         :'<span class="s2r1"><i class="s2k" aria-hidden="true">'+(on?CK:'')+'</i><span class="s2code">'+esc(tegelCode(m,t))+'</span></span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
       +(t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'')
-      +(fr?'<span class="s2fr">'+esc(fr)+'</span>':'')
-      +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+'Brandvertragend</span>':'')
+      +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
+      +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')
       +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></button>'; };
   const R=s2Raster(g);
   const keuze=R?'<div class="s2g" style="grid-template-columns:auto repeat('+R.cols.length+',minmax(0,1fr))">'
       +(R.ck.kop?'<span></span><span class="s2gkop" style="grid-column:span '+R.cols.length+'">'+esc(R.ck.kop)+'</span>':'')
       +'<span class="s2h s2hr">'+esc(R.rk.kop)+'</span>'+R.ck.ks.map(k=>'<span class="s2h">'+esc(k)+'</span>').join('')
       +R.rows.map((rw,i)=>'<span class="s2h s2hr">'+esc(R.rk.ks[i])+'</span>'+R.cols.map(c=>{ const t=R.cell[rw+'\u0001'+c]; return t?cel(t,false):'<span class="s2c leeg" aria-hidden="true"></span>'; }).join('')).join('')+'</div>'
-    :'<div class="s2tiles">'+T.map(t=>cel(t,true)).join('')+'</div>';
+    :'<div class="s2tiles'+(T.length>9?' kort':'')+'">'+T.map(t=>cel(t,T.length<=9)).join('')+'</div>';
   const n=T.filter(t=>S2.sel[t.main]).length, pc=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
   const spec=belowHTML(m,art,'',{zonderOmschrijving:true,alleenSpec:true}).replace('<details class="box">','<details class="box s2spec"'+(S2.spec?' open':'')+'>');
   $('s2').innerHTML='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
