@@ -1254,7 +1254,7 @@ body.swv #what{display:none}
 <div class="modal" id="usersModal" hidden>
   <div class="box gbox">
     <div class="ghead"><h2>Gebruikers</h2><button type="button" class="gx" id="usersClose" aria-label="Sluiten">×</button></div>
-    <p class="note">Alleen wie hier staat, kan inloggen. Vul je bij het toevoegen een wachtwoord in, dan wordt het account meteen aangemaakt: geef het wachtwoord zelf door, bij de eerste keer inloggen kiest de persoon een eigen wachtwoord. Laat je het leeg, dan logt de persoon de eerste keer in met een inloglink op zijn eigen e-mailadres. Bij een bestaand account vervangt een ingevuld wachtwoord het oude.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten. <b>Beoordelaar zonder prijzen</b>: als beoordelaar, maar ziet geen prijzen.</p>
+    <p class="note">Alleen wie hier staat, kan inloggen. Vul je bij het toevoegen een wachtwoord in, dan wordt het account meteen aangemaakt: geef het wachtwoord zelf door, bij de eerste keer inloggen kiest de persoon een eigen wachtwoord. Laat je het leeg, dan logt de persoon de eerste keer in met een inloglink op zijn eigen e-mailadres. Bij een bestaand account vervangt een ingevuld wachtwoord het oude. Verwijderen (×) haalt ook het account weg; gemaakte keuzes blijven bewaard.<br><b>Beheerder</b>: ziet resultaten, kan exporteren en keuzes onbeperkt aanpassen. <b>Beoordelaar</b>: doet elke leverancier één keer en ziet geen resultaten. <b>Beoordelaar zonder prijzen</b>: als beoordelaar, maar ziet geen prijzen.</p>
     <div class="glist" id="gList"><p class="note">Laden…</p></div>
     <form id="gForm" class="gform" autocomplete="off">
       <b>Gebruiker toevoegen</b>
@@ -3235,8 +3235,10 @@ async function laadGebruikers(){
     +(g.email===ik?'<span class="gdel"></span>':'<button type="button" class="gdel" data-gdel="'+esc(g.email)+'" aria-label="'+esc(g.email)+' verwijderen" title="Verwijderen">×</button>')+'</div>').join('')||'<p class="note">Nog geen gebruikers.</p>';
   box.querySelectorAll('[data-grol]').forEach(sel=>sel.onchange=async()=>{ const g=(data||[]).find(x=>x.email===sel.dataset.grol); const {error}=await window.blomRpc('gebruiker_zet',{p_email:g.email,p_naam:g.naam||'',p_rol:sel.value});
     if(error){ gMsg(gFout(error),true); } else gMsg(g.email+' is nu '+ROLN[sel.value]+'.'); laadGebruikers(); });
-  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=async()=>{ const e=b.dataset.gdel; if(!confirm(e+' verwijderen? Deze persoon kan dan niet meer inloggen. Gemaakte keuzes blijven bewaard.')) return;
-    const {error}=await window.blomRpc('gebruiker_verwijder',{p_email:e}); if(error) gMsg(gFout(error),true); else gMsg(e+' verwijderd.'); laadGebruikers(); });
+  // verwijderen: van de lijst én het inlogaccount in Supabase (Edge Function account-verwijderen); keuzes blijven bewaard
+  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=async()=>{ const e=b.dataset.gdel; if(!confirm(e+' verwijderen?\n\nHet account wordt helemaal verwijderd, ook het wachtwoord. Wil je deze persoon later terug, dan maak je een nieuw account aan.\nGemaakte keuzes blijven bewaard.')) return;
+    b.disabled=true; const {data,error}=await window.blomFunctie('account-verwijderen',{email:e});
+    if(error) gMsg(gFout(error),true); else gMsg(e+' verwijderd'+(data&&data.account===false?' (had nog geen account).':', ook het account.')); laadGebruikers(); });
 }
 $('mUsers').onclick=()=>{ $('menu').hidden=true; $('usersModal').hidden=false; gMsg(''); laadGebruikers(); };
 $('usersClose').onclick=()=>$('usersModal').hidden=true;
