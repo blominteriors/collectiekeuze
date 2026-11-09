@@ -1059,6 +1059,7 @@ body.swv #what{display:none}
 .s2hf{font-size:10.5px;color:var(--g400)}
 .s2fr{font-size:10.5px;color:var(--g400)}
 /* beheerder: korte naam controleren (reden als tooltip) */
+.s2mt{font-size:10.5px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .kchk{display:inline-grid;place-items:center;width:14px;height:14px;margin-left:5px;border:1px solid var(--ink);background:#ffe9a8;color:var(--ink);font:500 10px/1 var(--display);vertical-align:1px;cursor:help}
 .s2c .frb.st{justify-self:start;font-size:9.5px;padding:0 4px}
 .s2s{display:flex;align-items:center;gap:3px;font-size:9.5px;color:var(--g400);white-space:nowrap;border-top:1px solid var(--n300);padding-top:3px;margin-top:1px}
@@ -2293,7 +2294,7 @@ function modelMaten(sizes){ if(!sizes||!sizes.length) return ''; const r=[],q=[]
 // ook voor het hoofdartikel; 'Hoofdartikel' staat dan op de regel eronder. De app leidt in dat geval zelf niets af.
 const uitvVast=vs=>vs.length>0&&vs.every(v=>v.uitv);
 function modelLabels(m,vs){ const E=vs.map(v=>modelEig(m,v)), H=E[0], h=H.v;
-  if(uitvVast(vs)){ const lab={}, dim={}; vs.forEach((v,i)=>{ lab[v.id]=v.kort||v.uitv; dim[v.id]=i?'':'Hoofdartikel'; });
+  if(uitvVast(vs)){ const lab={}, dim={}; vs.forEach((v,i)=>{ lab[v.id]=!i&&v.kort==='Standaard'?'Hoofdartikel':(v.kort||v.uitv); dim[v.id]=i?'':'Hoofdartikel'; });   // standaard: basisuitvoering als hoofdartikel heet 'Hoofdartikel'
     const types=[...new Set(vs.map(v=>v.type).filter(Boolean))], gem=MFEAT.filter(k=>k!=='mech'&&k!=='greep'&&E.every(e=>e.feat[k]&&e.feat[k]===H.feat[k])).map(k=>H.feat[k]);
     return {lab, dim, type:types.join(' / ')||'Artikel', naam:m.fam+' '+types.map(t=>t.toLowerCase()).join(' / ')+(gem.length?' '+gem.join(', '):'')}; }
   const zonder=t=>/^met /.test(t)?'zonder '+t.slice(4):/^zonder /.test(t)?'met '+t.slice(7):'niet '+t;
@@ -2916,7 +2917,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
     return '<div class="s2c'+(t===ct?' nu':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
       +'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>'
       +(titel?'<b class="s2tt">'+esc(tl2)+kortTeken(m,t)+'</b><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
-        :'<span class="s2code">'+esc(tegelCodeMaat(m,t))+kortTeken(m,t)+'</span>'+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
+        :'<span class="s2code">'+esc(tegelCode(m,t))+kortTeken(m,t)+'</span>'+(tegelMaat(m,t)?'<span class="s2mt">'+esc(tegelMaat(m,t))+'</span>':'')+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
       +(t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'')
       +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')

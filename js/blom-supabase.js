@@ -348,12 +348,18 @@
     }
     return rijen;
   }
-  /* Model en uitvoering per artikelnummer (tabel artikelen): model = basiscode (de code vóór de slash), uitvoering = tegellabel.
-     De app deelt zelf in op basiscode; het tegellabel uit deze tabel gaat voor op het label dat de app afleidt. */
+  /* Model, uitvoering en de korte uitvoeringsnaam per artikelnummer (tabel artikelen, standaard korte uitvoeringsnaam in de data-repo).
+     Geeft {artikelnummer: [rij, ...]}: een artikelnummer kan bij Bree meer rijen hebben (zelfde code, andere maat); de app kiest
+     dan op AFAS-nummer of afwerking. kort = titel van de tegel, maatk = maten die de uitvoering onderscheiden, mk = model kenmerken,
+     kc/kr = controleren en reden (alleen voor de beheerder). */
   window.blomModellen = async (supNaam) => {
     const V = VERSIE || 'v1', uit = {};
-    const rijen = await alles(() => sb.from('artikelen').select('nummer_leverancier,model,uitvoering').eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));
-    rijen.forEach(r => { if (r.model) uit[r.nummer_leverancier] = { model: r.model, uit: r.uitvoering || '' }; });
+    const rijen = await alles(() => sb.from('artikelen')
+      .select('nummer_leverancier,afas_nr,afwerking,model,uitvoering,uitvoering_kort,maat_kort,model_kenmerken,kort_controleren,kort_reden')
+      .eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));
+    rijen.forEach(r => { if (!r.model) return; (uit[r.nummer_leverancier] = uit[r.nummer_leverancier] || []).push({
+      model: r.model, uit: r.uitvoering || '', afas: r.afas_nr || '', fin: r.afwerking || '', kort: r.uitvoering_kort || '',
+      maatk: r.maat_kort || '', mk: r.model_kenmerken || '', kc: !!r.kort_controleren, kr: r.kort_reden || '' }); });
     return uit;
   };
   window.blomBrandvertragend = async (supId, supNaam) => {
