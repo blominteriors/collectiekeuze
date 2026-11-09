@@ -2389,7 +2389,9 @@ const FMELD_ICO='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="tr
 // verschillen de uitvoeringen (tegels) van een model alleen in maat? Dan zijn de korte namen gelijk zodra de maatdelen eruit zijn
 // ('Standaard · 140' en 'Standaard · 160'; 'b 53', 'h 88', 'zithoogte 43', 'Ø 80', '140 cm', '220 × 110' tellen als maat)
 const MAATDEEL=/^(?:(?:b|h|d|zithoogte|zh|breedte|hoogte|diepte)\s*[\d.,–-]+(?:\s*cm)?|[øØ].*|\d[\d.,–-]*(?:\s*(?:cm|mm))?|.*\d\s*[×x]\s*\d.*)$/i;
-function alleenMaat(m,g){ const zonder=t=>{ const a=tegelArt(m,t)||mvOf(m,t.main), naam=(a&&a.kort)||g.tl[t.main]||''; return naam.split(' · ').map(p=>p.trim()).filter(p=>p&&!MAATDEEL.test(p)).join(' · ')||'Standaard'; };
+const MAAT_IN=[/[øØ]\s*\d[\d.,–-]*(?:\s*(?:cm|mm))?/g, /\d+\s*[×x]\s*\d+(?:\s*(?:cm|mm))?/g, /(^|\s)(?:(?:b|h|d|zithoogte|zh|breedte|hoogte|diepte)\s*)?\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?(?:\s*(?:cm|mm))?(?=\s|$)/gi];
+const zonderMaat=p=>{ let x=p; MAAT_IN.forEach(re=>{ x=x.replace(re,' '); }); return x.replace(/\s+/g,' ').trim(); };
+function alleenMaat(m,g){ const zonder=t=>{ const a=tegelArt(m,t)||mvOf(m,t.main), naam=(a&&a.kort)||g.tl[t.main]||''; return naam.split(' · ').map(p=>p.trim()).filter(p=>p&&!MAATDEEL.test(p)).map(zonderMaat).filter(Boolean).join(' · ')||'Standaard'; };
   const namen=new Set(g.tiles.map(zonder)); return namen.size===1; }
 function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fotoVan(m,pv)) return geen;
   const hf=String(pv.hf||''); if(!hf) return geen;
@@ -2399,6 +2401,10 @@ function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fot
   const ra=hf.match(/^Foto is van artikel ([^,\s]+),? niet van/);
   if(ra){ const x=m.v.find(y=>y.code===ra[1]), tx=tv(x); if(x&&tx&&tc&&tx.t===tc.t) return geen;
     return meld('andere uitvoering op de foto ('+esc(x?kortVan(x):ra[1])+')'); }
+  const ral=hf.match(/^Algemene foto van de serie \(([^)]+)\)/), alc=ral&&!/onbekend/i.test(ral[1])?ral[1].trim():null;
+  if(alc&&alc!==cur.code){ const x=m.v.find(y=>y.code===alc), tx=tv(x);
+    if(!(x&&tx&&tc&&tx.t===tc.t)){ const naam=x&&tx&&tc&&tx.g===tc.g?kortVan(x):((typeVan(alc)||'').toLowerCase()+' '+alc).trim();
+      return meld('andere uitvoering op de foto ('+esc(naam)+')'); } }
   const precies=/^Foto hoort bij precies dit artikelnummer|^Foto staat op \S+ bij dit artikelnummer/.test(hf);
   // prijslijstfoto uit de kolom van het eigen artikelnummer hoort bij de uitvoering zelf (zoals 'precies dit artikel')
   const kolom=(hf.match(/in de kolom van (.+?)\s*$/)||[])[1], eigenKolom=!!kolom&&kolom.trim()===String(pv.code).trim();
