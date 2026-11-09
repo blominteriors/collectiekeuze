@@ -645,13 +645,34 @@ select,input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1p
 .modal h2{font-family:var(--display);font-weight:500;font-size:26px;margin:0}
 .modal input{width:100%;font-size:17px}
 .modal ol{margin:0;padding-left:18px;display:grid;gap:6px;font-size:13.5px}
-/* Hoe werkt het?: genummerde stappen met een screenshot eronder */
-#helpModal .box{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
+/* Hoe werkt het?: genummerde stappen met een voorbeeld van het echte scherm eronder; Sluiten staat vast onderin het venster */
+#helpModal .box{max-height:calc(100dvh - 32px);max-width:480px;padding:0;gap:0;display:flex;flex-direction:column;overflow:hidden}
+#helpModal .hlpb{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;padding:22px 20px 18px;display:grid;gap:12px;align-content:start}
+#helpModal .hlpf{flex:none;border-top:1px solid var(--n300);background:#fff;padding:10px 20px calc(12px + env(safe-area-inset-bottom,0px));display:grid;gap:6px}
+#helpModal .hlpf .cta{width:100%}
+#helpModal .hlpf p{margin:0;font-size:11.5px;color:var(--g400);text-align:center}
+#helpModal .hlpslot{margin:4px 0 0;font-size:14px;line-height:1.45}
+/* voorbeeld: het echte schermdeel op ongeveer 60%, niet klikbaar, op lichtgrijs; het deel waar de stap over gaat krijgt een oranje rand */
+.uvb{margin:8px 0 0 -34px;background:var(--n200,#f1f1f1);padding:10px;overflow:hidden}
+.uvb[hidden]{display:none}
+.uvs{zoom:.6;pointer-events:none;user-select:none;background:#fff;font-size:14px;line-height:1.35}
+.uvs.leeg{background:none}
+.uvs .stitle{margin:0;padding:10px 12px}
+.uvs .s1k{margin:0}
+.uvs .smods{margin:0;padding:8px 12px 10px}
+.uvs .snote,.uvs .mcap{display:none}
+.uvs .pbar{padding:8px 12px;border-top:1px solid var(--ink)}
+.uvs .actions{position:static;padding:8px 12px;border-top:0}
+.uvs .s2kies{padding:8px 12px 10px}
+.uvs .s2f{border-top:0;padding:8px 12px 10px}
+.uvs .uvh{outline:4px solid var(--roze);outline-offset:2px}
+.uvt{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:8px 0 0;font-size:13.5px;align-items:baseline}
+.uvt dt{white-space:nowrap}.uvt dd{margin:0}
+.uvt kbd{font-family:var(--body);font-size:11.5px;font-weight:500;color:var(--ink);border:1px solid var(--ink);padding:1px 6px}
+@media (hover:none),(pointer:coarse){ .uitleg .alleenpc{display:none} }
 .modal ol.uitleg{list-style:none;padding:0;gap:22px;counter-reset:st}
 .uitleg li{counter-increment:st;position:relative;padding-left:34px;font-size:14px;line-height:1.45}
 .uitleg li::before{content:counter(st);position:absolute;left:0;top:-1px;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font:500 13px/1 var(--display)}
-.uitleg img{display:block;width:100%;height:auto;margin-top:8px;border:1px solid var(--n500);box-shadow:0 2px 10px rgba(58,58,58,.08)}
-.uitleg img[hidden]{display:none}
 body.beoordelaar .uitleg .alleenbeheer{display:none}
 .uitleg b{font-weight:600}
 
@@ -1246,22 +1267,25 @@ body.swv #what{display:none}
 </div>
 
 <div class="modal" id="helpModal" hidden>
-  <div class="box">
-    <h2>Hoe werkt het?</h2>
-    <p class="note">Je kiest per serie of Blom die houdt. Daarna kies je per model welke uitvoeringen blijven.</p>
-    <!-- de screenshots staan in de privé opslag (data/uitleg.json): deze repository is openbaar -->
-    <ol class="uitleg">
-      <li><b>Kies een leverancier.</b> Tik op <b>Beoordelen</b>.<img data-uitleg="s1" alt="Beginscherm met de knop Beoordelen" hidden></li>
-      <li><b>Bekijk de serie.</b> Je ziet één serie tegelijk, bijvoorbeeld Mamy. Tik op een fotootje of gebruik ‹ › voor de andere producten.<img data-uitleg="s2" alt="Seriekaart met foto en fotootjes" hidden></li>
-      <li><b>Meer weten?</b> Scrol omlaag voor alle modellen en de specificaties<span class="metprijs"> en prijzen</span>.<img data-uitleg="s3" alt="Modellen en specificaties onder de foto" hidden></li>
-      <li><b>Beslis.</b> Tik op <b>Serie houden</b> of <b>Serie niet houden</b>.<img data-uitleg="s4" alt="Knoppen Serie niet houden en Serie houden" hidden></li>
-      <li><b>Houd je de serie?</b> Dan krijg je per model een kaart, bijvoorbeeld de bank, de fauteuil en de stoel.<img data-uitleg="s5" alt="Kaart van één model" hidden></li>
-      <li><b>Vink de uitvoeringen aan die je wilt houden.</b> Wat je niet aanvinkt, houd je niet. Tik op een tegel om die uitvoering op de foto te zien.<span class="metprijs"> Het bedrag op de tegel is hoeveel duurder hij is in inkoop.</span><img data-uitleg="s6" alt="Tegels met aangevinkte uitvoeringen" hidden></li>
-      <li><b>Kies wie het mag zien</b> (niet online, intern of klanten) en kies de labels.<img data-uitleg="s7" alt="Zichtbaarheid en labels" hidden></li>
-      <li><b>Volgende model.</b> Tik op <b>Houden</b> of <b>Model niet</b>, of veeg naar rechts of links. Vergist? Met ↶ zet je je laatste keuze terug.<img data-uitleg="s8" alt="Knoppen Model niet en Houden" hidden></li>
-      <li class="alleenbeheer"><b>Beheerders</b> zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.<img data-uitleg="s9" alt="Scherm Resultaten met de Excel" hidden></li>
-    </ol>
-    <button class="cta" type="button" id="helpClose">Sluiten</button>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="helpT">
+    <div class="hlpb" id="helpBody">
+      <h2 id="helpT">Hoe werkt het?</h2>
+      <p class="note">Je beoordeelt een leverancier serie voor serie. Binnen een serie kijk je per soort: eerst de banken van Mamy, dan de fauteuils, dan de stoelen. Per soort kies je wat Blom houdt.</p>
+      <!-- de voorbeelden tekent de app zelf met de echte schermdelen en de data van Piaval (Mamy bank); zonder Piaval alleen de tekst -->
+      <ol class="uitleg">
+        <li><b>Eén soort tegelijk.</b> Bovenin zie je de serie en de soort, en hoe ver je bent. Na de laatste soort komt de volgende serie.<div class="uvb" data-uv="kop" hidden></div></li>
+        <li><b>Bekijk de uitvoeringen.</b> Tik op een tegel om die uitvoering op de foto te zien. Met ‹ › blader je, met de tabs onder de foto wissel je van zijde. Onder de foto staat wat er nu in AFAS staat.<span class="metprijs"> Onderin staan de prijzen van de uitvoering op de foto.</span><div class="uvb" data-uv="stap1" hidden></div></li>
+        <li><b>Beslis.</b> Zijn alle banken niets voor Blom? Tik op <b>Banken niet houden</b>. Zijn sommige of alle banken wel iets voor Blom? Tik op het vinkje: <b>Banken houden</b>.<div class="uvb" data-uv="knoppen" hidden></div></li>
+        <li><b>Vink aan welke banken je houdt.</b> Gebruik het vakje rechtsboven in de tegel. Tikken op de rest van de tegel zet hem alleen op de foto. Wat je niet aanvinkt, houdt Blom niet.<div class="uvb" data-uv="vink" hidden></div></li>
+        <li><b>Kies wie het mag zien en de labels.</b> Dat geldt voor alle uitvoeringen die je hebt aangevinkt. Het staat al ingevuld met wat nu in AFAS staat; pas het alleen aan als het anders moet.<div class="uvb" data-uv="zicht" hidden></div></li>
+        <li><b>Opslaan.</b> Zolang je niets hebt aangevinkt, staat er <b>Kies banken</b> en is de knop grijs. Na het aanvinken wordt het <b>Opslaan</b>, daarna komen de fauteuils van Mamy. Vergist? Met <b>↶</b> zet je je laatste keuze terug.<div class="uvb" data-uv="opslaan" hidden></div></li>
+        <li class="alleenpc"><b>Op de computer gaat het sneller met het toetsenbord.</b> De toetsen staan ook onder de knoppen.
+          <dl class="uvt"><dt><kbd>Enter</kbd></dt><dd>houden of opslaan</dd><dt><kbd>Del</kbd></dt><dd>niet houden</dd><dt><kbd>Spatie</kbd></dt><dd>vinkje bij de uitvoering op de foto</dd><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>vorige of volgende uitvoering</dd><dt><kbd>⌫</kbd></dt><dd>laatste keuze terug</dd></dl></li>
+        <li class="alleenbeheer"><b>Beheerders</b> zien bij <b>Resultaten</b> de keuzes van iedereen en downloaden daar de Excel.</li>
+      </ol>
+      <p class="hlpslot">Je keuzes worden direct bewaard. Je kunt stoppen en later verder gaan waar je was.</p>
+    </div>
+    <div class="hlpf"><button class="cta" type="button" id="helpClose">Sluiten</button><p>Sluiten kan ook met Esc of door naast het venster te tikken.</p></div>
   </div>
 </div>
 
@@ -2943,7 +2967,7 @@ function s2Raster(g){ const P=g.tiles.map(t=>({t,p:String(g.tl[t.main]||'').spli
   if(P.length*2<rows.length*cols.length) return null;
   return {rows, cols, cell, rk:s2Koppen(rows), ck:s2Koppen(cols)}; }
 const S2STAND={klant:'Klanten',intern:'Intern',niet:'Niet online',geen:'Niet in AFAS'};
-function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.indexOf(b), pl=soortPl(b), plk=pl.toLowerCase(), T=g.tiles;
+function renderS2(alleenHtml){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.indexOf(b), pl=soortPl(b), plk=pl.toLowerCase(), T=g.tiles;
   const ct=T.find(t=>t.main===S2.cur)||T[0], art=tegelArt(m,ct)||mvOf(m,ct.main), pv=tegelFoto(m,ct,art), fm=fotoMelding(m,art,pv), src=sideImg(pv), z=sideKey(pv);
   const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=T.filter(frT).length, frAlle=frN>0&&frN===T.length, frDeel=frN>0&&!frAlle;
   const fz=frameRegels(m,g), ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
@@ -2970,7 +2994,7 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
     :'<div class="s2tiles'+(T.length>9?' kort':'')+'">'+T.map(t=>cel(t,T.length<=9)).join('')+'</div>';
   const n=T.filter(t=>S2.sel[t.main]).length, pc=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
   const spec=belowHTML(m,art,'',{zonderOmschrijving:true,alleenSpec:true}).replace('<details class="box">','<details class="box s2spec"'+(S2.spec?' open':'')+'>');
-  $('s2').innerHTML='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
+  const H='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
     +'<div class="s2b" id="s2b">'
       +'<div class="s1k"><div class="s2foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+(fm.html?' fm':'')+'" id="s2foto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
         +((frAlle||(frDeel&&frT(ct)))?'<span class="frb">'+FLAM+'Brandvertragend</span>':'')
@@ -2988,6 +3012,8 @@ function renderS2(){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.ind
         +'<button type="button" class="dyes" id="s2Yes"'+(n?'':' disabled')+'>'+(n?OK(18)+'Opslaan · '+n+' van de '+T.length:'Kies '+esc(plk))+'</button></div>'
       +(pc?'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>Del</kbd> '+esc(plk)+' niet houden</span><span><kbd>⌫</kbd> laatste wijziging terug</span><span><kbd>spatie</kbd> vinkje</span><span><kbd>← →</kbd> uitvoering</span></div>':'')
     +'</div>';
+  if(alleenHtml) return H;
+  $('s2').innerHTML=H;
   const B=$('s2'), snap=()=>{ S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur}); if(S2.hist.length>60) S2.hist.shift(); };
   B.querySelectorAll('[data-s2k]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const id=x.dataset.s2k; snap(); S2.sel[id]=!S2.sel[id]; renderS2(); const k=$('s2').querySelector('[data-s2k="'+CSS.escape(id)+'"]'); if(k) k.focus({preventScroll:true}); });
   B.querySelectorAll('[data-s2t]').forEach(x=>{ x.onclick=()=>{ if(S2.cur===x.dataset.s2t) return; S2.cur=x.dataset.s2t; renderS2(); }; });
@@ -3126,16 +3152,57 @@ $('menuBtn').onclick=()=>{ $('mInfo').textContent=(me?'Ingelogd als '+me.name+'.
 $('mClose').onclick=()=>$('menu').hidden=true;
 $('menu').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ $('menu').hidden=true; go(b.dataset.go); });
 $('mName').hidden=true;   // de naam komt van het inlogaccount
-$('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; $('helpModal').querySelector('.box').scrollTop=0; laadUitleg(); };
-// screenshots bij Hoe werkt het? komen uit de privé opslag; lukt dat niet, dan blijft alleen de tekst staan
-let uitlegP=null;
-function laadUitleg(){
-  if(uitlegP) return uitlegP;
-  return uitlegP=dfetch('data/uitleg.json').then(r=>r.json()).then(o=>{
-    $('helpModal').querySelectorAll('img[data-uitleg]').forEach(im=>{ const s=o[im.dataset.uitleg]; if(s){ im.src=s; im.hidden=false; } });
-  }).catch(()=>{ uitlegP=null; });
+$('mHelp').onclick=()=>{ $('menu').hidden=true; $('helpModal').hidden=false; $('helpBody').scrollTop=0; renderUitleg(); };
+const sluitUitleg=()=>{ $('helpModal').hidden=true; };
+$('helpClose').onclick=sluitUitleg;
+$('helpModal').addEventListener('click',e=>{ if(e.target===$('helpModal')) sluitUitleg(); });
+// zolang de uitleg open is: Esc sluit, de sneltoetsen van stap 1 en 2 doen niets (pijlen en spatie scrollen de uitleg)
+window.addEventListener('keydown',e=>{ if($('helpModal').hidden) return; if(e.key==='Escape'){ e.preventDefault(); sluitUitleg(); } e.stopImmediatePropagation(); },true);
+// Voorbeelden in de uitleg: de app tekent ze zelf met dezelfde functies als het scherm (cardSoortHTML, lintHTML, renderS2),
+// met de echte data van Piaval: Mamy bank met 57-92/1 op de foto. Zo blijft de uitleg gelijk aan het scherm als het ontwerp verandert.
+// Is Piaval niet geladen (of mag de gebruiker Piaval niet zien), dan alleen de tekst.
+const UV={sup:'piaval',m:'piaval~mamy',b:'Bank',code:'57-92/1'};
+function uvBron(){ if(!SUP||SUP.id!==UV.sup||!DATA||!SUPS.some(x=>x.id===UV.sup)||!modelAan()) return null;
+  const m=byId[UV.m], v=m&&m.v.find(x=>x.code===UV.code), S=m&&soortenVan(m), g=m&&alleModellen(m).find(x=>x.basis===UV.b);
+  return m&&v&&g&&S&&S.includes(UV.b)?{m,v,g}:null; }
+function renderUitleg(){ const box=$('helpModal'), B=uvBron();
+  box.querySelectorAll('[data-uv]').forEach(x=>{ x.hidden=!B; if(!B) x.innerHTML=''; });
+  if(!B) return;
+  const {m,v,g}=B, pl=soortPl(UV.b), naId=h=>h.replace(/\sid="[^"]*"/g,''), pc=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
+  // stap 1 zoals het scherm hem tekent (tijdelijk Mamy bank als huidige soort en 57-92/1 op de foto)
+  const o={curVi,curB,hbOpen,LABOPEN,S2}; let h1='', h2='';
+  try{ curVi=m.v.indexOf(v); curB=UV.b; hbOpen=false; LABOPEN=false;
+    h1=cardSoortHTML(m);
+    const tv=tegelVan(m,v), art=(tv&&tegelArt(m,tv))||v;
+    if(PRIJS()) h1+='<div class="pbar uvlint">'+lintHTML(m,art)+'</div>';
+    // stap 2 zoals het scherm hem tekent: twee banken aangevinkt (die op de foto en de volgende), zichtbaarheid en labels voorgevuld met AFAS
+    const ct=g.tiles.find(t=>t.ids.includes(v.id))||g.tiles[0], sel={}; g.tiles.forEach(t=>{ sel[t.main]=false; });
+    [ct,g.tiles.find(t=>t!==ct)].filter(Boolean).forEach(t=>{ sel[t.main]=true; });
+    let oc=null, lab=[0,0,0,0,0]; const cnt={}; g.vs.filter(x=>x.inA).forEach(x=>{ const k=sigOf(afasOc(x),labOf(x)); cnt[k]=(cnt[k]||0)+1; });
+    const top=Object.keys(cnt).sort((a,c)=>cnt[c]-cnt[a])[0]; if(top){ const e=g.vs.find(x=>x.inA&&sigOf(afasOc(x),labOf(x))===top); oc=afasOc(e)||null; lab=labOf(e); }
+    // hist met één stap: dan staat ↶ aan, zoals na een keuze
+    S2={m,b:UV.b,g,sel,oc,lab,cur:ct.main,hist:[null],eerder:false,spec:false};
+    h2=renderS2(true)||'';
+  } finally { curVi=o.curVi; curB=o.curB; hbOpen=o.hbOpen; LABOPEN=o.LABOPEN; S2=o.S2; }
+  const tmp=document.createElement('div'); tmp.innerHTML=naId(h1)+'<div class="uv2">'+naId(h2)+'</div>';
+  const q=sel=>tmp.querySelector(sel), kl=x=>x?x.outerHTML:'', uvh=(root,sels)=>{ sels.forEach(s=>root.querySelectorAll(s).forEach(x=>x.classList.add('uvh'))); return root; };
+  const zet=(k,html,hl,leeg)=>{ const el=box.querySelector('[data-uv="'+k+'"]'); el.innerHTML='<div class="uvs'+(leeg?' leeg':'')+'" inert aria-hidden="true">'+html+'</div>'; if(hl) uvh(el,hl); };
+  // 1: de kop met serie, soort, voortgang en Hele serie overslaan
+  zet('kop',kl(q('.sokop')),['.sokop .skn','.sokop .sprog']);
+  // 2: foto met zijden, de regel eronder, twee tegels (die op de foto en de volgende) en het prijslint
+  const tiles=q('.smods'); if(tiles){ const T=[...tiles.querySelectorAll('.s1c')], nu=T.find(x=>x.classList.contains('nu'))||T[0], ander=T.find(x=>x!==nu); T.forEach(x=>{ if(x!==nu&&x!==ander) x.remove(); }); }
+  zet('stap1',kl(q('.s1k'))+kl(tiles)+kl(q('.uvlint')),['.s1zij','.mar','.s2cap','.s1tiles','.uvlint']);
+  // 3: de drie knoppen van stap 1
+  zet('knoppen','<div class="actions soort"><button class="b-undo" type="button">'+$('bUndo').innerHTML+'</button><button class="b-no" type="button"><span>'+NO(20)+'</span><span>'+esc(pl)+' niet houden</span></button><button class="b-yes" type="button"><span>'+OK(20)+'</span><span>'+esc(pl)+' houden</span></button></div>',['.b-no','.b-yes']);
+  // 4: stap 2, het keuzedeel precies zoals de app het toont (tegels of raster), twee aangevinkt
+  zet('vink',kl(q('.uv2 .s2kies')),['.s2kb[aria-checked="true"]']);
+  // 5: zichtbaarheid en labels voor alle aangevinkte banken
+  const f=q('.uv2 .s2f'); zet('zicht',f?kl(f.querySelector('.mlh'))+kl(f.querySelector('.dseg'))+kl(f.querySelector('.dlbs')):'',['.dseg','.dlbs']);
+  // 6: de knoppen van stap 2 met de regel met toetsen eronder (die staat alleen op de computer in het scherm)
+  zet('opslaan',f?kl(f.querySelector('.s2btn'))+(pc?kl(f.querySelector('.dkeys')):''):'',['.s2u','.dyes']);
+  // de echte foto: beelden van Mamy laden en dan opnieuw tekenen
+  if(m.ch.some(c=>!loadedChunks[c])) ensureImgs([m]).then(()=>{ if(!box.hidden&&SUP&&SUP.id===UV.sup) renderUitleg(); });
 }
-$('helpClose').onclick=()=>$('helpModal').hidden=true;
 /* ---------------- vaste balk op het serie-scherm (na doorscrollen) ---------------- */
 function updMini(){ const mb=$('minibar'); if(!mb) return; if(modelAan()&&curB!=null){ mb.hidden=true; document.body.classList.remove('mini'); return; } const st=document.querySelector('#sSwipe .stitle');
   const on=view==='swipe'&&!!cur&&!!st&&$('main').scrollTop>st.offsetTop+st.offsetHeight; mb.hidden=!on; document.body.classList.toggle('mini',on); if(!on) return;
