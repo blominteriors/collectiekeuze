@@ -953,6 +953,23 @@ body.swv #what{display:none}
 .scc{font-size:12.5px;color:var(--g400)}.scc b{color:var(--ink);font-weight:600}
 .scs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px}
 .scs .eye{margin-right:2px}
+/* stap 1 per soort: kop op één regel */
+.sokop{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0}
+.sokop .sok{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.sokop .sks{font-family:var(--display);font-weight:500;font-size:17px}
+.sokop .skn{flex:none;font-size:12px;color:var(--g400);white-space:nowrap}
+.sokop .frb.st{flex:none}
+.sokop .sprog{margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap;line-height:1.2}
+.sskip{border:0;background:none;padding:0;font:inherit;font-size:11.5px;color:var(--ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer;min-height:24px}
+.frb.st{position:static;display:inline-flex;align-items:center;gap:4px;padding:1px 6px;border:1px solid var(--n500);background:#fff;font-size:10.5px;font-weight:500;white-space:nowrap;color:var(--ink)}
+.ssoort .scs{gap:6px}.ssoort .scs .scc{margin-right:4px}
+.ssoort .smods .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sfz{font-size:11.5px;color:var(--g400);text-align:right}
+.mblok.sblok{border-left-width:1px;margin-top:6px}
+.mblok.sblok .mgrid{border-top:0}
+.dbtns.m2{grid-template-columns:1fr 1.8fr}
+.dbtns.m2 .dyl{font-size:clamp(12.5px,3.5vw,15px);text-wrap:balance}
+.dsk{font-family:var(--body);font-weight:400;font-size:12px;color:var(--g400);text-transform:none;letter-spacing:0}
 .sst{display:inline-flex;align-items:center;height:22px;padding:0 8px;box-sizing:border-box;border:1px solid var(--ink);font-size:12px;font-weight:600;white-space:nowrap;color:var(--ink);background:#fff}
 .sst.klant{background:var(--ink);color:#fff}
 .sst.niet{border-color:var(--n500);color:var(--g400)}
@@ -1338,6 +1355,36 @@ function subscribe(){
 
 /* ---------------- decisions ---------------- */
 const st=mid=>(D[mid]&&D[mid].s)||'';
+// beoordelen per soort (leveranciers met modelkaarten). Soort = producttype binnen de serie (Bank, Fauteuil …), zoals in modelGroepen.
+// Keuzes per soort staan in het serierecord: c[serie].soort = {Bank:{s,t,v,oc,lab,g}, …}. Het serierecord krijgt pas s (en v, oc, lab, g)
+// als alle soorten beslist zijn; dan staan de artikelen van soorten met 'niet houden' op 0 en worden zichtbaarheid en labels per soort
+// omgezet naar groepen, zodat effOf per artikel de instelling van zijn soort geeft. Een oude keuze per hele serie geldt voor alle soorten.
+let curB=null, forcedB=null;
+const soortVan=(m,v)=>m.p[v.p].t||'';
+function soortenVan(m){ if(!modelAan()) return null; if(m._sv) return m._sv; return m._sv=[...new Set(groups(m).flatMap(g=>g.pk).map(k=>m.p[k].t||''))]; }
+const soortIds=(m,b)=>m.v.filter(v=>soortVan(m,v)===b).map(v=>v.id);
+function soortRec(r,b){ if(!r) return null; if(r.soort) return r.soort[b]||null; return r.s?r:null; }
+const soortOpen=(m,b)=>{ const x=soortRec(D[m.id],b); return !(x&&x.s); };
+const soortNaam=b=>b?b.toLowerCase():'overig';
+const soortPl=b=>PL[b]?cap(PL[b]):(b||'Artikelen');
+// oude keuze per hele serie omzetten naar één soort (dezelfde uitkomst per artikel)
+function legacySoort(m,r,b){ const ids=soortIds(m,b), v={}; ids.forEach(id=>{ v[id]=vStatus(r,{id})==='wel'?1:0; });
+  return {s:r.s==='wel'&&ids.some(id=>v[id])?'wel':'niet', t:r.t, v, oc:r.oc||null, lab:r.lab?r.lab.slice():null, g:(r.g||[]).map(g=>Object.assign({},g,{ids:g.ids.filter(i=>ids.includes(i))})).filter(g=>g.ids.length)}; }
+function serieUitSoorten(m,so){ const S=soortenVan(m), out={t:new Date().toISOString(), soort:so};
+  if(!S.every(b=>so[b]&&so[b].s)) return out;   // nog niet alle soorten beslist: geen s, dus niet gehouden in Resultaten en export
+  if(!S.some(b=>so[b].s==='wel')) return Object.assign(out,{s:'niet'});
+  const v={}, kept=[];
+  S.forEach(b=>{ const x=so[b]; soortIds(m,b).forEach(id=>{ const w=vStatus(x,{id})==='wel'; v[id]=w?1:0; if(w) kept.push([id,effOf(x,id)]); }); });
+  m.v.forEach(x=>{ if(v[x.id]==null) v[x.id]=0; });
+  const sg=e=>sigOf(e.oc,e.lab), cnt={}; kept.forEach(([,e])=>{ cnt[sg(e)]=(cnt[sg(e)]||0)+1; });
+  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0], te=kept.find(([,e])=>sg(e)===top)[1], g=[];
+  kept.forEach(([id,e])=>{ const s2=sg(e); if(s2===top) return; let x=g.find(y=>sigOf(y.oc,y.lab)===s2); if(!x) g.push(x={oc:e.oc,lab:(e.lab||[]).slice(),ids:[]}); x.ids.push(id); });
+  return Object.assign(out,{s:'wel',v,oc:te.oc,lab:(te.lab||[]).slice(),g}); }
+// één soort beslissen (x) of terugzetten (x=null); schrijft het hele serierecord opnieuw
+function zetSoort(m,b,x){ const r=D[m.id]||{}, S=soortenVan(m), so=r.soort?Object.assign({},r.soort):{};
+  if(!r.soort&&r.s) S.forEach(c=>{ so[c]=legacySoort(m,r,c); });
+  if(x) so[b]=x; else delete so[b];
+  record(m.id,serieUitSoorten(m,so)); }
 function vStatus(r,v){ if(!r||!r.s) return ''; if(r.s==='niet') return 'niet'; if(r.v&&r.v[v.id]!=null) return r.v[v.id]?'wel':'niet'; return 'wel'; }
 // series zonder enkele foto achteraan (sort is stabiel, dus verder dezelfde volgorde)
 function queue(){ const q=M.filter(m=>!st(m.id)).sort((a,b)=>(a.v.every(x=>!fotoVan(a,x))?1:0)-(b.v.every(x=>!fotoVan(b,x))?1:0)); if(forced&&byId[forced]){ const f=byId[forced]; return [f,...q.filter(x=>x!==f)] } return q; }
@@ -1345,7 +1392,7 @@ function counts(c,list){let w=0,n=0;for(const m of list){const s=c[m.id]&&c[m.id
 function people(){
   const map={}; for(const k in TEAM) map[k]={naam:TEAM[k].naam,c:TEAM[k].c||{},laatst:TEAM[k].laatst};
   if(me&&SUP){ const k=docId(); map[k]={naam:me.name,c:Object.assign({},(map[k]||{}).c,D),laatst:(map[k]||{}).laatst||''} }
-  return Object.entries(map).map(([k,v])=>({key:k,...v})).filter(p=>Object.values(p.c).some(r=>r&&r.s)).sort((a,b)=>a.naam.localeCompare(b.naam,'nl'));
+  return Object.entries(map).map(([k,v])=>({key:k,...v})).filter(p=>Object.values(p.c).some(r=>r&&(r.s||r.soort))).sort((a,b)=>a.naam.localeCompare(b.naam,'nl'));
 }
 const anyIn=m=>m.v.some(v=>v.inA);
 
@@ -1430,9 +1477,13 @@ function renderCard(soft){
   }
   $('bNo').disabled=$('bYes').disabled=false;
   const m=q[0];
-  if(cur!==m||curOrd!==prState){ const fresh=cur!==m; cur=m; curOrd=prState; curVi=modelAan()?m.v.indexOf(alleModellen(m)[0].hoofd):m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
+  // per soort: de eerste soort van de serie zonder keuze (of de soort die met Vorige is teruggezet)
+  const S0=soortenVan(m); let b0=null; if(S0){ b0=(forcedB!=null&&forced===m.id&&soortOpen(m,forcedB))?forcedB:S0.find(x=>soortOpen(m,x)); if(b0==null) b0=S0[0]; }
+  const nieuwB=b0!==curB||cur!==m; curB=b0;
+  if(cur!==m||curOrd!==prState||nieuwB){ const fresh=nieuwB; cur=m; curOrd=prState; curVi=modelAan()?m.v.indexOf(soortModellen(m)[0].hoofd):m.p[groups(m)[0].pk[0]].idx[0]; if(fresh){ soft=false; $('main').scrollTop=0; } }
   const has=anyIn(m);
-  $('noTxt').textContent=has?'Serie niet houden':'Serie niet opnemen'; $('yesTxt').textContent=has?'Serie houden':'Serie opnemen';
+  if(curB!=null){ const pl=soortPl(curB); $('noTxt').textContent=pl+' niet houden'; $('yesTxt').textContent=pl+' houden'; }
+  else { $('noTxt').textContent=has?'Serie niet houden':'Serie niet opnemen'; $('yesTxt').textContent=has?'Serie houden':'Serie opnemen'; }
   $('what').innerHTML='Je beoordeelt de <b>hele serie '+esc(m.fam)+'</b><span class="kh"> · <kbd>Enter</kbd> '+(has?'houden':'opnemen')+' · <kbd>Del</kbd> niet · <kbd>⌫</kbd> vorige · <kbd>← →</kbd> artikel</span>';
   $('noIco').innerHTML=NO(20); $('yesIco').innerHTML=OK(20);
   const keepScroll=$('main').scrollTop, stripEl=sec.querySelector('.strip'), keepStrip=stripEl?stripEl.scrollLeft:0;
@@ -1529,12 +1580,51 @@ const STAND={klant:'Online · klanten',intern:'Intern',niet:'Niet online',geen:'
 const tegelStand=(m,t)=>{ const sv=t.ids.map(id=>mvOf(m,id)).find(x=>x&&x.inA); return sv?{k:afasOc(sv),lab:labOf(sv)}:{k:'geen',lab:[]}; };
 const standChips=s=>'<span class="sst '+s.k+'">'+STAND[s.k]+'</span>'+LABELS.map(([n,c],i)=>s.lab[i]===1?'<span class="slb" style="--lc:'+c+'"><i></i>'+n+'</span>':'').join('');
 // alle uitvoeringen (tegels) van de serie op een rij, in de volgorde van de modelblokken
+// seriekaart per soort: alleen de groep van de soort die nu beoordeeld wordt
+const soortModellen=m=>{ const G=alleModellen(m); if(!modelAan()||curB==null||m!==cur) return G; const x=G.filter(g=>g.basis===curB); return x.length?x:G; };
 const serieTegels=m=>alleModellen(m).flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main)})));
 // de artikelen van de tegel waar dit artikel in zit (alle afwerkingen van dezelfde uitvoering)
 const tegelArtikelen=(m,v)=>{ const e=serieTegels(m).find(x=>x.t.ids.includes(v.id)); return e?e.t.ids.map(id=>mvOf(m,id)).filter(Boolean):[v]; };
 // het artikel waarvan de zichtbaarheid en labels getoond worden: het getoonde artikel, of een afwerking uit dezelfde tegel die al in AFAS staat
 const statusArtikel=(m,v)=>v.inA?v:(tegelArtikelen(m,v).find(x=>x.inA)||v);
+// stap 1 per soort: kop op één regel, foto met de uitvoeringen van deze soort, tegels, Specificaties en Alle prijzen
+function cardSoortHTML(m){
+  const v=m.v[curVi], G=soortModellen(m), g=G.find(x=>x.vs.includes(v))||G[0], S=soortenVan(m), si=S.indexOf(curB);
+  const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
+  const ST=g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main),s:tegelStand(m,t)})), sp=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))), ct=ST[sp].t;
+  // brandvertragend: alle uitvoeringen = label in de kop; een deel = alleen op die tegels en onder de foto; geen = nergens
+  const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=ST.filter(e=>frT(e.t)).length, frAlle=frN>0&&frN===ST.length, frDeel=frN>0&&!frAlle;
+  const FR=()=>'<span class="frb st">'+FLAM+'Brandvertragend</span>';
+  const fz=frameRegels(m,g);
+  const pv=tegelFoto(m,ct,v), fm=fotoMelding(m,v,pv);
+  const zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv);
+  const tabs=zs.length>1?'<div class="mtabs">'+zs.map(x=>'<button type="button" class="'+(x===z?'on':'')+'" data-czz="'+x+'" aria-pressed="'+(x===z)+'">'+ZK[x]+'</button>').join('')+'</div>':'';
+  const tm=m.v[ST[sp].vi], tl=g.tl[tm.id]||v.code, td=g.td[tm.id]==='Hoofdartikel'?'':(g.td[tm.id]||'');
+  const foto='<div class="mfoto smfoto">'+tabs
+    +'<div class="dimg mimgbox" id="sfoto">'+(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+v.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
+    +(ST.length>1?'<button type="button" class="mar l" data-snav="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-snav="1" aria-label="Volgende uitvoering">›</button>':'')
+    +(src?'<button type="button" class="dzoom" data-szoom="'+m.v.indexOf(pv)+'" aria-label="Foto vergroten" title="Foto vergroten">'+ZOOMICO+'</button>':'')+'</div>'+fm.html
+    +'<div class="scap"><div class="sct"><b>'+esc(tl)+'</b>'+(ST.length>1?'<span class="num">'+(sp+1)+'/'+ST.length+'</span>':'')+'</div>'
+    +'<div class="scs"><span class="scc"><b>'+esc(fm.code)+'</b>'+(td?' · '+esc(td):'')+(z?' · '+ZK[z]:'')+'</span><span class="eye">Nu</span>'+standChips(ST[sp].s)+(frDeel&&frT(ct)?FR():'')+'</div></div></div>';
+  const h=g.hoofd, rh=modelPrijs(m,h), mp=x=>{ const r=modelPrijs(m,x); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; }, maat=g.tiles.some(t=>g.td[t.main]&&g.td[t.main]!=='Hoofdartikel');
+  const its=g.tiles.map(t=>{ const x=mvOf(m,t.main), hoofd=x===h, tdx=g.td[x.id]==='Hoofdartikel'?'':g.td[x.id], d=tdx||(hoofd&&maat?'Standaard maten':'');
+    return '<button type="button" class="mu'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering"><b>'+esc(g.tl[x.id])+'</b>'+(d?'<small class="mud">'+esc(d)+'</small>':'')
+      +tegelRegels(m,x,t,hoofd,mp(x),fz.tegel[t.main]||'')+'<span class="mus">'+standChips(tegelStand(m,t))+(frDeel&&frT(t)?FR():'')+'</span></button>'; }).join('');
+  const kort=!!(window.matchMedia&&matchMedia('(max-width:420px)').matches);
+  return '<div class="fold sfold ssoort">'
+    +'<div class="stitle sokop"><span class="sok"><span class="disp sn">'+esc(m.fam)+'</span> <span class="sks">'+esc(soortNaam(curB))+'</span></span>'
+      +(S.length>1?'<span class="skn">'+(kort?(si+1)+'/'+S.length:'soort '+(si+1)+' van '+S.length)+'</span>':'')+(frAlle?FR():'')
+      +'<span class="sprog"><span>serie '+Math.min(done+1,M.length)+'/'+M.length+' · <b>'+pctd+'%</b></span>'+(S.length>1?'<button type="button" class="sskip" data-skip="1">Hele serie overslaan</button>':'')+'</span></div>'
+    +'<div class="sbar"><i style="width:'+pctd+'%"></i></div>'
+    +foto
+    +'<div class="smods"><div class="mlh"><span class="eye">'+ST.length+' '+(ST.length===1?'uitvoering':'uitvoeringen')+'</span>'+(fz.kop?'<span class="sfz">'+esc(fz.kop)+'</span>':'')+'</div>'+(ST.length>1?'<p class="mcap mtik">Tik op een uitvoering om hem op de foto te zien.</p>':'')
+    +'<div class="mblok sblok"><div class="mgrid">'+its+'</div></div>'
+    +'<p class="mcap snote">'+(PRIJS()?'Meerprijs op inkoop ten opzichte van het hoofdartikel. ':'')+'Welke uitvoeringen je houdt, kies je na '+esc(soortPl(curB))+' houden.</p></div>'
+    +'</div>'
+    +belowHTML(m,v,'',{zonderOmschrijving:true,prijsBox:'',soort:curB});
+}
 function cardModelHTML(m){
+  if(curB!=null&&m===cur) return cardSoortHTML(m);
   const v=m.v[curVi], G=alleModellen(m), gm=G.find(g=>g.vs.includes(v))||G[0];
   const c0=counts(D,M), done=c0.w+c0.n, pctd=Math.floor(done/(M.length||1)*100);
   const ST=G.flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main),s:tegelStand(m,t)}))), sp=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))), ct=ST[sp].t, son=ST.filter(e=>e.s.k==='klant').length;
@@ -1723,7 +1813,7 @@ function belowHTML(m,v,full,opt){
       +(rows.some(p=>p.cat&&bc(p.cat)==null)?'<div><span>Gestippeld</span>Blom stofgroep nog te bepalen</div>':'')
       +(PR.bcNote&&rows.some(p=>[6,7,8].includes(bc(p.cat)))?'<div><span>Let op</span>'+esc(PR.bcNote)+'</div>':'')
       +'</div></p></details>'; }
-  const ps=people(); const team=ps.length?ps.map(p=>{const r=p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>r.v[x.id]).map(x=>x.code):[];
+  const ps=people(); const team=ps.length?ps.map(p=>{const r=opt.soort!=null?soortRec(p.c[m.id],opt.soort):p.c[m.id]; const s=r&&r.s; const vs=s==='wel'&&r.v?m.v.filter(x=>(opt.soort==null||soortVan(m,x)===opt.soort)&&r.v[x.id]).map(x=>x.code):[];
     return '<div><span>'+esc(p.naam)+'</span>'+(s==='wel'?'<span class="tag wel">'+(anyIn(m)?'HOUDEN':'OPNEMEN')+(vs.length?' · '+esc(vs.slice(0,3).join(', '))+(vs.length>3?' +'+(vs.length-3):''):'')+'</span>':s==='niet'?'<span class="tag niet">NIET</span>':'<span class="tag open">nog geen keuze</span>')+'</div>'}).join(''):'<div class="leeg">Nog niemand heeft deze serie beoordeeld.</div>';
   // seriekaart met modellen: eerst de prijzen van de getoonde uitvoering, dan de specificaties, daarna de hele berekening
   const spec='<details class="box"><summary>Specificaties <span>'+esc(v.code)+' · stand '+dstr()+'</span></summary><div class="kv">'+kv.map(([a,b])=>'<div><span>'+a+'</span><span>'+b+'</span></div>').join('')+'</div></details>';
@@ -1739,7 +1829,7 @@ function belowHTML(m,v,full,opt){
   </div>`;
 }
 // seriekaart met modellen: naar de vorige of volgende uitvoering (tegel) van de serie
-function serieStap(m,d){ const ST=serieTegels(m), n=ST.length; if(n<2) return; const v=m.v[curVi], i=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))); setVi(m,ST[(i+d+n)%n].vi); }
+function serieStap(m,d){ const ST=soortModellen(m).flatMap(g=>g.tiles.map(t=>({g,t,vi:m.v.findIndex(x=>x.id===t.main)}))), n=ST.length; if(n<2) return; const v=m.v[curVi], i=Math.max(0,ST.findIndex(e=>e.t.ids.includes(v.id))); setVi(m,ST[(i+d+n)%n].vi); }
 function setVi(m,i){
   curVi=Math.max(0,Math.min(m.v.length-1,i));
   const sec=$('sSwipe'), keep=$('main').scrollTop;
@@ -1816,6 +1906,7 @@ function bindCard(m){
   $('sSwipe').querySelectorAll('[data-dlab]').forEach(b=>b.onclick=()=>{ const d=drOf(m,v0), j=+b.dataset.dlab; d.lab[j]=d.lab[j]===1?0:1; zet(undefined,d.oc,d.lab); setVi(m,curVi); });
   const rt=$('prRetry'); if(rt) rt.onclick=()=>{ prState='wait'; prErr=''; renderCard(true); loadPrices(); };
   const ap=$('apBox'); if(ap) ap.addEventListener('toggle',()=>{ apOpen=ap.open; });
+  const sk=$('sSwipe').querySelector('[data-skip]'); if(sk) sk.onclick=()=>skipSerie(m);
   const hb=$('hbBox'); if(hb) hb.addEventListener('toggle',()=>{ prOpen=hb.open; });
   const pb=$('psBox'); if(pb) pb.addEventListener('toggle',()=>{ psOpen=pb.open; });
   updMini();
@@ -1878,10 +1969,22 @@ document.addEventListener('keydown',e=>{ if($('zoom').hidden) return; if(e.key==
 
 /* ---------------- deciding ---------------- */
 function stamp(s){ const e=document.createElement('div'); e.className='stamp '+s; e.textContent=s==='wel'?(anyIn(cur)?'HOUDEN':'OPNEMEN'):'NIET'; document.body.appendChild(e); setTimeout(()=>e.remove(),650); }
-function after(m){ hist.push(m.id); if(hist.length>50) hist.shift(); if(forced===m.id) forced=null; cur=null; render(); }
-$('bNo').onclick=()=>{ const m=cur; if(!m) return; if(!me){askName();return} record(m.id,{s:'niet',t:new Date().toISOString()}); stamp('niet'); after(m); };
-$('bYes').onclick=()=>{ const m=cur; if(!m) return; if(!me){askName(()=>openForm(m));return} openForm(m); };
-$('bUndo').onclick=()=>{ const mid=hist.pop(); if(!mid) return; const prev=D[mid]||{}; record(mid,Object.assign({},prev,{s:'',t:new Date().toISOString()})); forced=mid; cur=null; render(); toast('Vorige keuze teruggezet'); };
+// per soort: in hist staat het serierecord van vóór de keuze, zodat Vorige precies dat terugzet
+function after(m,b,prev){ hist.push(b!=null?{mid:m.id,b,prev:prev?JSON.parse(JSON.stringify(prev)):null}:m.id); if(hist.length>50) hist.shift();
+  if(forced===m.id&&(b==null||st(m.id))) forced=null; forcedB=null; cur=null; render(); }
+$('bNo').onclick=()=>{ const m=cur; if(!m) return; if(!me){askName();return}
+  if(curB!=null){ const b=curB, prev=D[m.id]; zetSoort(m,b,{s:'niet',t:new Date().toISOString()}); stamp('niet'); after(m,b,prev); return; }
+  record(m.id,{s:'niet',t:new Date().toISOString()}); stamp('niet'); after(m); };
+$('bYes').onclick=()=>{ const m=cur; if(!m) return; const b=curB; if(!me){askName(()=>openForm(m,b));return} openForm(m,b); };
+$('bUndo').onclick=()=>{ const h=hist.pop(); if(!h) return;
+  if(typeof h==='object'){ const keep=h.prev?JSON.parse(JSON.stringify(h.prev)):{}; keep.t=new Date().toISOString(); record(h.mid,keep); forced=h.mid; forcedB=h.b; cur=null; render(); toast('Vorige keuze teruggezet'); return; }
+  const mid=h, prev=D[mid]||{}; record(mid,Object.assign({},prev,{s:'',t:new Date().toISOString()})); forced=mid; cur=null; render(); toast('Vorige keuze teruggezet'); };
+// hele serie overslaan: alle soorten zonder keuze op niet houden (na bevestiging)
+function skipSerie(m){ const S=soortenVan(m); if(!S) return; if(!confirm('Alle '+S.length+' soorten van '+m.fam+' niet houden?')) return;
+  const r=D[m.id]||{}, prev=D[m.id], so=r.soort?Object.assign({},r.soort):{}, t=new Date().toISOString();
+  if(!r.soort&&r.s) S.forEach(c=>{ so[c]=legacySoort(m,r,c); });
+  S.forEach(b=>{ if(!(so[b]&&so[b].s)) so[b]={s:'niet',t}; });
+  record(m.id,serieUitSoorten(m,so)); stamp('niet'); after(m,curB,prev); }
 document.addEventListener('keydown',e=>{ if(e.target.closest('input,select,textarea')||!$('zoom').hidden||!$('nameModal').hidden||!$('form').hidden||!$('menu').hidden) return; if(view!=='swipe'||!cur) return;
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   // sneltoetsen op het beginscherm van een serie: Enter = houden/opnemen, Delete = niet, Backspace = vorige
@@ -1898,8 +2001,9 @@ const sigOf=(oc,lab)=>oc+'|'+(lab||[]).map(x=>x==null?'-':x).join('');
 const GL=i=>String.fromCharCode(66+i);   // groepen B, C, D … (A = standaard)
 // welke instelling geldt voor één artikel: zijn afwijkende groep, anders de standaard van de serie
 function effOf(r,id){ const g=(r&&r.g||[]).find(g=>g.ids.includes(id)); return g?{oc:g.oc,lab:g.lab,g:GL(r.g.indexOf(g))}:{oc:r&&r.oc,lab:r&&r.lab,g:'A'}; }
-function openForm(m){
-  const prev=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
+function openForm(m,b){
+  if(b===undefined) b=null;
+  const SR=b!=null?soortRec(D[m.id],b):D[m.id], prev=SR&&SR.s==='wel'?SR:null;
   const ins=m.v.filter(v=>v.inA);
   F={m, v:{}, oc:null, lab:[null,null,null,null,null], g:[], sel:{}, cur:{}};
   if(ins.length){
@@ -1912,13 +2016,15 @@ function openForm(m){
     Object.entries(byk).forEach(([k,ids])=>{ const [o,l]=k.split('|'); F.g.push({oc:o,lab:[...l].map(Number),ids,afas:1}); });
   }
   if(prev){ if(prev.v) F.v=Object.assign({},prev.v); if(prev.oc) F.oc=prev.oc; if(prev.lab) F.lab=prev.lab.slice(); F.g=JSON.parse(JSON.stringify(prev.g||[])); }
+  // per soort: alleen de artikelen van deze soort
+  F.soort=b; if(b!=null){ const ids=new Set(soortIds(m,b)); Object.keys(F.v).forEach(k=>{ if(!ids.has(k)) delete F.v[k]; }); F.g=F.g.map(g=>Object.assign({},g,{ids:g.ids.filter(i=>ids.has(i))})).filter(g=>g.ids.length); }
   // eerst per product swipen (Tinder), daarna online collectie en labels
   DECK_T=Date.now()+600;   // korte pauze: een dubbele tik op 'Serie houden' mag het eerste product niet meteen goedkeuren
   // producten waarvan het collectioneren is uitgesteld (geen bruikbare foto) komen niet in het swipen; hun AFAS-stand blijft
   F.view='deck'; F.dk={order:groups(m).flatMap(g=>g.pk).filter(k=>m.p[k].idx.some(i=>fotoVan(m,m.v[i]))), i:0,   /* producten zonder foto achteraan */ hist:[], info:false, ex:{}, enter:true, need:null, ct:{}, fl:{}, ax:{}, man:{}, note:{}};
   // per uitvoering: online collectie en labels (uit AFAS of een eerdere keuze); labels die nog niet bekend zijn staan uit
   // bron per uitvoering: 'afas' (huidige waarde), 'eerder' (eigen eerdere keuze), of leeg
-  const prevRec=D[m.id]&&D[m.id].s==='wel'?D[m.id]:null;
+  const prevRec=prev;
   // geen voorstellen: uitvoeringen die nog niet in AFAS staan beginnen leeg (online collectie en labels kies je zelf)
   const leeg=v=>afasOc(v)==='niet'&&!labOf(v).some(x=>x===1), rich=m.v.filter(v=>v.inA&&!leeg(v)), nIn=rich.length;
   F.vs={}; m.v.forEach(v=>{ const g=F.g.find(g=>g.ids.includes(v.id)); let oc=g?g.oc:F.oc, lab=g?g.lab:F.lab, src=null;
@@ -1934,6 +2040,7 @@ function openForm(m){
   F.vs0=JSON.parse(JSON.stringify(F.vs));
   // modellen: alle artikelen van dezelfde soort (stoel, fauteuil, bank …) binnen de serie vormen één kaart, op basis van de taxonomie;
   // het hoofdartikel is de goedkoopste uitvoering (netto inkoop), de tegels staan op oplopende inkoopprijs
+  if(b!=null){ const all=groups(m).flatMap(g=>g.pk).filter(k=>(m.p[k].t||'')===b), o=F.dk.order.filter(k=>all.includes(k)); F.dk.order=o.length?o:all; }
   F.dk.grp={}; F.dk.mu={};
   if(modelAan()){ modelGroepen(m,F.dk.order).forEach(g=>{ const vs=g.vs, ks=g.ks; if(vs.length<2) return;
       const k0=ks[0]; F.dk.grp[k0]=ks; F.dk.order=F.dk.order.filter(k=>k===k0||!ks.includes(k));
@@ -2127,12 +2234,26 @@ function fotoMelding(m,cur,pv){ const geen={html:'',code:cur.code}; if(!pv||!fot
 // Code: die zonder afwerkingsletter (57-92/1 naast 57-92/1N), anders die van de goedkoopste afwerking.
 const HOUT_NL={Beech:'beuken',Walnut:'walnoot',Oak:'eiken',Ash:'essen'};
 const ofLijst=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' of '+a[a.length-1];
-function tegelRegels(m,v,t,hoofd,mp){ const al=[{id:v.id,code:v.code,fin:v.fin||''}].concat(t.ook||[]), codes=al.map(o=>o.code);
+function tegelRegels(m,v,t,hoofd,mp,frame){ const al=[{id:v.id,code:v.code,fin:v.fin||''}].concat(t.ook||[]), codes=al.map(o=>o.code);
   let code=codes.find(c=>codes.some(d=>d!==c&&d.startsWith(c)&&/^[A-Z]+$/.test(d.slice(c.length))));
   if(!code){ let best=null; al.forEach(o=>{ const x=mvOf(m,o.id), r=x&&modelPrijs(m,x); if(r&&r[3]!=null&&(!best||r[3]<best.p)) best={p:r[3],code:o.code}; }); code=best?best.code:v.code; }
   const fins=[...new Set(al.map(o=>o.fin).filter(Boolean))], hout=fins.every(x=>HOUT_NL[x]);
   return '<span class="mtc">'+esc(code)+(hoofd?' · Hoofdartikel':mp!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(mp)+'</em>':'')+'</span>'
-    +(fins.length>1?'<span class="mtf">'+(hout?'Frame':'Afwerking')+': '+esc(ofLijst(fins.map(x=>HOUT_NL[x]||x)))+'</span>':''); }
+    +(frame!==undefined?(frame?'<span class="mtf">'+esc(frame)+'</span>':''):fins.length>1?'<span class="mtf">'+(hout?'Frame':'Afwerking')+': '+esc(ofLijst(fins.map(x=>HOUT_NL[x]||x)))+'</span>':''); }
+// framezin per soort: alle tegels gelijk = één zin boven de tegels; minstens de helft gelijk = zin met 'tenzij anders vermeld' en de afwijkers
+// op hun tegel; geen meerderheid = elke tegel zijn eigen regel. Houtsoorten in het Nederlands, vaste volgorde.
+const HOUT_RANG=['walnoot','beuken','eiken','essen'];
+function frameRegels(m,g){ const fr=t=>{ const ns=[...new Set(t.ids.map(id=>mvOf(m,id)).map(x=>x&&x.fin).filter(Boolean))].map(x=>HOUT_NL[x]?{n:HOUT_NL[x],h:1}:{n:x,h:0});
+    ns.sort((a,b)=>{ const ia=HOUT_RANG.indexOf(a.n), ib=HOUT_RANG.indexOf(b.n); return (ia<0?99:ia)-(ib<0?99:ib)||a.n.localeCompare(b.n); }); return ns; };
+  const per=g.tiles.map(t=>{ const ns=fr(t); return {t, ns, sig:ns.map(x=>x.n).join('|')}; }), n=per.length, tegel={};
+  const txt=ns=>(ns.every(x=>x.h)?'frame ':'afwerking ')+ofLijst(ns.map(x=>x.n)), lab=ns=>ns.every(x=>x.h)?'Frame':'Afwerking';
+  const cnt={}; per.forEach(p=>{ if(p.sig) cnt[p.sig]=(cnt[p.sig]||0)+1; });
+  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0], tn=top?cnt[top]:0, tns=top?per.find(p=>p.sig===top).ns:[];
+  if(top&&tn===n) return {kop:'Alle '+plural(g.basis,2)+': '+txt(tns), tegel};
+  if(top&&tn*2>=n){ per.forEach(p=>{ if(p.sig===top) return; const sub=p.ns.length&&p.ns.every(x=>tns.some(y=>y.n===x.n)); tegel[p.t.main]=p.ns.length?lab(p.ns)+': '+(sub?'alleen ':'')+ofLijst(p.ns.map(x=>x.n)):''; });
+    return {kop:cap(txt(tns))+', tenzij anders vermeld', tegel}; }
+  per.forEach(p=>{ tegel[p.t.main]=p.ns.length?lab(p.ns)+': '+ofLijst(p.ns.map(x=>x.n)):''; });
+  return {kop:'', tegel}; }
 function modelCard(k0,top){
   const m=F.m, d=F.dk, mu=d.mu[k0], vs=mu.ids.map(id=>mvOf(m,id)), h=vs[0], cur=mvOf(m,mu.cur)||h, att=top?' ':' tabindex="-1" ';
   const rh=modelPrijs(m,h), mp=v=>{ const r=modelPrijs(m,v); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
@@ -2237,7 +2358,7 @@ function openPk(m,k,r){ PK={m,k,tab:r?'win':(PK.tab||'win'),vi:0,r:r||null,back:
 /* opzet: alle producten die jij toevoegt (nog niet in AFAS) en die online komen, als overzicht van de online collectie */
 // de serie die nu open staat (nog niet opgeslagen) telt mee met de keuzes zoals ze nu staan
 function liveOpen(m){ return !!(F&&F.m===m&&F.v&&F.vs&&!$('form').hidden); }
-function liveRec(m){ if(!liveOpen(m)) return null; const ids=m.v.filter(v=>F.v[v.id]===1).map(v=>v.id); if(!ids.length) return null;
+function liveRec(m){ if(!liveOpen(m)||F.soort!=null) return null; const ids=m.v.filter(v=>F.v[v.id]===1).map(v=>v.id); if(!ids.length) return null;
   return {s:'wel',live:true,v:Object.assign({},F.v),oc:null,lab:null,g:ids.map(id=>{ const e=effV(id)||{}; return {oc:e.oc,lab:(e.lab||[]).slice(),ids:[id]}; })}; }
 function opzetItems(){ const cards=new Map();
   for(const m of M){ const r=liveRec(m)||D[m.id]; if(!r||r.s!=='wel') continue;
@@ -2383,18 +2504,23 @@ function autoEx(){ const m=F.m, d=F.dk;
 function renderDeck(){
   if(TQ.length){ toast(TQ.join(' '),7000); TQ=[]; }
   const m=F.m, d=F.dk, n=d.order.length, has=anyIn(m), B=$('formBody');
-  if(d.i>=n) return renderDeckDone();
+  // per soort: na de kaart meteen opslaan (geen overzicht); niets gekozen = terug naar de kaart
+  if(d.i>=n){ if(F.soort==null) return renderDeckDone(); if(m.v.some(v=>F.v[v.id]===1)) return saveDeck(); d.i=0; d.hist=[]; toast('Kies minstens één uitvoering, of ga terug en kies '+soortPl(F.soort)+' niet houden'); }
+  const SO=F.soort!=null, S2=SO?soortenVan(m):null, si2=SO?S2.indexOf(F.soort):0, volg=SO?S2.slice(si2+1).find(x=>soortOpen(m,x)):null;
+  const opsl='Opslaan · naar '+(volg!=null?m.fam+' '+soortNaam(volg):'volgende serie');
   const k=d.order[d.i], k2=d.order[d.i+1], isM=!!d.grp[k], mu=d.mu[k], heeftM=Object.keys(d.grp).length>0;
   const nSel=isM?mu.tiles.filter(t=>mu.sel[t.main]).length:0;
-  B.innerHTML='<div class="deck"><div class="dhead"><div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke '+(heeftM?'modellen':'producten')+' '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+(heeftM?' modellen':'')+'</div></div>'
-    +'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>'
+  B.innerHTML='<div class="deck"><div class="dhead">'+(SO?'<div><div class="eye">'+esc(SUP.name)+'</div><b>'+esc(m.fam)+' '+esc(soortNaam(F.soort))+(S2.length>1?' <span class="dsk">· soort '+(si2+1)+' van '+S2.length+'</span>':'')+'</b></div>'
+      :'<div><div class="eye">'+esc(SUP.name)+' · serie '+esc(m.fam)+'</div><b>Welke '+(heeftM?'modellen':'producten')+' '+(has?'houd':'neem')+' je?</b></div><div class="dcount"><b>'+(d.i+1)+'</b> / '+n+(heeftM?' modellen':'')+'</div>')+'</div>'
+    +(SO?'':'<div class="dbar"><i style="width:'+(d.i/n*100)+'%"></i></div>')
     +'<div class="dstack'+(d.info?' info':'')+'" id="dstack">'+(k2!=null?deckCard(k2,false):'')+deckCard(k,true)+(d.info?(isM?deckInfo(mvOf(m,mu.cur).p,mvOf(m,mu.cur),mu.naam):deckInfo(k)):'')+'</div>'
-    +'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.tiles.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>'
+    +(SO?'<div class="dbtns m2"><button type="button" class="dno" id="dBack">Terug</button><button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+esc(opsl)+'</span></button></div>':'<div class="dbtns'+(isM?' m3':'')+'"><button type="button" class="dundo" id="dUndo" aria-label="Vorig product terug"'+(d.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="dNo">'+NO(20)+(isM?'Model niet':'Niet')+'</button>'+(isM?'':'<button type="button" class="dinf" id="dInf" aria-label="Meer info">ⓘ</button>')+'<button type="button" class="dyes" id="dYes">'+OK(20)+'<span class="dyl">'+(isM?(has?'Houden':'Opnemen')+' · '+nSel+' van '+mu.tiles.length:(has?'Houden':'Opnemen')+(hasProp(k)?'<small>akkoord met voorstel</small>':''))+'</span></button></div>')
     +(isM?'<p class="mhint">Niet gekozen uitvoeringen komen als niet gehouden in Resultaten.</p>':'')
     +'<div class="dkeys"><span><kbd>←</kbd>/<kbd>Del</kbd> niet</span><span><kbd>→</kbd>/<kbd>Enter</kbd> '+(has?'houden':'opnemen')+'</span>'+(isM?'':'<span><kbd>↑</kbd> info</span>')+'<span><kbd>Z</kbd> foto groot</span><span><kbd>⌫</kbd> terug</span><button type="button" id="dList">overzicht</button></div></div>';
   d.enter=false;
   $('dList').onclick=toList;
-  $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); if($('dInf')) $('dInf').onclick=()=>deckGo('up'); $('dUndo').onclick=deckUndo;
+  if($('dNo')) $('dNo').onclick=()=>deckGo('no'); $('dYes').onclick=()=>deckGo('yes'); if($('dInf')) $('dInf').onclick=()=>deckGo('up'); if($('dUndo')) $('dUndo').onclick=deckUndo;
+  if($('dBack')) $('dBack').onclick=()=>{ $('form').hidden=true; F=null; render(); };
   B.querySelectorAll('[data-pk]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); openPk(F.m,+b.dataset.pk); });
   B.querySelectorAll('[data-dzoom]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const kk=+b.dataset.dzoom; if(F.dk.grp[kk]) openZoomModel(F.m,kk); else openZoomDeck(F.m,kk); });
   // online collectie en labels op de kaart: voor alle aangezette afwerkingen van dit product
@@ -2455,7 +2581,7 @@ function deckGo(dir,fromDrag){
   if(!fromDrag&&dir!=='up'&&Date.now()<DECK_T) return;
   const d=F.dk, m=F.m, k=d.order[d.i]; if(k==null) return;
   if(dir==='up'){ d.info=!d.info; renderDeck(); return; }
-  if(dir==='yes'&&itemVs(k).every(v=>d.ex[v.id])){ buzz(20); toast(d.grp[k]?'Kies minstens één uitvoering, of kies Model niet':'Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
+  if(dir==='yes'&&itemVs(k).every(v=>d.ex[v.id])){ buzz(20); toast(d.grp[k]?(F.soort!=null?'Kies minstens één uitvoering, of ga terug en kies '+soortPl(F.soort)+' niet houden':'Kies minstens één uitvoering, of kies Model niet'):'Zet eerst de afwerking aan die je wilt '+(anyIn(m)?'houden':'opnemen')+', of kies Niet'); return; }
   if(dir==='yes'){ const open=itemVs(k).filter(v=>!d.ex[v.id]&&!effV(v.id).oc);
     if(open.length){ d.need=k; renderDeck(); buzz(20); toast('Kies eerst op de kaart of het product online komt'); return; } }
   if(d.info) d.info=false; d.need=null;
@@ -2590,7 +2716,10 @@ function renderForm(){
   const ok=!open&&!noneV; $('fSave').disabled=!ok; $('fSave').textContent=ok?'Opslaan en volgende':noneV?'Kies minstens één artikel':'Nog '+open+(open===1?' keuze':' keuzes')+' open';
 }
 $('fCancel').onclick=()=>{ $('form').hidden=true; F=null; };
-$('fSave').onclick=()=>{ if(!F) return; const m=F.m; if(DR[m.id]){ delete DR[m.id]; saveDr(); } const keep=Object.keys(F.v).filter(k=>F.v[k]===1); record(m.id,{s:'wel',t:new Date().toISOString(),v:Object.assign({},F.v),oc:F.oc,lab:F.lab.slice(),g:F.g.map(g=>Object.assign({oc:g.oc,lab:g.lab.slice(),ids:g.ids.filter(x=>keep.includes(x))},g.n?{n:g.n}:{})).filter(g=>g.ids.length)}); $('form').hidden=true; F=null; stamp('wel'); toast(m.fam+' opgeslagen'); after(m); };
+$('fSave').onclick=()=>{ if(!F) return; const m=F.m;
+  if(F.soort!=null){ const b=F.soort, ids=soortIds(m,b), v={}; ids.forEach(id=>{ v[id]=F.v[id]===1?1:0; }); const keep=ids.filter(id=>v[id]===1), prev=D[m.id];
+    zetSoort(m,b,{s:keep.length?'wel':'niet',t:new Date().toISOString(),v,oc:F.oc,lab:(F.lab||[]).slice(),g:F.g.map(g=>({oc:g.oc,lab:g.lab.slice(),ids:g.ids.filter(x=>keep.includes(x))})).filter(g=>g.ids.length)});
+    $('form').hidden=true; F=null; stamp('wel'); toast(m.fam+' '+soortNaam(b)+' opgeslagen'); after(m,b,prev); return; } if(DR[m.id]){ delete DR[m.id]; saveDr(); } const keep=Object.keys(F.v).filter(k=>F.v[k]===1); record(m.id,{s:'wel',t:new Date().toISOString(),v:Object.assign({},F.v),oc:F.oc,lab:F.lab.slice(),g:F.g.map(g=>Object.assign({oc:g.oc,lab:g.lab.slice(),ids:g.ids.filter(x=>keep.includes(x))},g.n?{n:g.n}:{})).filter(g=>g.ids.length)}); $('form').hidden=true; F=null; stamp('wel'); toast(m.fam+' opgeslagen'); after(m); };
 
 /* ---------------- results ---------------- */
 function ago(t){if(!t)return '—';const s=(Date.now()-new Date(t))/1000;if(s<90)return 'zojuist';if(s<3600)return Math.round(s/60)+' min';if(s<86400)return Math.round(s/3600)+' uur';return new Date(t).toLocaleDateString('nl-NL')}
