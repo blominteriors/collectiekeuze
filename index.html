@@ -2049,11 +2049,13 @@ let hbOpen=false;
 // prijslint van de uitvoering op de foto (stap 1 en stap 2): kopregel met code en stofgroep, vier vakken, en de hele berekening als paneel erboven
 function lintHTML(m,v){ const r=prState==='ok'?modelPrijs(m,v):null, care=r&&careOn()&&r[7]!=null, leeg=prState==='wait'?'laden…':'–';
   const vak=(lbl,x,cls)=>'<div'+(cls?' class="'+cls+'"':'')+'><span>'+lbl+'</span><b>'+(r?x:leeg)+'</b></div>';
-  const kop0=(r&&r[0]?' · stof cat. '+esc(catNaam(r[0])):'')+' · excl. btw', kop='<b>'+esc(v.code)+'</b>'+kop0;
+  // boven het lint geen stofcode van de leverancier: 'vanaf goedkoopste stof' als de vanaf-regel een stofgroep heeft, anders (niet gestoffeerd) 'vanaf-prijs';
+  // de stofcode staat in Hele berekening bij Bruto
+  const cat=r&&String(r[0]||'').trim(), kop0=(r?(cat?' · vanaf goedkoopste stof':' · vanaf-prijs'):'')+' · excl. btw', kop='<b>'+esc(v.code)+'</b>'+kop0;
   const rij=(a,b,x,vet)=>'<div class="hbr'+(vet?' vet':'')+'"><span>'+a+'</span><span>'+b+'</span><b>'+(x!=null?eur(x):'–')+'</b></div>';
   const open=hbOpen&&!!r;
   return (open?'<div class="hbp" id="hbp" role="region" aria-label="Hele berekening '+esc(v.code)+'"><div class="hbk"><span class="eye">Hele berekening · '+esc(v.code)+'</span><button type="button" class="hbx" id="hbx" aria-label="Berekening sluiten">×</button></div>'
-      +rij('Bruto','prijslijst',r[2])
+      +rij('Bruto','prijslijst'+(cat?' · stof cat. '+esc(catNaam(r[0])):''),r[2])
       +rij('Netto inkoop',PR.k!=null?'− korting '+pct(PR.k):'',r[3])
       +rij('Verreken',PR.t!=null?'+ transport '+pct(PR.t):'',r[4])
       +rij('Verkoop',(PR.o!=null?'× '+fmt(PR.o)+', ':'')+'afgerond op € 5',r[5],1)
