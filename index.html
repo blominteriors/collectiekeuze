@@ -1086,6 +1086,9 @@ body.swv #what{display:none}
 .s2tt{font-family:var(--display);font-weight:500;font-size:12.5px;line-height:1.2;overflow-wrap:anywhere}
 .s2code{font-size:11px;line-height:1.3;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;min-width:0}
 .s2c .mmp{font-size:10.5px;padding:0 4px;justify-self:start}
+/* rastercel: het bedrag mag onder ink. vanaf; zo bepaalt het bedrag nooit de breedte van de cel en wordt niets afgekapt */
+.s2g .s2c .mmp{white-space:normal;max-width:100%}.s2g .s2c .mmp span{white-space:nowrap}
+.s2g .s2c{min-width:0;overflow:hidden}
 .s2hf{font-size:10.5px;color:var(--g400)}
 .s2fr{font-size:10.5px;color:var(--g400)}
 /* beheerder: korte naam controleren (reden als tooltip) */
@@ -1100,6 +1103,23 @@ body.swv #what{display:none}
 .s2f{border-top:1px solid var(--ink);padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:4px;background:#fff}
 .s2f .mlh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0}
 .s2vg{font-size:11px;color:var(--g400);white-space:nowrap}
+/* uitzondering: knopje naast de kop, lichtoranje onderbalk, oranje vinkvak met U, gestippelde tegel, label 'afwijkend' */
+.s2uzb{flex:none;height:24px;padding:0 8px;border:1px solid var(--ink);background:#fff;font:500 11.5px/1 var(--body);color:var(--ink);cursor:pointer}
+.s2uzb:disabled{opacity:.35;cursor:default}
+.s2f.uzm{background:#fff4ec}
+.s2f.uzm .mlh .eye{color:#b4561b}
+.s2f.uzm .dseg button:not(.on),.s2f.uzm .dlb:not(.on){background:#fff}
+.s2btn.uzk2{grid-template-columns:1fr 1.35fr}
+.s2kb.uzb .s2k{border:2px solid #e8833a;font:700 16px/1 var(--display);color:#fff}
+.s2kb.uzb[aria-checked="true"] .s2k{background:#e8833a}
+.s2kb:disabled{cursor:default}
+.s2c.uzx{opacity:.4}
+.s2c.uzk{border:1.5px dashed #e8833a}
+.s2uz{display:flex;align-items:center;gap:3px;justify-self:start;font-size:9.5px;line-height:1.3;white-space:nowrap;border:1px dashed #e8833a;padding:0 4px;margin-right:-34px;color:var(--ink)}
+.s2uzl{display:grid;gap:2px;font-size:11.5px;line-height:1.35}
+.s2uzl span{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.s2uzl b{font-weight:600;color:#b4561b}
+.s2uzl button{border:0;background:none;padding:0 6px;margin-left:2px;font-size:12px;line-height:1;color:var(--ink);cursor:pointer}
 .s2f .dseg button{height:32px}
 .s2f .dlbs{gap:4px}.s2f .dlb{height:27px;padding:0 7px;font-size:11.5px}.s2f .dlb.on{padding:0 6px}
 .s2btn{display:grid;grid-template-columns:46px 1fr 1.35fr;gap:7px}
@@ -1770,7 +1790,6 @@ function cardSoortHTML(m){
   const fz=frameRegels(m,g), fkop=kopKenm(g,fz)||(fz.kop||'').replace(/^Alle [^:]+:\s*/,'');
   const pv=tegelFoto(m,ct,v), fm=fotoMelding(m,art,pv), zs=sidesOf(pv), z=sideKey(pv), src=sideImg(pv), st=tegelStand(m,ct);
   const ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
-  const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
   const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
   const foto='<div class="s1k"><div class="s1foto'+((frAlle||(frDeel&&frT(ct)))?' fr':'')+(fm.html?' fm':'')+(zs.length>1?' zij':'')+'" id="sfoto">'
       +(!fotoVan(m,pv)?NOFOTO_K:src?'<img src="'+src+'" alt="'+esc(m.fam+' '+art.code)+'" draggable="false">':'<span class="wait">foto laden…</span>')
@@ -1782,8 +1801,8 @@ function cardSoortHTML(m){
     +'</div>'
     +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
       +'<div class="s2c2"><span class="eye">Labels nu</span>'+labelsNu(st.lab)+'</div></div></div>';
-  const its=T.map(t=>{ const s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
-    const mpx=t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'';
+  const its=T.map(t=>{ const s2=tegelStand(m,t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
+    const mpx=inkTag(m,t);
     return '<button type="button" class="s2c s1c'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering op de foto">'
       +'<b class="s2tt">'+esc(g.tl[t.main]||'')+kortTeken(m,t)+'</b>'
       +(T.length>4?'<span class="s1cr"><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx+'</span>':'<span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx)
@@ -2397,6 +2416,10 @@ function modelZet(mu,id){ modelTegel(mu,id).ids.forEach(i=>{ const x=F.vs[i]||(F
   if(mu.oc){ x.oc=mu.oc; x.src='gekozen'; } if(mu.lab){ x.lab=mu.lab.slice(); x.src='gekozen'; }
   if(!mu.oc&&!x.oc){ const os=mu.tiles.filter(t=>t.main!==id&&mu.sel[t.main]).map(t=>F.vs[t.main]).filter(e=>e&&e.oc); if(os.length&&os.every(e=>sigOf(e.oc,e.lab)===sigOf(os[0].oc,os[0].lab))){ x.oc=os[0].oc; x.lab=(os[0].lab||[0,0,0,0,0]).slice(); x.src='gekozen'; } } }); }
 const mpTxt2=x=>(x<-0.004?'− ':'+ ')+eur(Math.abs(x));
+// op de tegel: de goedkoopste netto inkoop van die tegel, de laagste vanaf-inkoop over alle afwerkingen in de tegel (57-92/1 beuken en 57-92/1N walnoot)
+// zelfde bron en regel als het prijslint (modelPrijs): de vanaf-regel uit de prijslijst, zonder eigen stof of leder (COM, COL, COF)
+const tegelInk=(m,t)=>{ if(!PRIJS()||prState!=='ok') return null; let b=null; t.ids.forEach(id=>{ const x=mvOf(m,id), r=x&&modelPrijs(m,x); if(r&&r[3]!=null&&(b==null||r[3]<b)) b=r[3]; }); return b; };
+const inkTag=(m,t)=>{ const x=tegelInk(m,t); return x!=null?'<em class="mmp"><span>ink. vanaf</span> <span>'+eur(x).replace(' ','\u00a0')+'</span></em>':''; };
 // de foto van een tegel: het artikel uit die tegel met de beste foto (eigen foto gaat voor een foto van internet of van een ander artikel)
 const FOTO_RANK={exact:4,fin:3,base:2,bekl:2,web:1};
 function tegelFoto(m,t,cur){ const rk=v=>fotoVan(m,v)?(FOTO_RANK[v.imgq]||0):-1; let best=cur; (t?t.ids:[]).forEach(id=>{ const v=mvOf(m,id); if(v&&rk(v)>rk(best)) best=v; }); return best; }
@@ -2951,10 +2974,11 @@ function openS2(m,b){ const g=alleModellen(m).find(x=>x.basis===b); if(!g) retur
   const SR=soortRec(D[m.id],b), prev=SR&&SR.s==='wel'?SR:null, sel={};
   g.tiles.forEach(t=>{ sel[t.main]=!!prev&&t.ids.some(id=>vStatus(prev,{id})==='wel'); });
   let oc=null, lab=[0,0,0,0,0];
-  if(prev){ const k=g.tiles.flatMap(t=>t.ids).find(id=>vStatus(prev,{id})==='wel'), e=k?effOf(prev,k):{oc:prev.oc,lab:prev.lab}; oc=e.oc||null; if(e.lab) lab=e.lab.map(x=>x?1:0); }
+  if(prev){ const k=g.tiles.flatMap(t=>t.ids).find(id=>vStatus(prev,{id})==='wel'), e=prev.oc?{oc:prev.oc,lab:prev.lab}:(k?effOf(prev,k):{}); oc=e.oc||null; if(e.lab) lab=e.lab.map(x=>x?1:0); }
   else { const cnt={}; g.vs.filter(v=>v.inA).forEach(v=>{ const k=sigOf(afasOc(v),labOf(v)); cnt[k]=(cnt[k]||0)+1; }); const top=Object.keys(cnt).sort((a,c)=>cnt[c]-cnt[a])[0]; if(top){ const [o,l]=top.split('|'); oc=o; lab=[...l].map(Number); } }
   const t0=g.tiles.find(t=>t.ids.includes((m.v[curVi]||{}).id))||g.tiles[0];
-  S2={m,b,g,sel,oc,lab,cur:t0.main,hist:[],eerder:!!prev,spec:false}; updPbar(null);
+  const uz=(prev&&prev.g||[]).map(x=>({oc:x.oc,lab:(x.lab||[0,0,0,0,0]).map(y=>y?1:0),tiles:g.tiles.filter(t=>sel[t.main]&&t.ids.some(id=>x.ids.includes(id))).map(t=>t.main)})).filter(u=>u.tiles.length);
+  S2={m,b,g,sel,oc,lab,cur:t0.main,hist:[],eerder:!!prev,spec:false,uz,um:null}; updPbar(null);
   $('s2').hidden=false; renderS2(); }
 // raster: elke tegeltitel heeft precies twee kenmerken, elke combinatie hoogstens één keer, minstens 2×2 en minstens de helft gevuld
 function s2Koppen(hs){ const T=hs.map(h=>h.split(/\s+/)), zelfde=(a,b)=>{ a=a.toLowerCase(); b=b.toLowerCase(); const [k,l]=a.length<=b.length?[a,b]:[b,a]; return k.length>=4&&l.startsWith(k)&&l.length-k.length<=2; };
@@ -2969,25 +2993,27 @@ function s2Raster(g){ const P=g.tiles.map(t=>({t,p:String(g.tl[t.main]||'').spli
   if(P.length*2<rows.length*cols.length) return null;
   return {rows, cols, cell, rk:s2Koppen(rows), ck:s2Koppen(cols)}; }
 const S2STAND={klant:'Klanten',intern:'Intern',niet:'Niet online',geen:'Niet in AFAS'};
-function renderS2(alleenHtml){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m), si=S.indexOf(b), pl=soortPl(b), plk=pl.toLowerCase(), T=g.tiles;
+function renderS2(alleenHtml){ if(!S2) return; if(!S2.uz) S2.uz=[]; const {m,b,g}=S2, S=soortenVan(m), si=S.indexOf(b), pl=soortPl(b), plk=pl.toLowerCase(), T=g.tiles;
   const ct=T.find(t=>t.main===S2.cur)||T[0], art=tegelArt(m,ct)||mvOf(m,ct.main), pv=tegelFoto(m,ct,art), fm=fotoMelding(m,art,pv), src=sideImg(pv), z=sideKey(pv);
   const frT=t=>!!frLabel(t.ids.map(id=>mvOf(m,id)).filter(Boolean)), frN=T.filter(frT).length, frAlle=frN>0&&frN===T.length, frDeel=frN>0&&!frAlle;
   const fz=frameRegels(m,g), ht=T.find(t=>t.ids.includes(g.hoofd.id))||T[0], rh=modelPrijs(m,tegelArt(m,ht)||g.hoofd);
-  const mpT=t=>{ const r=modelPrijs(m,tegelArt(m,t)||mvOf(m,t.main)); return r&&rh&&r[3]!=null&&rh[3]!=null?r[3]-rh[3]:null; };
   const r=PRIJS()&&prState==='ok'?modelPrijs(m,art):null, care=r&&careOn()&&r[7]!=null, leeg=prState==='wait'?'laden…':'–';
   const pblok0=PRIJS()?'<div class="s2p" aria-label="Prijzen '+esc(art.code)+'">'+[['Verkoop',r&&r[5]!=null?eur(r[5]):leeg,'vk'],['Blom Care',care?eur(r[7]):leeg,'vk care'],['Inkoop',r&&r[3]!=null?eur(r[3]):leeg,''],['Marge',r&&r[5]&&r[4]!=null?pct((r[5]-r[4])/r[5]):leeg,'']].map(([a,x,c])=>'<span class="'+c+'">'+a+'</span><b class="'+c+'">'+x+'</b>').join('')+'</div>':'';
   const st=tegelStand(m,ct), labNu=LABELS.filter((x,i)=>st.lab[i]===1).map(x=>x[0]);
   const dots=s2=>'<span class="s2d">'+LABELS.map(([n,c],i)=>s2.lab[i]===1?'<i style="--lc:'+c+'" title="'+esc(n)+'"></i>':'').join('')+'</span>';
-  const cel=(t,titel)=>{ const on=!!S2.sel[t.main], s2=tegelStand(m,t), y=mpT(t), fr=fz.tegel[t.main];
+  // uitzonderingsstand (S2.um): het vinkvak kiest voor de uitzondering (oranje vak met U); alleen aangevinkte uitvoeringen kunnen
+  const cel=(t,titel)=>{ const on=!!S2.sel[t.main], s2=tegelStand(m,t), fr=fz.tegel[t.main], um=S2.um, inU=!!(um&&um.sel[t.main]), ui=S2.uz.findIndex(u=>u.tiles.includes(t.main)), uz=ui>=0?S2.uz[ui]:null;
     const tl2=g.tl[t.main]||'';
-    return '<div class="s2c'+(t===ct?' nu':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
-      +'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>'
+    return '<div class="s2c'+(t===ct?' nu':'')+(um&&!on?' uzx':'')+(inU?' uzk':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
+      +(um?'<button type="button" class="s2kb uzb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+inU+'"'+(on?'':' disabled')+' aria-label="'+esc(tl2+' '+tegelCode(m,t))+' in de uitzondering"><i class="s2k">'+(inU?'U':'')+'</i></button>'
+        :'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>')
       +(titel?'<b class="s2tt">'+esc(tl2)+kortTeken(m,t)+'</b><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
         :'<span class="s2code">'+esc(tegelCode(m,t))+kortTeken(m,t)+'</span>'+(tegelMaat(m,t)?'<span class="s2mt">'+esc(tegelMaat(m,t))+'</span>':'')+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
-      +(t!==ht&&y!=null&&PRIJS()?'<em class="mmp">'+mpTxt2(y)+'</em>':'')
+      +inkTag(m,t)
       +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')
-      +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span></div>'; };
+      +'<span class="s2s">'+S2STAND[s2.k]+dots(s2)+'</span>'
+      +(uz?'<span class="s2uz" title="Uitzondering: eigen zichtbaarheid en labels">afwijkend · '+(S2STAND[uz.oc]||'')+dots(uz)+'</span>':'')+'</div>'; };
   const R=s2Raster(g);
   const keuze=R?'<div class="s2g" style="grid-template-columns:auto repeat('+R.cols.length+',minmax(0,1fr))">'
       +(R.ck.kop?'<span></span><span class="s2gkop" style="grid-column:span '+R.cols.length+'">'+esc(R.ck.kop)+'</span>':'')
@@ -2995,6 +3021,11 @@ function renderS2(alleenHtml){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m)
       +R.rows.map((rw,i)=>'<span class="s2h s2hr">'+esc(R.rk.ks[i])+'</span>'+R.cols.map(c=>{ const t=R.cell[rw+'\u0001'+c]; return t?cel(t,false):'<span class="s2c leeg" aria-hidden="true"></span>'; }).join('')).join('')+'</div>'
     :'<div class="s2tiles'+(T.length>9?' kort':'')+'">'+T.map(t=>cel(t,T.length<=9)).join('')+'</div>';
   const n=T.filter(t=>S2.sel[t.main]).length, pc=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
+  // uitzondering: zichtbaarheid en labels van de gekozen tegels (VO), knoppen Annuleren en Uitzondering klaar, regels met de uitzonderingen
+  const un=S2.um?T.filter(t=>S2.sel[t.main]&&S2.um.sel[t.main]).length:0, VO=S2.um||S2;
+  const UZBTN='<div class="s2btn uzk2"><button type="button" class="dno" id="s2UzNee">Annuleren</button><button type="button" class="dyes" id="s2UzOk"'+(un?'':' disabled')+'>'+(un?OK(18):'')+'Uitzondering klaar · '+un+'</button></div>';
+  const UZL=!S2.um&&S2.uz.length?'<div class="s2uzl">'+S2.uz.map((u,i)=>{ const ls=LABELS.filter((x,j)=>u.lab[j]===1).map(x=>x[0]).join(', ');
+      return '<span><b>Uitzondering</b> · '+esc(u.tiles.map(mn=>{ const tt=T.find(x=>x.main===mn); return tt?tegelCode(m,tt):mn; }).join(', '))+' · '+(S2STAND[u.oc]||'')+(ls?' · '+esc(ls):'')+'<button type="button" data-s2uzx="'+i+'" aria-label="Uitzondering weghalen" title="Uitzondering weghalen">✕</button></span>'; }).join('')+'</div>':'';
   const spec=belowHTML(m,art,'',{zonderOmschrijving:true,alleenSpec:true}).replace('<details class="box">','<details class="box s2spec"'+(S2.spec?' open':'')+'>');
   const H='<div class="s2h0"><button type="button" class="s2back" id="s2Back" aria-label="Terug naar stap 1">‹</button><b>'+esc(m.fam)+' <span>'+esc(soortNaam(b))+'</span></b>'+(S.length>1?'<span class="s2n">soort '+(si+1)+' van '+S.length+'</span>':'')+'</div>'
     +'<div class="s2b" id="s2b">'
@@ -3003,38 +3034,58 @@ function renderS2(alleenHtml){ if(!S2) return; const {m,b,g}=S2, S=soortenVan(m)
         +(T.length>1?'<button type="button" class="mar l" data-s2n="-1" aria-label="Vorige uitvoering">‹</button><button type="button" class="mar r" data-s2n="1" aria-label="Volgende uitvoering">›</button>':'')+fm.html+'</div>'
       +'<div class="s2cap"><div class="s2c1"><span><b>'+esc(art.code)+'</b> · '+esc(g.tl[ct.main]||'')+(z?' · '+ZK[z]:'')+'</span><span class="sst '+st.k+'">'+STAND[st.k]+'</span></div>'
         +'<div class="s2c2"><span class="eye">Labels nu</span>'+(labNu.length?esc(labNu.join(', ')):'geen')+'</div></div></div>'
-      +'<div class="s2kies"><div class="mlh"><span class="eye">Kies de '+esc(plk)+' die je houdt</span>'+((kopKenm(g,fz)||fz.kop)?'<span class="sfz">'+esc(kopKenm(g,fz)||fz.kop)+'</span>':'')+'</div>'+keuze
+      +'<div class="s2kies"><div class="mlh"><span class="eye">'+(S2.um?'Kies de '+esc(plk)+' voor de uitzondering':'Kies de '+esc(plk)+' die je houdt')+'</span>'+((kopKenm(g,fz)||fz.kop)?'<span class="sfz">'+esc(kopKenm(g,fz)||fz.kop)+'</span>':'')+'</div>'+keuze
         +'<p class="mcap">Vink rechtsboven aan wat je houdt; tik op een tegel om die '+esc(soortNaam(b))+' op de foto te zien.</p></div>'
       +spec
     +'</div>'
-    +'<div class="s2f">'+(PRIJS()?'<div class="pbar s2lint">'+lintHTML(m,art)+'</div>':'')+'<div class="mlh"><span class="eye">Alle '+esc(plk)+' van '+esc(m.fam)+'</span><span class="s2vg">'+(S2.eerder?'voorgevuld met je eerdere keuze':'voorgevuld met de stand in AFAS')+'</span></div>'
-      +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button" class="'+(S2.oc===o?'on':'')+'" data-s2oc="'+o+'" aria-pressed="'+(S2.oc===o)+'">'+l+'</button>').join('')+'</div>'
-      +'<div class="dlbs" role="group" aria-label="Labels">'+LABELS.map(([nm,c],j)=>{ const on=S2.lab[j]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-s2lab="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+nm+'</button>'; }).join('')+'</div>'
-      +'<div class="s2btn"><button type="button" class="s2u" id="s2Undo" aria-label="Laatste wijziging terug"'+(S2.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="s2No">'+NO(18)+esc(pl)+' niet houden</button>'
-        +'<button type="button" class="dyes" id="s2Yes"'+(n?'':' disabled')+'>'+(n?OK(18)+'Opslaan · '+n+' van de '+T.length:'Kies '+esc(plk))+'</button></div>'
-      +(pc?'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>Del</kbd> '+esc(plk)+' niet houden</span><span><kbd>⌫</kbd> laatste wijziging terug</span><span><kbd>spatie</kbd> vinkje</span><span><kbd>← →</kbd> uitvoering</span></div>':'')
+    +'<div class="s2f'+(S2.um?' uzm':'')+'">'+(PRIJS()&&!S2.um?'<div class="pbar s2lint">'+lintHTML(m,art)+'</div>':'')
+      +(S2.um?'<div class="mlh"><span class="eye">Uitzondering · '+un+' gekozen</span><span class="s2vg">geldt alleen voor de gekozen '+esc(plk)+'</span></div>'
+        :'<div class="mlh"><span class="eye" title="'+(S2.eerder?'Voorgevuld met je eerdere keuze':'Voorgevuld met de stand in AFAS')+'">Alle '+esc(plk)+' van '+esc(m.fam)+'</span><button type="button" class="s2uzb" id="s2Uz"'+(n?'':' disabled')+' title="Andere zichtbaarheid en labels voor een deel van de '+esc(plk)+'">+ Uitzondering</button></div>')
+      +'<div class="dseg" role="group" aria-label="Zichtbaarheid">'+[['niet','Niet online'],['intern','Intern'],['klant','Klanten']].map(([o,l])=>'<button type="button" class="'+(VO.oc===o?'on':'')+'" data-s2oc="'+o+'" aria-pressed="'+(VO.oc===o)+'">'+l+'</button>').join('')+'</div>'
+      +'<div class="dlbs" role="group" aria-label="Labels">'+LABELS.map(([nm,c],j)=>{ const on=VO.lab[j]===1; return '<button type="button" class="dlb'+(on?' on':'')+'" style="--lc:'+c+'" data-s2lab="'+j+'" aria-pressed="'+on+'">'+(on?'<span class="ck">'+CK+'</span>':'<span class="dot"></span>')+nm+'</button>'; }).join('')+'</div>'
+      +UZL
+      +(S2.um?UZBTN:'<div class="s2btn"><button type="button" class="s2u" id="s2Undo" aria-label="Laatste wijziging terug"'+(S2.hist.length?'':' disabled')+'>↶</button><button type="button" class="dno" id="s2No">'+NO(18)+esc(pl)+' niet houden</button>'
+        +'<button type="button" class="dyes" id="s2Yes"'+(n?'':' disabled')+'>'+(n?OK(18)+'Opslaan · '+n+' van de '+T.length:'Kies '+esc(plk))+'</button></div>')
+      +(pc&&S2.um?'<div class="dkeys"><span><kbd>spatie</kbd> in of uit de uitzondering</span><span><kbd>Enter</kbd> uitzondering klaar</span><span><kbd>Esc</kbd> annuleren</span></div>':pc?'<div class="dkeys"><span><kbd>Enter</kbd> opslaan</span><span><kbd>Del</kbd> '+esc(plk)+' niet houden</span><span><kbd>⌫</kbd> laatste wijziging terug</span><span><kbd>spatie</kbd> vinkje</span><span><kbd>← →</kbd> uitvoering</span></div>':'')
     +'</div>';
   if(alleenHtml) return H;
   $('s2').innerHTML=H;
-  const B=$('s2'), snap=()=>{ S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur}); if(S2.hist.length>60) S2.hist.shift(); };
-  B.querySelectorAll('[data-s2k]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const id=x.dataset.s2k; snap(); S2.sel[id]=!S2.sel[id]; renderS2(); const k=$('s2').querySelector('[data-s2k="'+CSS.escape(id)+'"]'); if(k) k.focus({preventScroll:true}); });
+  const B=$('s2'), snap=s2Snap;
+  B.querySelectorAll('[data-s2k]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); const id=x.dataset.s2k; s2Vink(id); const k=$('s2').querySelector('[data-s2k="'+CSS.escape(id)+'"]'); if(k) k.focus({preventScroll:true}); });
   B.querySelectorAll('[data-s2t]').forEach(x=>{ x.onclick=()=>{ if(S2.cur===x.dataset.s2t) return; S2.cur=x.dataset.s2t; renderS2(); }; });
   B.querySelectorAll('[data-s2n]').forEach(x=>x.onclick=e=>{ e.stopPropagation(); s2Stap(+x.dataset.s2n); });
-  B.querySelectorAll('[data-s2oc]').forEach(x=>x.onclick=()=>{ snap(); S2.oc=x.dataset.s2oc; renderS2(); });
-  B.querySelectorAll('[data-s2lab]').forEach(x=>x.onclick=()=>{ snap(); const j=+x.dataset.s2lab; S2.lab[j]=S2.lab[j]===1?0:1; renderS2(); });
-  $('s2Undo').onclick=s2Undo; $('s2No').onclick=()=>s2Opslaan(true); $('s2Yes').onclick=()=>s2Opslaan(false); $('s2Back').onclick=s2Sluit;
+  B.querySelectorAll('[data-s2oc]').forEach(x=>x.onclick=()=>{ if(S2.um) S2.um.oc=x.dataset.s2oc; else { snap(); S2.oc=x.dataset.s2oc; } renderS2(); });
+  B.querySelectorAll('[data-s2lab]').forEach(x=>x.onclick=()=>{ const j=+x.dataset.s2lab; let L; if(S2.um) L=S2.um.lab; else { snap(); L=S2.lab; } L[j]=L[j]===1?0:1; renderS2(); });
+  if(S2.um){ $('s2UzNee').onclick=s2UzNee; $('s2UzOk').onclick=s2UzOk; }
+  else { $('s2Undo').onclick=s2Undo; $('s2No').onclick=()=>s2Opslaan(true); $('s2Yes').onclick=()=>s2Opslaan(false); $('s2Uz').onclick=s2UzStart;
+    B.querySelectorAll('[data-s2uzx]').forEach(x=>x.onclick=()=>{ snap(); S2.uz.splice(+x.dataset.s2uzx,1); renderS2(); }); }
+  $('s2Back').onclick=s2Sluit;
   $('s2foto').onclick=e=>{ if(!e.target.closest('button')) s2Zoom(); };
   bindLint(B,renderS2); fitFotoMeld($('s2foto'));
   const sp=B.querySelector('.s2spec'); if(sp) sp.addEventListener('toggle',()=>{ S2.spec=sp.open; });
 }
 function s2Stap(d){ const T=S2.g.tiles, i=Math.max(0,T.findIndex(t=>t.main===S2.cur)); S2.cur=T[(i+d+T.length)%T.length].main; renderS2(); }
-function s2Undo(){ const h=S2&&S2.hist.pop(); if(!h) return; Object.assign(S2,h); renderS2(); }
+function s2Undo(){ if(S2&&S2.um) return; const h=S2&&S2.hist.pop(); if(!h) return; Object.assign(S2,h); renderS2(); }
+// uitzonderingen: S2.uz = [{tiles:[hoofdartikel van de tegel …], oc, lab}]; S2.um = de uitzondering die je nu kiest ({sel, oc, lab}) of null
+function s2Snap(){ S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur,uz:(S2.uz||[]).map(u=>({tiles:u.tiles.slice(),oc:u.oc,lab:u.lab.slice()}))}); if(S2.hist.length>60) S2.hist.shift(); }
+// tegels uit hun uitzondering halen; een lege uitzondering verdwijnt
+function s2UzWeg(mains){ S2.uz.forEach(u=>{ u.tiles=u.tiles.filter(x=>!mains.includes(x)); }); S2.uz=S2.uz.filter(u=>u.tiles.length); }
+// vinkvak: gewoon = houden of niet (uitvinken haalt de tegel uit zijn uitzondering); in de uitzonderingsstand = in of uit de uitzondering
+function s2Vink(id){ if(S2.um){ if(S2.sel[id]) S2.um.sel[id]=!S2.um.sel[id]; renderS2(); return; }
+  s2Snap(); S2.sel[id]=!S2.sel[id]; if(!S2.sel[id]) s2UzWeg([id]); renderS2(); }
+function s2UzStart(){ if(!S2||!S2.g.tiles.some(t=>S2.sel[t.main])) return; S2.um={sel:{},oc:S2.oc,lab:S2.lab.slice()}; hbOpen=false; renderS2(); }
+function s2UzNee(){ S2.um=null; renderS2(); }
+// klaar: de gekozen tegels verhuizen uit een eerdere uitzondering naar deze
+function s2UzOk(){ const u=S2.um, tiles=S2.g.tiles.filter(t=>S2.sel[t.main]&&u.sel[t.main]).map(t=>t.main); if(!tiles.length) return;
+  if(!u.oc){ toast('Kies eerst de zichtbaarheid van de uitzondering (Niet online, Intern of Klanten)'); return; }
+  s2Snap(); s2UzWeg(tiles); S2.uz.push({tiles,oc:u.oc,lab:u.lab.slice()}); S2.um=null; renderS2(); }
 function s2Sluit(){ $('s2').hidden=true; S2=null; render(); }
 function s2Opslaan(niet){ if(!S2) return; const {m,b,g}=S2, prev=D[m.id], t=new Date().toISOString();
   if(!niet){ if(!g.tiles.some(x=>S2.sel[x.main])) return; if(!S2.oc){ toast('Kies eerst de zichtbaarheid (Niet online, Intern of Klanten)'); return; } }
   if(niet) zetSoort(m,b,{s:'niet',t});
   else { const v={}; g.tiles.forEach(x=>x.ids.forEach(id=>{ v[id]=S2.sel[x.main]?1:0; })); soortIds(m,b).forEach(id=>{ if(v[id]==null) v[id]=0; });
-    zetSoort(m,b,{s:'wel',t,v,oc:S2.oc,lab:S2.lab.slice(),g:[]}); }
+    const gr=(S2.uz||[]).map(u=>({oc:u.oc,lab:u.lab.slice(),ids:u.tiles.filter(mn=>S2.sel[mn]).flatMap(mn=>{ const tt=g.tiles.find(x=>x.main===mn); return tt?tt.ids:[]; })})).filter(x=>x.ids.length);
+    zetSoort(m,b,{s:'wel',t,v,oc:S2.oc,lab:S2.lab.slice(),g:gr}); }
   $('s2').hidden=true; S2=null; stamp(niet?'niet':'wel'); toast(m.fam+' '+soortNaam(b)+(niet?' niet gehouden':' opgeslagen')); after(m,b,prev); }
 function s2Zoom(){ if(!S2) return; const {m,g}=S2, ct=g.tiles.find(t=>t.main===S2.cur)||g.tiles[0], art=tegelArt(m,ct)||mvOf(m,ct.main), pv=tegelFoto(m,ct,art), src=sideImg(pv); if(!src) return;
   const fm=fotoMelding(m,art,pv), z=sideKey(pv);
@@ -3044,10 +3095,13 @@ function s2Zoom(){ if(!S2) return; const {m,g}=S2, ct=g.tiles.find(t=>t.main===S
 // sneltoetsen in stap 2 (computer): Enter = opslaan, Delete = niet houden, Backspace = laatste wijziging terug, ← → = uitvoering, Escape = terug
 document.addEventListener('keydown',e=>{ if(!S2||$('s2').hidden||!$('zoom').hidden) return; if((e.target.closest&&e.target.closest('input,select,textarea'))||e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key; let ok=true;
+  // uitzonderingsstand: spatie = uitvoering op de foto in of uit de uitzondering, Enter = klaar, Escape = annuleren
+  if(S2.um){ if(k==='Enter') s2UzOk(); else if(k==='Escape') s2UzNee(); else if(k===' ') s2Vink(S2.cur); else if(k==='ArrowRight') s2Stap(1); else if(k==='ArrowLeft') s2Stap(-1); else if(k==='Backspace'||k==='Delete'){} else ok=false;
+    if(ok) e.preventDefault(); e.stopImmediatePropagation(); return; }
   if(k==='Enter'){ if(!$('s2Yes').disabled) s2Opslaan(false); }
   else if(k==='Delete') s2Opslaan(true);
   else if(k==='Backspace') s2Undo();
-  else if(k===' '){ const id=S2.cur; S2.hist.push({sel:Object.assign({},S2.sel),oc:S2.oc,lab:S2.lab.slice(),cur:S2.cur}); S2.sel[id]=!S2.sel[id]; renderS2(); }
+  else if(k===' ') s2Vink(S2.cur);
   else if(k==='ArrowRight') s2Stap(1); else if(k==='ArrowLeft') s2Stap(-1);
   else if(k==='Escape') s2Sluit();
   else ok=false;
@@ -3183,7 +3237,7 @@ function renderUitleg(){ const box=$('helpModal'), B=uvBron();
     let oc=null, lab=[0,0,0,0,0]; const cnt={}; g.vs.filter(x=>x.inA).forEach(x=>{ const k=sigOf(afasOc(x),labOf(x)); cnt[k]=(cnt[k]||0)+1; });
     const top=Object.keys(cnt).sort((a,c)=>cnt[c]-cnt[a])[0]; if(top){ const e=g.vs.find(x=>x.inA&&sigOf(afasOc(x),labOf(x))===top); oc=afasOc(e)||null; lab=labOf(e); }
     // hist met één stap: dan staat ↶ aan, zoals na een keuze
-    S2={m,b:UV.b,g,sel,oc,lab,cur:ct.main,hist:[null],eerder:false,spec:false};
+    S2={m,b:UV.b,g,sel,oc,lab,cur:ct.main,hist:[null],eerder:false,spec:false,uz:[],um:null};
     h2=renderS2(true)||'';
   } finally { curVi=o.curVi; curB=o.curB; hbOpen=o.hbOpen; LABOPEN=o.LABOPEN; S2=o.S2; }
   const tmp=document.createElement('div'); tmp.innerHTML=naId(h1)+'<div class="uv2">'+naId(h2)+'</div>';
