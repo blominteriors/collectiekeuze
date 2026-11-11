@@ -266,28 +266,30 @@
 
   /* Wachtwoord kiezen of wijzigen (alleen als je bent ingelogd). Bij het opslaan zetten we een
      vlag in de gebruikersgegevens, zodat de app weet dat dit account een wachtwoord heeft. */
-  function toonWachtwoord(eerste) {
+  /* verplicht: een beheerder heeft het account met een tijdelijk wachtwoord aangemaakt (vlag wachtwoord_wijzigen).
+     Dan is er geen knop Later: eerst een eigen wachtwoord kiezen, daarna pas de app. */
+  function toonWachtwoord(eerste, verplicht) {
     maakScherm();
     scherm.innerHTML = `<form novalidate>
       <span class="eye">Blom Collectiekeuze</span>
-      <h1>${eerste ? 'Kies een wachtwoord' : 'Wachtwoord wijzigen'}</h1>
-      <p>${eerste ? 'Daarmee log je voortaan op elk apparaat in met je e-mailadres en dit wachtwoord, zonder mail.' : 'Kies een nieuw wachtwoord.'} Minimaal 8 tekens.</p>
+      <h1>${verplicht ? 'Kies je eigen wachtwoord' : eerste ? 'Kies een wachtwoord' : 'Wachtwoord wijzigen'}</h1>
+      <p>${verplicht ? 'Je bent ingelogd met een tijdelijk wachtwoord van de beheerder. Kies nu een eigen wachtwoord, daarmee log je voortaan op elk apparaat in.' : eerste ? 'Daarmee log je voortaan op elk apparaat in met je e-mailadres en dit wachtwoord, zonder mail.' : 'Kies een nieuw wachtwoord.'} Minimaal 8 tekens.</p>
       <input type="email" autocomplete="username" value="${esc(window.BLOM_USER ? window.BLOM_USER.email : email)}" readonly hidden>
       <input type="password" autocomplete="new-password" placeholder="Nieuw wachtwoord" minlength="8" required>
       <input type="password" autocomplete="new-password" placeholder="Herhaal wachtwoord" minlength="8" required>
       <button type="submit">Wachtwoord opslaan</button>
       <p class="fout" hidden></p>
-      <button type="button" class="link">${eerste ? 'Later' : 'Annuleren'}</button></form>`;
+      ${verplicht ? '' : `<button type="button" class="link">${eerste ? 'Later' : 'Annuleren'}</button>`}</form>`;
     const f = scherm.querySelector('form'), [, w1, w2] = f.querySelectorAll('input'), knop = f.querySelector('button[type=submit]'), fout = f.querySelector('.fout');
     const meld = t => { fout.textContent = t; fout.hidden = false; };
     w1.focus();
-    f.querySelector('.link').onclick = () => { scherm.hidden = true; };
+    if (!verplicht) f.querySelector('.link').onclick = () => { scherm.hidden = true; };
     f.onsubmit = async e => {
       e.preventDefault();
       if (w1.value.length < 8) return meld('Het wachtwoord moet minimaal 8 tekens hebben.');
       if (w1.value !== w2.value) return meld('De twee wachtwoorden zijn niet gelijk.');
       knop.disabled = true; knop.textContent = 'Opslaan…';
-      const { data, error } = await sb.auth.updateUser({ password: w1.value, data: { wachtwoord: true } });
+      const { data, error } = await sb.auth.updateUser({ password: w1.value, data: { wachtwoord: true, wachtwoord_wijzigen: false } });
       if (error) {
         knop.disabled = false; knop.textContent = 'Wachtwoord opslaan';
         return meld(/reauth/i.test(error.message) ? 'Log eerst opnieuw in met een inloglink en kies dan je wachtwoord.'
@@ -325,7 +327,7 @@
     }
   }
 
-  /* Rol ophalen: alleen wie in de gebruikerslijst staat, heeft toegang (beheerder of beoordelaar).
+  /* Rol ophalen: alleen wie in de gebruikerslijst staat, heeft toegang (beheerder, beoordelaar of beoordelaar zonder prijzen).
      Bestaat de functie nog niet (database nog niet bijgewerkt), dan werkt de app zoals voorheen. */
   async function haalRol() {
     const { data, error } = await sb.rpc('mijn_rol');
@@ -336,6 +338,15 @@
     return data;
   }
   window.blomRpc = (fn, args) => sb.rpc(fn, args || {});
+  /* Edge Function aanroepen met het inlogtoken van de gebruiker. Geeft { data, error }; bij een fout is error.message
+     de melding uit de functie zelf (veld error in het antwoord). */
+  window.blomFunctie = async (naam, body) => {
+    const { data, error } = await sb.functions.invoke(naam, { body: body || {} });
+    if (!error) return { data, error: null };
+    let msg = error.message, info = null;
+    try { info = await error.context.json(); if (info && info.error) msg = info.error; } catch (_) {}
+    return { data: info, error: { message: msg } };
+  };
   /* Brandvertragend per artikelnummer, letterlijk uit Supabase:
      prijzen.uitvoering ('Brandvertragend' / 'Niet brandvertragend') en artikelen.omschrijving ('Brandvertragend uitgevoerd'). */
   async function alles(maak) {
@@ -348,9 +359,27 @@
     }
     return rijen;
   }
+  /* Model, uitvoering en de korte uitvoeringsnaam per artikelnummer (tabel artikelen, standaard korte uitvoeringsnaam in de data-repo).
+     Geeft {artikelnummer: [rij, ...]}: een artikelnummer kan bij Bree meer rijen hebben (zelfde code, andere maat); de app kiest
+     dan op AFAS-nummer of afwerking. kort = titel van de tegel, maatk = maten die de uitvoering onderscheiden, mk = model kenmerken,
+     kc/kr = controleren en reden (alleen voor de beheerder). */
+  window.blomModellen = async (supNaam) => {
+    const V = VERSIE || 'v1', uit = {};
+    const rijen = await alles(() => sb.from('artikelen')
+      .select('nummer_leverancier,afas_nr,afwerking,model,uitvoering,uitvoering_kort,maat_kort,model_kenmerken,kort_controleren,kort_reden,herkomst_foto,foto_klopt_pct')
+      .eq('versie', V).eq('leverancier', supNaam).not('model', 'is', null));
+    rijen.forEach(r => { if (!r.model) return; (uit[r.nummer_leverancier] = uit[r.nummer_leverancier] || []).push({
+      model: r.model, uit: r.uitvoering || '', afas: r.afas_nr || '', fin: r.afwerking || '', kort: r.uitvoering_kort || '',
+      maatk: r.maat_kort || '', mk: r.model_kenmerken || '', kc: !!r.kort_controleren, kr: r.kort_reden || '', hf: r.herkomst_foto || '', fk: r.foto_klopt_pct == null ? null : Number(r.foto_klopt_pct) }); });
+    return uit;
+  };
   window.blomBrandvertragend = async (supId, supNaam) => {
     const V = VERSIE || 'v1', fr = {}, nfr = {}, oms = {};
-    const prijs = await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));
+    // de beoordelaar zonder prijzen mag de tabel prijzen niet lezen: die krijgt alleen artikelnummer en uitvoering via een functie
+    const zonder = window.BLOM_ROL && window.BLOM_ROL.rol === 'beoordelaar_zonder_prijzen';
+    const prijs = zonder
+      ? await alles(() => sb.rpc('brandvertragend_regels', { p_versie: V, p_leverancier: supId })).catch(() => [])
+      : await alles(() => sb.from('prijzen').select('nummer_leverancier,uitvoering').eq('versie', V).eq('leverancier', supId).ilike('uitvoering', '%brandvertr%'));
     prijs.forEach(r => { if (/niet\s+brandvertr/i.test(r.uitvoering)) nfr[r.nummer_leverancier] = 1; else fr[r.nummer_leverancier] = 1; });
     const art = await alles(() => sb.from('artikelen').select('nummer_leverancier,omschrijving').eq('versie', V).eq('leverancier', supNaam).ilike('omschrijving', '%brandvertr%'));
     art.forEach(r => { if (!/niet\s+brandvertr/i.test(r.omschrijving)) oms[r.nummer_leverancier] = 1; });
@@ -376,7 +405,9 @@
     laadFonts();
     if (typeof window.__blomBoot === 'function') window.__blomBoot();
     // nog geen wachtwoord gekozen: vraag erom (buiten de inlog-callback van Supabase, anders kan die blijven hangen)
-    if (!(user.user_metadata && user.user_metadata.wachtwoord)) setTimeout(() => toonWachtwoord(true), 0);
+    const meta = user.user_metadata || {};
+    if (meta.wachtwoord_wijzigen) setTimeout(() => toonWachtwoord(true, true), 0);
+    else if (!meta.wachtwoord) setTimeout(() => toonWachtwoord(true), 0);
   }
 
   async function start() {
