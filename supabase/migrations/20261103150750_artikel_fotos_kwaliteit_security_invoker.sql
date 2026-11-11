@@ -1,0 +1,1 @@
+ALTER VIEW public.artikel_fotos_kwaliteit SET (security_invoker = true);
