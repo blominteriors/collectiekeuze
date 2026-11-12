@@ -1091,9 +1091,8 @@ body.swv #what{display:none}
 .s2g .s2c{min-width:0;overflow:hidden}
 .s2hf{font-size:10.5px;color:var(--g400)}
 .s2fr{font-size:10.5px;color:var(--g400)}
-/* beheerder: korte naam controleren (reden als tooltip) */
+/* maat onder de code op de tegel */
 .s2mt{font-size:10.5px;line-height:1.25;color:var(--g400);white-space:normal;overflow-wrap:anywhere;min-width:0;padding-right:2px}
-.kchk{display:inline-grid;place-items:center;width:14px;height:14px;margin-left:5px;border:1px solid var(--ink);background:#ffe9a8;color:var(--ink);font:500 10px/1 var(--display);vertical-align:1px;cursor:help}
 .s2c .frb.st{justify-self:start;font-size:9.5px;padding:0 4px}
 .s2s{display:flex;align-items:center;gap:3px;font-size:9.5px;color:var(--g400);white-space:nowrap;border-top:1px solid var(--n300);padding-top:3px;margin-top:1px}
 .s2d{display:inline-flex;gap:1.5px;flex:none}
@@ -1482,8 +1481,6 @@ const tegelCodeMaat=(m,t)=>{ const mk=tegelMaat(m,t); return tegelCode(m,t)+(mk?
 // model kenmerken één keer per model, voor het frame in de kop: 'greep in rug · frame beuken'
 const modelKenm=g=>{ const v=g.vs.find(x=>x.mk); return v?v.mk:''; };
 const kopKenm=(g,fz)=>{ const mk=modelKenm(g), fr=(fz.kop||'').replace(/^Alle [^:]+:\s*/,''); return mk?[mk,fr].filter(Boolean).join(' · '):''; };
-// alleen de beheerder: klein teken op de tegel als de korte naam nagekeken moet worden, met de reden als tooltip
-const kortTeken=(m,t)=>{ if(!BEH()) return ''; const a=tegelArt(m,t)||mvOf(m,t.main); return a&&a.kc?'<span class="kchk" title="Korte naam controleren: '+esc(a.kr||'')+'" aria-label="Korte naam controleren: '+esc(a.kr||'')+'">!</span>':''; };
 let BRAND=null;   // uit Supabase: {fr, nfr, oms} per artikelnummer (prijzen.uitvoering en artikelen.omschrijving)
 function frLabel(vs){
   if(BRAND){ const cs=[...new Set(vs.flatMap(v=>[v.code,pk(v)]))]; const ja=cs.some(c=>BRAND.fr[c]||BRAND.oms[c]), nee=cs.some(c=>BRAND.nfr[c]);
@@ -1821,7 +1818,7 @@ function cardSoortHTML(m){
   const its=T.map(t=>{ const s2=tegelStand(m,t), fr=fz.tegel[t.main], x=mvOf(m,t.main);
     const mpx=inkTag(m,t);
     return '<button type="button" class="s2c s1c'+(t===ct?' nu':'')+'" data-vi="'+m.v.indexOf(x)+'" aria-pressed="'+(t===ct)+'" title="Toon deze uitvoering op de foto">'
-      +'<b class="s2tt">'+esc(g.tl[t.main]||'')+kortTeken(m,t)+'</b>'
+      +'<b class="s2tt">'+esc(g.tl[t.main]||'')+'</b>'
       +(T.length>4?'<span class="s1cr"><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx+'</span>':'<span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'+mpx)
       +(fr?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+'Brandvertragend</span>':'')
@@ -3028,8 +3025,8 @@ function renderS2(alleenHtml){ if(!S2) return; if(!S2.uz) S2.uz=[]; const {m,b,g
     return '<div class="s2c'+(t===ct?' nu':'')+(um&&!on?' uzx':'')+(inU?' uzk':'')+'" data-s2t="'+esc(t.main)+'" role="button" tabindex="0" aria-pressed="'+(t===ct)+'" title="Op de foto: '+esc(tl2)+'">'
       +(um?'<button type="button" class="s2kb uzb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+inU+'"'+(on?'':' disabled')+' aria-label="'+esc(tl2+' '+tegelCode(m,t))+' in de uitzondering"><i class="s2k">'+(inU?'U':'')+'</i></button>'
         :'<button type="button" class="s2kb" data-s2k="'+esc(t.main)+'" role="checkbox" aria-checked="'+on+'" aria-label="'+esc(tl2+' '+tegelCode(m,t))+' houden"><i class="s2k">'+(on?CK:'')+'</i></button>')
-      +(titel?'<b class="s2tt">'+esc(tl2)+kortTeken(m,t)+'</b><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
-        :'<span class="s2code">'+esc(tegelCode(m,t))+kortTeken(m,t)+'</span>'+(tegelMaat(m,t)?'<span class="s2mt">'+esc(tegelMaat(m,t))+'</span>':'')+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
+      +(titel?'<b class="s2tt">'+esc(tl2)+'</b><span class="s2code">'+esc(tegelCodeMaat(m,t))+(t===ht?' · Hoofdartikel':'')+'</span>'
+        :'<span class="s2code">'+esc(tegelCode(m,t))+'</span>'+(tegelMaat(m,t)?'<span class="s2mt">'+esc(tegelMaat(m,t))+'</span>':'')+(t===ht?'<span class="s2hf">Hoofdartikel</span>':''))
       +inkTag(m,t)
       +(fr&&(titel||R)?'<span class="s2fr">'+esc(fr)+'</span>':'')
       +(frDeel&&frT(t)?'<span class="frb st">'+FLAM+(titel||R?'Brandvertragend':'')+'</span>':'')
