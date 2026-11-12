@@ -1173,6 +1173,23 @@ body.swv #what{display:none}
 .mlh .eye{min-width:0}
 .mhint{margin:6px 0 0;text-align:center;font-size:11.5px;color:var(--g400)}
 .mcard .dvis{border-top:1px solid var(--n500)}
+/* telefoon: geen vastgeplakte fotokaart en in stap 2 schuift alles mee behalve de knoppen, anders blijft er op een telefoon maar een smalle strook over om te scrollen */
+@media (max-width:560px){
+  .ssoort>.s1k{position:relative;top:auto;box-shadow:none;clip-path:none}
+  .sheet.s2{display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .sheet.s2>.s2h0{position:sticky;top:0;z-index:6;background:#fff}
+  .sheet.s2>.s2b{display:block;overflow:visible;min-height:0}
+  .s2b>.s1k{position:relative;top:auto;box-shadow:none;clip-path:none;display:block}
+  .s2b>.s1k>.s2foto{height:clamp(200px,42vh,340px);height:clamp(200px,42dvh,340px)}
+  .s2b>.s2kies,.s2b>.s2spec{margin-top:6px}
+  .sheet.s2>.s2f{display:contents}
+  .sheet.s2>.s2f>*{margin-left:12px;margin-right:12px}
+  .sheet.s2>.s2f>.pbar{margin-top:12px;padding-top:8px;border-top:1px solid var(--ink)}
+  .sheet.s2>.s2f>.mlh{margin-top:12px}
+  .sheet.s2>.s2f>.dseg,.sheet.s2>.s2f>.dlbs{margin-top:6px}
+  .sheet.s2>.s2f>.s2btn{position:sticky;bottom:0;z-index:6;margin:10px 0 0;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid var(--ink)}
+  .sheet.s2>.s2f.uzm>.mlh .eye{color:#b4561b}
+}
 </style>
 
 <div class="app">
