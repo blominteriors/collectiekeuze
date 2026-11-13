@@ -1,7 +1,7 @@
 name: Publiceren
 
-# main         -> https://blominteriors.github.io/collectiekeuze/       (Database V1, versie v1, bucket v1)
-# ontwikkeling -> https://blominteriors.github.io/collectiekeuze/test/  (Database V1, versie test, bucket test)
+# main         -> https://blominterieurs.github.io/collectiekeuze/       (Database V1, versie v1, bucket v1)
+# ontwikkeling -> https://blominterieurs.github.io/collectiekeuze/test/  (Database V1, versie test, bucket test)
 # Welke database een adres gebruikt, legt deze actie vast; de app-code zelf bepaalt dat niet.
 
 on:

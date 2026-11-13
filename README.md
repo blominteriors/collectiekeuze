@@ -6,8 +6,8 @@ Swipe-app waarmee het Blom-team per leverancier beslist welke series in de colle
 
 | Adres | Tak | Supabase |
 |---|---|---|
-| https://blominteriors.github.io/collectiekeuze/ | `main` (alleen final versies) | Database V1, versie `v1` (bucket `v1`) |
-| https://blominteriors.github.io/collectiekeuze/test/ | `ontwikkeling` (tussenversies) | Database V1, versie `test` (bucket `test`) |
+| https://blominterieurs.github.io/collectiekeuze/ | `main` (alleen final versies) | Database V1, versie `v1` (bucket `v1`) |
+| https://blominterieurs.github.io/collectiekeuze/test/ | `ontwikkeling` (tussenversies) | Database V1, versie `test` (bucket `test`) |
 
 Er is één Supabase project (Database V1). Elke versie heeft een eigen bucket met dezelfde mappen
 (`collectie/`, `afbeeldingen/<leverancier>/`, `prijzen/<leverancier>/`, `algemeen/`). Keuzes, artikelen en foto's
@@ -33,7 +33,7 @@ het voorvoegsel `test:`, zodat test en live ook in de browser gescheiden blijven
 | App (code) | Deze repository, via GitHub Pages |
 | Inloggen | Supabase Auth, e-mail, alleen `@blominterieurs.nl` |
 | Keuzes | Supabase tabel `keuzes`, overzichten `keuzes_per_serie` en `keuzes_per_uitvoering` |
-| Modellen, foto's, prijzen, lettertypes | Supabase opslag, privé bucket per versie (`test`, `v1`), gevuld vanuit `blominteriors/collectiekeuze-data` |
-| Artikellijst | Supabase tabel `artikelen`, gevuld vanuit `blominteriors/collectiekeuze-data` |
+| Modellen, foto's, prijzen, lettertypes | Supabase opslag, privé bucket per versie (`test`, `v1`), gevuld vanuit `blominterieurs/collectiekeuze-data` |
+| Artikellijst | Supabase tabel `artikelen`, gevuld vanuit `blominterieurs/collectiekeuze-data` |
 
 Deze repository is openbaar en bevat bewust geen prijzen, artikeldata of lettertypebestanden.
