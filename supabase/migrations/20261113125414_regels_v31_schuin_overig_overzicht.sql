@@ -1,6 +1,6 @@
 -- Regels 3.1 (13 november 2026): plekken Schuin en Overig, overzicht per artikel, opschonen. Alleen toevoegen.
 -- Toegepast op Database V1 op 13 november 2026 onder de naam regels_v31_schuin_overig_overzicht.
--- Let op: het versienummer in de bestandsnaam is bij benadering; controleer het tegen supabase_migrations.schema_migrations.
+-- Versienummer gelijk aan supabase_migrations.schema_migrations (gecontroleerd op 13 november 2026).
 -- Vooraf gemaakt (buiten deze migratie): backup.artikel_fotos_brees_test_20261113 en backup.collectie_brees_test_20261113.
 
 -- 1. Extra gegevens per zijdefoto (regel J)
