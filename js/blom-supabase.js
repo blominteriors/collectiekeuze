@@ -28,7 +28,15 @@
 
   /* Test en live staan op hetzelfde webadres en delen dus de lokale opslag van de browser.
      Op de testomgeving krijgt elke sleutel een eigen voorvoegsel, zodat lokaal bewaarde
-     keuzes van test nooit in de live versie terechtkomen (en andersom). */
+     keuzes van test nooit in de live versie terechtkomen (en andersom).
+     Uitzondering: de inlog (Supabase-sessie) gebruikt altijd de gewone sleutel, zodat test, live,
+     de startpagina en de andere apps op blominterieurs.github.io één gedeelde inlog hebben. */
+  const RAW = (() => { try { const P = Storage.prototype; return { get: P.getItem, set: P.setItem, del: P.removeItem }; } catch (e) { return null; } })();
+  const inlogOpslag = RAW ? {
+    getItem: k => { try { return RAW.get.call(window.localStorage, k); } catch (e) { return null; } },
+    setItem: (k, v) => { try { RAW.set.call(window.localStorage, k, v); } catch (e) {} },
+    removeItem: k => { try { RAW.del.call(window.localStorage, k); } catch (e) {} }
+  } : undefined;
   if (OMGEVING !== 'live') {
     try {
       const pre = OMGEVING + ':';
@@ -55,7 +63,7 @@
     });
   }
   const sb = window.supabase.createClient(CFG.url, CFG.anonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: inlogOpslag }
   });
   window.sb = sb;
   const isBlom = u => !!(u && u.email && u.email.toLowerCase().endsWith(DOMEIN));
